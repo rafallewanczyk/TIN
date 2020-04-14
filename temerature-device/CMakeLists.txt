@@ -8,6 +8,6 @@ include_directories(/Users/jaroslaw.glegola/cryptopp820)
 find_library(crypto libcryptopp.dylib PATHS /Users/jaroslaw.glegola/cryptopp820)
 message("LIBRARIES = ${crypto}")
 
-add_executable(untitled main.cpp)
+add_executable(untitled main.cpp src/server/server.hpp src/server/socket-initialisation-exception.hpp src/server/accept-connection-exception.hpp)
 add_executable(test test/catch.hpp test/maintest.cpp)
 target_link_libraries(untitled ${crypto})

@@ -1,20 +1,7 @@
-#include <iostream>
-#include "cryptlib.h"
-#include "sha.h"
-#include <vector>
+#include "src/server/server.hpp"
+#include "src/connection-handler/connection-handler.hpp"
 
-void x() {
-
-}
-
-int main() {
-    std::cout << "Hello, World!" << std::endl;
-
-    CryptoPP::SHA1 hash;
-    std::cout << "Name: " << hash.AlgorithmName() << std::endl;
-    std::cout << "Digest size: " << hash.DigestSize() << std::endl;
-    std::cout << "Block size: " << hash.BlockSize() << std::endl;
-
-
-    return 0;
+int main(int argc, char *argv[]) {
+    auto server = Server("20001");
+    server.run(ConnectionHandler::getConnectionHandler);
 }
