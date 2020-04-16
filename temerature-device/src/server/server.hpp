@@ -25,6 +25,7 @@
 #include "socket-initialisation-exception.hpp"
 #include "accept-connection-exception.hpp"
 
+using  ConnectionThreadHanlder = std::function<void(int, struct sockaddr_in)>;
 
 class Server {
 private:
@@ -92,7 +93,7 @@ public:
         initSocket();
     }
 
-    void run(const std::function<void(int, struct sockaddr_in)> &handler, int maxBacklogSize = 18) {
+    void run(const ConnectionThreadHanlder &handler, int maxBacklogSize = 18) {
         bindAddress();
         listen(socketDescriptor, maxBacklogSize);
         std::cout << "Listening on port: " << port << "." << std::endl;
