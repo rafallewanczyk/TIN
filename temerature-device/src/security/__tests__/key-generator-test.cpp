@@ -5,7 +5,15 @@
 #include "../../../test/catch.hpp"
 #include "../key-generator.hpp"
 
-TEST_CASE("should generate keys when the keys are not in files", "[test]") {
+class TestsFixture {
+public:
+    TestsFixture() {
+        KeyGenerator().generateAndSaveKeys("regulator.public.rsa", "regulator.private.rsa");
+        KeyGenerator().generateAndSaveKeys("key.public.rsa", "key.private.rsa");
+    }
+};
+
+TEST_CASE_METHOD(TestsFixture, "should generate keys when the keys are not in files", "[test]") {
     // given
     std::filesystem::remove("key.public.rsa");
     std::filesystem::remove("key.private.rsa");
@@ -29,7 +37,7 @@ TEST_CASE("should generate keys when the keys are not in files", "[test]") {
     privateKeyFile.close();
 }
 
-TEST_CASE("should load keys when keys are in the file directory", "[test]") {
+TEST_CASE_METHOD(TestsFixture, "should load keys when keys are in the file directory", "[test]") {
     // given
     auto generatedPair = KeyGenerator().generateAndSaveKeys();
 
@@ -40,11 +48,11 @@ TEST_CASE("should load keys when keys are in the file directory", "[test]") {
     auto keyPair = generator.loadKeys();
 
     // then
-    REQUIRE(keyPair.first.GetPublicExponent() == generatedPair.first.GetPublicExponent());
-    REQUIRE(keyPair.second.GetPublicExponent() == generatedPair.second.GetPublicExponent());
+    REQUIRE(keyPair.publicKey.GetPublicExponent() == generatedPair.publicKey.GetPublicExponent());
+    REQUIRE(keyPair.privateKey.GetPublicExponent() == generatedPair.privateKey.GetPublicExponent());
 }
 
-TEST_CASE("should throw when no files are found in directory", "[test]") {
+TEST_CASE_METHOD(TestsFixture, "should throw when no files are found in directory", "[test]") {
     // when
     std::filesystem::remove("key.public.rsa");
     std::filesystem::remove("key.private.rsa");
@@ -52,3 +60,4 @@ TEST_CASE("should throw when no files are found in directory", "[test]") {
     // then
     REQUIRE_THROWS_AS(KeyGenerator().loadKeys(), CryptoPP::FileStore::OpenErr);
 }
+

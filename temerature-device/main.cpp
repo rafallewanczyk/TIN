@@ -8,6 +8,8 @@
 int main(int argc, char *argv[]) {
 //    auto server = Server("20001");
 //    server.run(ConnectionHandler::getConnectionHandler);
-    SecurityModule security;
+    SecurityModule security("regulator.public.rsa");
+
+    std::cout << security.decrypt(security.encrypt("Hello world from security")) << std::endl;
 
 }

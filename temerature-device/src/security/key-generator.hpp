@@ -10,7 +10,11 @@
 #include <string>
 #include "rsa.h"
 
-using KeyPair = std::pair<CryptoPP::RSA::PublicKey, CryptoPP::RSA::PrivateKey>;
+//using KeyPair = std::pair<CryptoPP::RSA::PublicKey, CryptoPP::RSA::PrivateKey>;
+struct KeyPair {
+    CryptoPP::RSA::PublicKey publicKey;
+    CryptoPP::RSA::PrivateKey privateKey;
+};
 
 class KeyGenerator {
 
@@ -61,30 +65,43 @@ class KeyGenerator {
         key.Load(queue);
     }
 
+
 public:
-
-    KeyPair loadKeys() {
+    CryptoPP::RSA::PublicKey loadPublicKey(const std::string &keyFilename = PUBLIC_KEY_FILENAME) {
         CryptoPP::RSA::PublicKey publicKey;
-        CryptoPP::RSA::PrivateKey privateKey;
 
-        loadPublicKey(PUBLIC_KEY_FILENAME, publicKey);
-        loadPrivateKey(PRIVATE_KEY_FILENAME, privateKey);
+        loadPublicKey(keyFilename, publicKey);
 
-        return std::make_pair(std::move(publicKey), std::move(privateKey));
+        return publicKey;
     }
 
-    KeyPair generateAndSaveKeys() {
-        CryptoPP::AutoSeededRandomPool rng;
-        CryptoPP::RSA::PublicKey publicKey;
+    CryptoPP::RSA::PrivateKey loadPrivateKey(const std::string &keyFilename = PUBLIC_KEY_FILENAME) {
         CryptoPP::RSA::PrivateKey privateKey;
 
-        privateKey.GenerateRandomWithKeySize(rng, PRIVATE_KEY_SIZE);
-        publicKey = CryptoPP::RSA::PublicKey(privateKey);
+        loadPublicKey(keyFilename, privateKey);
 
-        savePublicKey(PUBLIC_KEY_FILENAME, publicKey);
-        savePrivateKey(PRIVATE_KEY_FILENAME, privateKey);
+        return privateKey;
+    }
 
-        return std::make_pair(std::move(publicKey), std::move(privateKey));
+    KeyPair loadKeys(const std::string &publicKeyFilename = PUBLIC_KEY_FILENAME,
+                     const std::string &privateKeyFilename = PRIVATE_KEY_FILENAME) {
+        return {std::move(loadPublicKey(publicKeyFilename)), std::move(loadPrivateKey(privateKeyFilename))};
+    }
+
+
+    KeyPair generateAndSaveKeys(const std::string &publicKeyFilename = PUBLIC_KEY_FILENAME,
+                                const std::string &privateKeyFilename = PRIVATE_KEY_FILENAME) {
+        CryptoPP::AutoSeededRandomPool rng;
+        CryptoPP::InvertibleRSAFunction params;
+        params.GenerateRandomWithKeySize(rng, PRIVATE_KEY_SIZE);
+
+        CryptoPP::RSA::PublicKey publicKey(params);
+        CryptoPP::RSA::PrivateKey privateKey(params);
+
+        savePublicKey(publicKeyFilename, publicKey);
+        savePrivateKey(privateKeyFilename, privateKey);
+
+        return {std::move(publicKey), std::move(privateKey)};
     }
 };
 
