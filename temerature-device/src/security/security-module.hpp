@@ -8,8 +8,11 @@
 #include <osrng.h>
 #include <files.h>
 #include <string>
+#include <hex.h>
 #include "rsa.h"
 #include "key-generator.hpp"
+
+using namespace CryptoPP;
 
 class RegulatorKeysNotFound : public std::runtime_error {
 public:
@@ -17,7 +20,7 @@ public:
 };
 
 class SecurityModule {
-
+    std::mutex mutex;
     KeyPair serverKeyPair;
     CryptoPP::RSA::PublicKey regulatorPublicKey;
     CryptoPP::AutoSeededRandomPool rng;
@@ -40,30 +43,44 @@ public:
         }
     }
 
-    std::string decrypt(std::string cipher) {
+    std::string decrypt(std::string messageToDecrypt) {
+        std::lock_guard lock(mutex);
         CryptoPP::RSAES_OAEP_SHA_Decryptor d(serverKeyPair.privateKey);
-        std::string recovered;
+        std::string decryptedMessage;
 
-        CryptoPP::StringSource ss2(cipher, true,
-                                   new CryptoPP::PK_DecryptorFilter(rng, d, new CryptoPP::StringSink(recovered)));
-        return recovered;
+        CryptoPP::StringSource ss2(messageToDecrypt, true,
+                                   new CryptoPP::PK_DecryptorFilter(rng, d,
+                                                                    new CryptoPP::StringSink(decryptedMessage)));
+        return decryptedMessage;
     }
 
-    std::string encrypt(std::string x) {
+    std::string encrypt(const std::string &messageToEncrypt) {
+        std::lock_guard lock(mutex);
         CryptoPP::RSAES_OAEP_SHA_Encryptor e(regulatorPublicKey);
         std::string cipher;
 
-        CryptoPP::StringSource ss1(x, true, new CryptoPP::PK_EncryptorFilter(rng, e, new CryptoPP::StringSink(cipher)));
+        CryptoPP::StringSource ss1(messageToEncrypt, true,
+                                   new CryptoPP::PK_EncryptorFilter(rng, e, new CryptoPP::StringSink(cipher)));
 
         return cipher;
     }
 
-    std::string makeSignature(std::string) {
-        return "";
+    std::string makeSignature(const std::string &messageToSign) {
+        std::lock_guard lock(mutex);
+        std::string signature;
+        StringSource(messageToSign, true, new HashFilter(hash, new StringSink(signature)));
+
+        return signature;
     }
 
-    bool verifySignature(std::string) {
-        return false;
+    bool verifySignature(const std::string &message, const std::string &signature) {
+        std::lock_guard lock(mutex);
+        bool result;
+        StringSource(signature + message, true, new HashVerificationFilter(hash,
+                                                                           new ArraySink((byte *) &result,
+                                                                                         sizeof(result))));
+
+        return result;
     }
 };
 

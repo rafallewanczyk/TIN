@@ -10,6 +10,10 @@ int main(int argc, char *argv[]) {
 //    server.run(ConnectionHandler::getConnectionHandler);
     SecurityModule security("regulator.public.rsa");
 
-    std::cout << security.decrypt(security.encrypt("Hello world from security")) << std::endl;
+    auto message = "Jarek";
+    auto signature = security.makeSignature(message);
+    auto isVerified = security.verifySignature(message, signature);
+    std::cout << isVerified << std::endl;
 
+    return 0;
 }

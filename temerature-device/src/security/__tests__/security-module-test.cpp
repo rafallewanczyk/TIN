@@ -9,12 +9,11 @@
 class TestsFixture {
 public:
     TestsFixture() {
-//        KeyGenerator().generateAndSaveKeys("regulator.public.rsa", "regulator.private.rsa");
         KeyGenerator().generateAndSaveKeys("key.public.rsa", "key.private.rsa");
     }
 };
 
-TEST_CASE_METHOD(TestsFixture, "should encrypt decrypted message", "[test]") {
+TEST_CASE_METHOD(TestsFixture, "should encrypt decrypted message", "[test][security-module]") {
     // given
     SecurityModule security("key.public.rsa");
 
@@ -26,4 +25,56 @@ TEST_CASE_METHOD(TestsFixture, "should encrypt decrypted message", "[test]") {
 
     // then
     REQUIRE(decryptedMessage == "Encrypted from test");
+}
+
+TEST_CASE_METHOD(TestsFixture, "should verify signature", "[test][security-module]") {
+    // given
+    SecurityModule security("key.public.rsa");
+
+    // and
+    auto message = "Checking signature from test";
+
+    // and
+    auto signature = security.makeSignature(message);
+
+    // when
+    auto isSignatureCorrect = security.verifySignature(message, signature);
+
+    // then
+    REQUIRE(isSignatureCorrect);
+    REQUIRE(signature != message);
+}
+
+TEST_CASE_METHOD(TestsFixture, "should not verify signature when message is different", "[test][security-module]") {
+    // given
+    SecurityModule security("key.public.rsa");
+
+    // and
+    auto message = "Checking signature from test";
+
+    // and
+    auto signature = security.makeSignature(message);
+
+    // when
+    auto isSignatureCorrect = security.verifySignature(message + std::string("."), signature);
+
+    // then
+    REQUIRE(!isSignatureCorrect);
+}
+
+TEST_CASE_METHOD(TestsFixture, "should not verify signature when signature is different", "[test][security-module]") {
+    // given
+    SecurityModule security("key.public.rsa");
+
+    // and
+    auto message = "Checking signature from test";
+
+    // and
+    auto signature = security.makeSignature(message);
+
+    // when
+    auto isSignatureCorrect = security.verifySignature(message, signature + std::string("."));
+
+    // then
+    REQUIRE(!isSignatureCorrect);
 }
