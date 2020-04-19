@@ -11,13 +11,10 @@
 #include <hex.h>
 #include "rsa.h"
 #include "key-generator.hpp"
+#include "regulator-keys-not-found.hpp"
 
 using namespace CryptoPP;
 
-class RegulatorKeysNotFound : public std::runtime_error {
-public:
-    RegulatorKeysNotFound() : std::runtime_error("Couldn't find regulator keys") {}
-};
 
 class SecurityModule {
     std::mutex mutex;
@@ -67,6 +64,7 @@ public:
 
     std::string makeSignature(const std::string &messageToSign) {
         std::lock_guard lock(mutex);
+        SHA256 hash;
         std::string signature;
         StringSource(messageToSign, true, new HashFilter(hash, new StringSink(signature)));
 
@@ -75,6 +73,7 @@ public:
 
     bool verifySignature(const std::string &message, const std::string &signature) {
         std::lock_guard lock(mutex);
+        SHA256 hash;
         bool result;
         StringSource(signature + message, true, new HashVerificationFilter(hash,
                                                                            new ArraySink((byte *) &result,

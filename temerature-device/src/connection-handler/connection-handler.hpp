@@ -10,13 +10,19 @@
 #include <chrono>
 #include <thread>
 
+class SendError : public std::runtime_error {
+public:
+    SendError() : std::runtime_error("Couldnt send the data. Aborting") {}
+};
 
 class ConnectionHandler {
     int socketDescriptor;
     sockaddr_in clientAddress;
 
     void handle() {
-        send(socketDescriptor, "Hello, world!\n", 13, 0);
+        if (send(socketDescriptor, "Hello, world!\n", 13, 0) < 0) {
+            throw SendError();
+        }
 
         destroy();
     }
@@ -31,7 +37,11 @@ public:
               clientAddress(clientAddress) {}
 
     static void getConnectionHandler(int socketDescriptor, sockaddr_in clientAddress) {
-        ConnectionHandler(socketDescriptor, clientAddress).handle();
+        try {
+            ConnectionHandler(socketDescriptor, clientAddress).handle();
+        } catch (const SendError &e) {
+            return;
+        }
     }
 };
 
