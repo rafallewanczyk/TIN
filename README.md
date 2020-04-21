@@ -142,7 +142,7 @@ Nagłówek:
 4. N B - Dane
 5. N B - Podpis
 
-Do stworzenia podpisu wykorzystana zostanie funkcja skrótu SHA-256 i zostanie on zaszyfrowany kluczem prywatnym nadawcy algorytmem RSA. Ten sam algorytm będzie również użyty do przesłania całości wiadomości poprzez szyfrowanie kluczem publicznym odbiorcy.
+Do stworzenia podpisu wykorzystana zostanie funkcja skrótu SHA-256 i zostanie on zaszyfrowany kluczem prywatnym nadawcy algorytmem RSA. Ten sam algorytm będzie również użyty do przesłania całości wiadomości (bez nagłowka) poprzez szyfrowanie kluczem publicznym odbiorcy.
 
 ## Przykładowe sekwencje
 
