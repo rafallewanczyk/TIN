@@ -42,7 +42,7 @@ class DataParser {
     }
 
     std::optional<MessageType> parseType(MessageType type, const std::string &basicString) {
-        auto typeRepresentation = messageTypeToString(PING);
+        auto typeRepresentation = messageTypeToString(type);
 
         if (basicString.size() < typeRepresentation.size())
             throw InvalidMessageTypeException("Type has invalid size");
@@ -78,6 +78,7 @@ public:
     explicit DataParser(std::shared_ptr<SecurityModule> security) : security(std::move(security)) {}
 
     ParsedData parse(const std::vector<char> &data) {
+//        auto encryptedData = security->encrypt(std::string(data.begin(), data.end())); // TODO change to encryptoin
         std::string stringData(data.begin(), data.end());
         auto messageType = parseMessageType(stringData);
 
@@ -87,10 +88,10 @@ public:
             case GET_TEMP:
                 return {GET_TEMP};
             case CHANGE_TEMP: {
-                auto doubleOffset = messageTypeToString(CHANGE_TEMP).size();
-                auto decryptedDouble = stringData.substr(doubleOffset);
+                auto typeOffset = messageTypeToString(CHANGE_TEMP).size();
+                auto doubleData = stringData.substr(typeOffset);
 
-                return {CHANGE_TEMP, parseDouble(security->encrypt(decryptedDouble))};
+                return {CHANGE_TEMP, parseDouble(doubleData)};
             }
             default:
                 throw std::runtime_error("Undefined message type");

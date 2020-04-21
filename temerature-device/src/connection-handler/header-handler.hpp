@@ -26,7 +26,7 @@ public:
         auto contentSizeBytes = intToBytes(contentSize);
         auto senderIdBytes = intToBytes(senderId);
 
-        std::vector<char> result(12);
+        std::vector<char> result;
         result.insert(result.end(), protocolVersionBytes.begin(), protocolVersionBytes.end());
         result.insert(result.end(), contentSizeBytes.begin(), contentSizeBytes.end());
         result.insert(result.end(), senderIdBytes.begin(), senderIdBytes.end());

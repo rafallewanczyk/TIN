@@ -16,14 +16,15 @@ class DataSender {
     const static inline int DOUBLE_SIZE = 8;
 
     Header buildHeader(const std::string &message) {
-        return {HeaderHandler::PROTOCOL_VERSION, HeaderHandler::HEADER_SIZE + int(message.size()), 0};
+        return {HeaderHandler::PROTOCOL_VERSION, HeaderHandler::HEADER_SIZE + int(message.size()),
+                0}; //what about device id?
     }
 
     std::vector<char> buildMessage(const std::string &message) {
         auto encryptedMessage = security->encrypt(message);
         auto headerBytes = buildHeader(encryptedMessage).toBytes();
 
-        std::vector<char> wholeMessage(headerBytes.size() + encryptedMessage.size());
+        std::vector<char> wholeMessage;
 
         wholeMessage.insert(wholeMessage.end(), headerBytes.begin(), headerBytes.end());
         wholeMessage.insert(wholeMessage.end(), encryptedMessage.begin(), encryptedMessage.end());
@@ -44,7 +45,7 @@ public:
     }
 
     void sendPing() {
-        sendMessage("");
+        sendMessage(""); // TODO NO MESSAGE TYPE HERE !!!!! and down there
     }
 
     void sendCurrentTemperature(double currentTemperature) {

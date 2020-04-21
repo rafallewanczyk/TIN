@@ -1,7 +1,6 @@
-
-#include <vector>
-#include <iostream>
-#include <string>
+#include <osrng.h>
+#include <files.h>
+#include <netdb.h>
 #include "src/server/server.hpp"
 #include "src/connection-handler/connection-handler.hpp"
 
@@ -11,23 +10,15 @@ int main(int argc, char *argv[]) {
     auto server = Server("20001");
     server.run(ConnectionHandler::getConnectionHandler);
 //    SecurityModule security("regulator.public.rsa");
-//    int i = 68;
-//    std::vector<char> bytes(4);
-//    std::memcpy(bytes.data(), &i, 4);
-//    std::string x = "jarek\0 jarek";
-//    std::cout << x.size() << std::endl;
-
-
-//    std::cout << bytes.size() << std::endl;
-//    std::cout << bytes.data() << std::endl;
-
-//    int protocolVersion = std::stoi(std::string(array.begin(), array.begin() + 4));
-//    int contentSize = std::stoi(std::string(array.begin() + 4, array.begin() + 8));
-//    bytesToInt(std::vector<char>(array.begin(), array.begin() + 4));
-//    std::cout << protocolVersion << std::endl;
-//    std::cout << contentSize << std::endl;
-
     return 0;
+//    char protocol = '\0' + 1;
+//    char contentSize = '\0' + 31;
+//    char id = '\0';
+//
+//    std::array<char, 31> arr = {'\0', '\0', '\0', protocol, '\0', '\0', '\0', contentSize, '\0', '\0', '\0', id, 'C',
+//                                'H', 'A', 'N', 'G', 'E', '_', 'T', 'E', 'M', 'P'};
+//
+//
 //    int sockfd, portno, n;
 //    struct sockaddr_in serv_addr;
 //    struct hostent *server;
@@ -57,8 +48,7 @@ int main(int argc, char *argv[]) {
 //        }
 //        printf("Please enter the message: ");
 //        bzero(buffer, 256);
-//        fgets(buffer, 255, stdin);
-//        n = write(sockfd, buffer, strlen(buffer));
+//        n = write(sockfd, arr.data(), arr.size());
 //        if (n < 0) {
 //            cout << ("ERROR writing to socket") << endl;
 //            exit(0);

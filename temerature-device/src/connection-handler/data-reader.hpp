@@ -40,11 +40,11 @@ public:
 
         auto header = readHeader();
 
-        while (result.size() <= header.contentSize) {
-            int receivedBytes = recv(socketDescriptor, receiveBuffer.data(), receiveBuffer.size() - 1, 0);
+        while (result.size() < header.contentSize - HeaderHandler::HEADER_SIZE) {
+            int receivedBytes = recv(socketDescriptor, receiveBuffer.data(), receiveBuffer.size(), 0);
 
             if (receivedBytes > 0) {
-                result.insert(result.begin(), receiveBuffer.data(), receiveBuffer.data() + receivedBytes);
+                result.insert(result.end(), receiveBuffer.data(), receiveBuffer.data() + receivedBytes);
             } else if (receivedBytes == 0) {
                 throw NotEnoughDataException();
             } else {

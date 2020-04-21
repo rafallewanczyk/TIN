@@ -28,7 +28,7 @@
 class ConnectionHandler {
     int socketDescriptor;
     sockaddr_in clientAddress;
-    std::shared_ptr<Device> device;
+    std::shared_ptr<Device> device = std::make_shared<Device>();
     DataSender sender;
     DataReader reader;
     DataParser dataParser;
