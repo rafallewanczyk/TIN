@@ -1,23 +1,25 @@
-#include <osrng.h>
-#include <files.h>
-#include <netdb.h>
+
+#include <vector>
+#include <iostream>
+#include <string>
 #include "src/server/server.hpp"
 #include "src/connection-handler/connection-handler.hpp"
-#include "rsa.h"
-#include "src/security/security-module.hpp"
 
 using namespace std;
 
 int main(int argc, char *argv[]) {
-//    auto server = Server("20001");
-//    server.run(ConnectionHandler::getConnectionHandler);
+    auto server = Server("20001");
+    server.run(ConnectionHandler::getConnectionHandler);
 //    SecurityModule security("regulator.public.rsa");
-    int i = 68;
-    std::vector<char> bytes(4);
-    std::memcpy(bytes.data(), &i, 4);
+//    int i = 68;
+//    std::vector<char> bytes(4);
+//    std::memcpy(bytes.data(), &i, 4);
+//    std::string x = "jarek\0 jarek";
+//    std::cout << x.size() << std::endl;
 
-    std::cout << bytes.size() << std::endl;
-    std::cout << bytes.data() << std::endl;
+
+//    std::cout << bytes.size() << std::endl;
+//    std::cout << bytes.data() << std::endl;
 
 //    int protocolVersion = std::stoi(std::string(array.begin(), array.begin() + 4));
 //    int contentSize = std::stoi(std::string(array.begin() + 4, array.begin() + 8));

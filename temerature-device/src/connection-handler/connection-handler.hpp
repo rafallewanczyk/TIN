@@ -10,34 +10,44 @@
 #include <chrono>
 #include <thread>
 #include <array>
+#include <utility>
 #include "connection-lost-during-read-exception.hpp"
 #include "header-handler.hpp"
 #include "data-sender.hpp"
 #include "data-reader.hpp"
 #include "data-parser.hpp"
+#include "../device/device.hpp"
+#include "../security/security-module.hpp"
 
 //class SendError : public std::runtime_error {
 //public:
-//    SendError() : std::runtime_error("Couldnt send the data. Aborting") {}
+//    SendError() : std::runtime_error("Couldnt sendMessage the data. Aborting") {}
 //};
 
 
 class ConnectionHandler {
     int socketDescriptor;
     sockaddr_in clientAddress;
+    std::shared_ptr<Device> device;
     DataSender sender;
     DataReader reader;
     DataParser dataParser;
 
     void handle() {
-        auto data = reader.readAllData();
+        auto requestData = reader.readAllData();
+        auto parsedData = dataParser.parse(requestData.data);
 
-        for (char i : data) {
-            std::cout << i;
+        switch (parsedData.messageType) {
+            case PING:
+                sender.sendPing();
+            case GET_TEMP:
+                sender.sendCurrentTemperature(device->getCurrentTemperature());
+            case CHANGE_TEMP: {
+                device->setTargetTemperature(parsedData.targetTemp.value());
+            }
+            default:
+                break;
         }
-
-        auto parsedData = dataParser.parse(data);
-
 
         destroy();
     }
@@ -48,15 +58,17 @@ class ConnectionHandler {
     }
 
 public:
-    ConnectionHandler(int socketDescriptor, struct sockaddr_in clientAddress)
+    ConnectionHandler(int socketDescriptor, struct sockaddr_in clientAddress, std::shared_ptr<SecurityModule> security)
             : socketDescriptor(socketDescriptor),
               clientAddress(clientAddress),
-              sender(socketDescriptor),
-              reader(socketDescriptor) {}
+              sender(socketDescriptor, security),
+              reader(socketDescriptor),
+              dataParser(security) {}
 
-    static void getConnectionHandler(int socketDescriptor, sockaddr_in clientAddress) {
+    static void getConnectionHandler(int socketDescriptor, struct sockaddr_in clientAddress,
+                                     std::shared_ptr<SecurityModule> security) {
         try {
-            ConnectionHandler(socketDescriptor, clientAddress).handle();
+            ConnectionHandler(socketDescriptor, clientAddress, std::move(security)).handle();
         } catch (const std::exception &e) {
             return;
         }

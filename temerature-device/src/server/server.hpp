@@ -24,13 +24,15 @@
 #include <memory>
 #include "socket-initialisation-exception.hpp"
 #include "accept-connection-exception.hpp"
+#include "../security/security-module.hpp"
 
-using  ConnectionThreadHanlder = std::function<void(int, struct sockaddr_in)>;
+using ConnectionThreadHanlder = std::function<void(int, struct sockaddr_in, std::shared_ptr<SecurityModule>)>;
 
 class Server {
 private:
     int socketDescriptor{}, port;
     struct sockaddr_in serverAddressStruct{};
+    std::shared_ptr<SecurityModule> security = std::make_shared<SecurityModule>("regulator.public.rsa");
 
     static std::string getError() {
         return "Errno: " + std::to_string(errno) + " - " + strerror(errno);
@@ -102,7 +104,7 @@ public:
             try {
                 auto clientConnectionInfo = acceptConnection();
 
-                std::thread(handler, clientConnectionInfo.first, clientConnectionInfo.second).detach();
+                std::thread(handler, clientConnectionInfo.first, clientConnectionInfo.second, security).detach();
             } catch (AcceptConnectionException &e) {
                 std::cout << e.what() << std::endl;
                 continue;

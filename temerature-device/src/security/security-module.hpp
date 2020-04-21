@@ -53,6 +53,10 @@ public:
 
     std::string encrypt(const std::string &messageToEncrypt) {
         std::lock_guard lock(mutex);
+        if(messageToEncrypt.size() == 0) {
+            return "";
+        }
+
         CryptoPP::RSAES_OAEP_SHA_Encryptor e(regulatorPublicKey);
         std::string cipher;
 
