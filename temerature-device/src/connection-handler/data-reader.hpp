@@ -14,7 +14,7 @@ struct RequestData {
 };
 
 class DataReader {
-    const static inline int RECEIVE_BUFFER_SIZE = 5;
+    const static inline int RECEIVE_BUFFER_SIZE = 255;
     int socketDescriptor;
     HeaderHandler headerHandler;
 
