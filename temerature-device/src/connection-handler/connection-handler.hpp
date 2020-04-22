@@ -22,7 +22,7 @@
 class ConnectionHandler {
     int socketDescriptor;
     sockaddr_in clientAddress;
-    std::shared_ptr<Device> device = std::make_shared<Device>();
+    std::shared_ptr<Device> device;
     std::shared_ptr<SecurityModule> security;
     DataSender sender;
     DataReader reader;
@@ -72,17 +72,20 @@ class ConnectionHandler {
     }
 
 public:
-    ConnectionHandler(int socketDescriptor, struct sockaddr_in clientAddress, std::shared_ptr<SecurityModule> security)
+    ConnectionHandler(int socketDescriptor, struct sockaddr_in clientAddress, std::shared_ptr<SecurityModule> security,
+                      std::shared_ptr<Device> device)
             : socketDescriptor(socketDescriptor),
               clientAddress(clientAddress),
               sender(socketDescriptor, security),
               reader(socketDescriptor),
               dataParser(security),
-              security(security) {}
+              security(security),
+              device(std::move(device)) {}
 
     static void getConnectionHandler(int socketDescriptor, struct sockaddr_in clientAddress,
-                                     std::shared_ptr<SecurityModule> security) {
-        ConnectionHandler(socketDescriptor, clientAddress, std::move(security)).handle();
+                                     std::shared_ptr<SecurityModule> security,
+                                     std::shared_ptr<Device> device) {
+        ConnectionHandler(socketDescriptor, clientAddress, std::move(security), device).handle();
     }
 };
 

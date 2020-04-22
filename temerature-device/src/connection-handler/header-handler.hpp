@@ -42,8 +42,6 @@ class HeaderHandler {
     int bytesToInt(std::vector<char> bytes) {
         int value = *(reinterpret_cast<int *>(bytes.data()));
 
-        std::cout << value << std::endl;
-
         return value;
     }
 

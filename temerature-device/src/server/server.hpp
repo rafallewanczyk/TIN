@@ -25,8 +25,10 @@
 #include "socket-initialisation-exception.hpp"
 #include "accept-connection-exception.hpp"
 #include "../security/security-module.hpp"
+#include "../device/device.hpp"
 
-using ConnectionThreadHanlder = std::function<void(int, struct sockaddr_in, std::shared_ptr<SecurityModule>)>;
+using ConnectionThreadHanlder = std::function<void(int, struct sockaddr_in, std::shared_ptr<SecurityModule>,
+                                                   std::shared_ptr<Device>)>;
 
 class Server {
 private:
@@ -65,7 +67,6 @@ private:
     }
 
     std::pair<int, struct sockaddr_in> acceptConnection() {
-        std::cout << "Waiting for connection..." << std::endl;
         struct sockaddr_in clientAddress{};
         auto clientAddressLength = sizeof(clientAddress);
         auto newSocketDescriptor = accept(socketDescriptor,
@@ -95,7 +96,7 @@ public:
         initSocket();
     }
 
-    void run(const ConnectionThreadHanlder &handler, int maxBacklogSize = 18) {
+    void run(const ConnectionThreadHanlder &handler, std::shared_ptr<Device> device, int maxBacklogSize = 18) {
         bindAddress();
         listen(socketDescriptor, maxBacklogSize);
         std::cout << "Listening on port: " << port << "." << std::endl;
@@ -104,7 +105,8 @@ public:
             try {
                 auto clientConnectionInfo = acceptConnection();
 
-                std::thread(handler, clientConnectionInfo.first, clientConnectionInfo.second, security).detach();
+                std::thread(handler, clientConnectionInfo.first, clientConnectionInfo.second, security,
+                            std::ref(device)).detach();
             } catch (AcceptConnectionException &e) {
                 std::cout << e.what() << std::endl;
                 continue;

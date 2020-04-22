@@ -24,7 +24,7 @@ class Device {
 
         auto low = temperatureDifference < 0 ? newChangeRate : -0.3;
         auto high = temperatureDifference > 0 ? newChangeRate : 0.3;
-        generateTemperatureChange = std::uniform_real_distribution<double>(-low, high);
+        generateTemperatureChange = std::uniform_real_distribution<double>(low, high);
     }
 
 public:
