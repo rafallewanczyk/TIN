@@ -47,10 +47,13 @@ class ConnectionHandler {
         switch (parsedData.messageType) {
             case PING:
                 sender.sendPing();
+                break;
             case GET_TEMP:
                 sender.sendCurrentTemperature(device->getCurrentTemperature());
+                break;
             case CHANGE_TEMP: {
                 device->setTargetTemperature(parsedData.targetTemp.value());
+                break;
             }
         }
     }
