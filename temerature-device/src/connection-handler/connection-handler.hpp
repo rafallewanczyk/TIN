@@ -11,7 +11,7 @@
 #include <thread>
 #include <array>
 #include <utility>
-#include "connection-lost-during-read-exception.hpp"
+#include "connection-exceptions.hpp"
 #include "header-handler.hpp"
 #include "data-sender.hpp"
 #include "data-reader.hpp"
@@ -39,11 +39,10 @@ class ConnectionHandler {
         }
     }
 
-    void handle() {
+    void handleData() {
         auto requestData = reader.readAllData();
         auto parsedData = dataParser.parse(requestData.data);
         if (!SecurityModule::ENCRYPTION_MODE_OFF) verifySignature(requestData, parsedData.signature);
-        verifySignature(requestData, parsedData.signature);
 
         switch (parsedData.messageType) {
             case PING:
@@ -53,6 +52,15 @@ class ConnectionHandler {
             case CHANGE_TEMP: {
                 device->setTargetTemperature(parsedData.targetTemp.value());
             }
+        }
+    }
+
+    void handle() {
+        try {
+            handleData();
+        } catch (const ConnectionException &e) {
+        } catch (const InvalidDataException &e) {
+            sender.sendError(e.what());
         }
 
         destroy();
@@ -74,11 +82,7 @@ public:
 
     static void getConnectionHandler(int socketDescriptor, struct sockaddr_in clientAddress,
                                      std::shared_ptr<SecurityModule> security) {
-        try {
-            ConnectionHandler(socketDescriptor, clientAddress, std::move(security)).handle();
-        } catch (const std::exception &e) {
-            return;
-        }
+        ConnectionHandler(socketDescriptor, clientAddress, std::move(security)).handle();
     }
 };
 

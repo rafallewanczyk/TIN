@@ -28,7 +28,7 @@ public:
 
         int receivedBytes = recv(socketDescriptor, receiveBuffer.data(), HeaderHandler::HEADER_SIZE, 0);
         if (receivedBytes < HeaderHandler::HEADER_SIZE) {
-            throw InvalidMessageHeaderException();
+            throw InvalidMessageHeaderException("Received not enough data to form a header");
         }
 
         return headerHandler.parseHeader(receiveBuffer);

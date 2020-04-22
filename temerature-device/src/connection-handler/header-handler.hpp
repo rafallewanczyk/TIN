@@ -5,7 +5,8 @@
 #ifndef UNTITLED_HEADER_HANDLER_HPP
 #define UNTITLED_HEADER_HANDLER_HPP
 
-#include "connection-lost-during-read-exception.hpp"
+#include "connection-exceptions.hpp"
+#include "invalid-data-exceptions.hpp"
 
 struct Header {
 private:
@@ -47,7 +48,7 @@ class HeaderHandler {
     }
 
 
-    void validate(Header header) {
+    void validate(const Header &header) {
         if (header.protocolVersion != PROTOCOL_VERSION)
             throw InvalidMessageHeaderException("Wrong protocol version");
 

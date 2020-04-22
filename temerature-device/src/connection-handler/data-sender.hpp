@@ -13,7 +13,8 @@
 
 enum OutputMessageType {
     CURR_TEMP,
-    PING_RETURN
+    PING_RETURN,
+    ERROR
 };
 
 class DataSender {
@@ -27,6 +28,8 @@ class DataSender {
                 return "CURR_TEMP";
             case PING_RETURN:
                 return "PING_RETURN";
+            case ERROR:
+                return "ERROR";
         }
     }
 
@@ -60,7 +63,7 @@ public:
         auto bytesToSend = buildMessage(message);
 
         if (send(socketDescriptor, bytesToSend.data(), bytesToSend.size(), 0) < 0) {
-            throw ConnectionLostDuringReadException(); // TODO
+            throw ConnectionLostDuringSendException();
         }
     }
 
@@ -79,6 +82,17 @@ public:
 
         sendMessage(message);
     }
+
+    void sendError(const std::string &error) {
+        auto messageType = messageTypeToString(ERROR);
+        std::vector<char> message;
+
+        message.insert(messageType.end(), messageType.begin(), messageType.end());
+        message.insert(messageType.end(), error.begin(), error.end());
+
+        sendMessage(message);
+    }
+
 };
 
 
