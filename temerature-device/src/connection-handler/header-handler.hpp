@@ -20,6 +20,7 @@ public:
     int protocolVersion;
     int contentSize;
     int senderId;
+    std::vector<char> rawData;
 
     [[nodiscard]] std::vector<char> toBytes() const {
         auto protocolVersionBytes = intToBytes(protocolVersion);
@@ -63,7 +64,7 @@ public:
         int contentSize = bytesToInt(std::vector(array.begin() + 4, array.begin() + 8));
         int senderId = bytesToInt(std::vector(array.begin() + 8, array.end()));
 
-        auto header = Header{protocolVersion, contentSize, senderId};
+        auto header = Header{protocolVersion, contentSize, senderId, std::vector<char>(array.begin(), array.end())};
 
         validate(header);
 

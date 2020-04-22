@@ -19,23 +19,31 @@
 #include "../device/device.hpp"
 #include "../security/security-module.hpp"
 
-//class SendError : public std::runtime_error {
-//public:
-//    SendError() : std::runtime_error("Couldnt sendMessage the data. Aborting") {}
-//};
-
-
 class ConnectionHandler {
     int socketDescriptor;
     sockaddr_in clientAddress;
     std::shared_ptr<Device> device = std::make_shared<Device>();
+    std::shared_ptr<SecurityModule> security;
     DataSender sender;
     DataReader reader;
     DataParser dataParser;
 
+    void verifySignature(RequestData data, const std::string &signature) {
+        std::vector<char> body;
+
+        body.insert(body.end(), data.header.rawData.begin(), data.header.rawData.end());
+        body.insert(body.end(), data.data.begin(), data.data.end() - SecurityModule::SIGNATURE_SIZE);
+
+        if (!security->verifySignature(std::string(body.begin(), body.end()), signature)) {
+            throw SignatureNotVerified();
+        }
+    }
+
     void handle() {
         auto requestData = reader.readAllData();
         auto parsedData = dataParser.parse(requestData.data);
+        if (!SecurityModule::ENCRYPTION_MODE_OFF) verifySignature(requestData, parsedData.signature);
+        verifySignature(requestData, parsedData.signature);
 
         switch (parsedData.messageType) {
             case PING:
@@ -61,7 +69,8 @@ public:
               clientAddress(clientAddress),
               sender(socketDescriptor, security),
               reader(socketDescriptor),
-              dataParser(security) {}
+              dataParser(security),
+              security(security) {}
 
     static void getConnectionHandler(int socketDescriptor, struct sockaddr_in clientAddress,
                                      std::shared_ptr<SecurityModule> security) {

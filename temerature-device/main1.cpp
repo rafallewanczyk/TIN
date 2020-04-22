@@ -7,12 +7,13 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
+    const int cSize = 31 + 32;
     char protocol = '\0' + 1;
-    char contentSize = '\0' + 28;
+    char contentSize = '\0' + cSize;
     char id = '\0';
 
-    std::array<char, 28> arr = {protocol, '\0', '\0', '\0', contentSize, '\0', '\0', '\0', '\0', '\0', '\0', id,
-                                'G', 'E', 'T', '_', 'T', 'E', 'M', 'P'};
+    std::array<char, cSize> arr = {protocol, '\0', '\0', '\0', contentSize, '\0', '\0', '\0', '\0', '\0', '\0', id, 'C',
+                                   'H', 'A', 'N', 'G', 'E', '_', 'T', 'E', 'M', 'P'};
 
 
     int sockfd, portno, n;

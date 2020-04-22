@@ -39,4 +39,12 @@ public:
             : ErrnoException(INVALID_HEADER_MESSAGE + extraMessage) {}
 };
 
+class SignatureNotVerified : public ErrnoException {
+public:
+    const static inline char *INVALID_HEADER_MESSAGE = "Signature could not be verified";
+
+    explicit SignatureNotVerified(const std::string &extraMessage = "")
+            : ErrnoException(INVALID_HEADER_MESSAGE + extraMessage) {}
+};
+
 #endif //UNTITLED_CONNECTION_LOST_DURING_READ_EXCEPTION_HPP

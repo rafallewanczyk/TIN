@@ -18,6 +18,7 @@ enum MessageType {
 
 struct ParsedData {
     MessageType messageType;
+    std::string signature;
     std::optional<double> targetTemp = std::nullopt;
 };
 
@@ -74,17 +75,20 @@ public:
     ParsedData parse(const std::vector<char> &data) {
         auto encryptedData = security->decrypt(std::string(data.begin(), data.end()));
         auto messageType = parseMessageType(encryptedData);
+        auto messageTypeSize = messageTypeToString(messageType).size();
 
         switch (messageType) {
             case PING:
-                return {PING};
-            case GET_TEMP:
-                return {GET_TEMP};
-            case CHANGE_TEMP: {
-                auto typeOffset = messageTypeToString(CHANGE_TEMP).size();
-                auto doubleData = encryptedData.substr(typeOffset);
+            case GET_TEMP: {
+                auto signature = encryptedData.substr(messageTypeSize);
 
-                return {CHANGE_TEMP, parseDouble(doubleData)};
+                return {messageType, signature};
+            }
+            case CHANGE_TEMP: {
+                auto doubleData = encryptedData.substr(messageTypeSize, 8);
+                auto signature = encryptedData.substr(messageTypeSize + 8);
+
+                return {CHANGE_TEMP, signature, parseDouble(doubleData)};
             }
         }
     }
