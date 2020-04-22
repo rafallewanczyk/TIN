@@ -13,9 +13,7 @@
 enum MessageType {
     PING,
     GET_TEMP,
-    CURR_TEMP,
-    CHANGE_TEMP,
-    PING_RETURN
+    CHANGE_TEMP
 };
 
 struct ParsedData {
@@ -32,12 +30,8 @@ class DataParser {
                 return "GET_TEMP";
             case PING:
                 return "PING";
-            case CURR_TEMP:
-                return "CURR_TEMP";
             case CHANGE_TEMP:
                 return "CHANGE_TEMP";
-            case PING_RETURN:
-                return "PING_RETURN";
         }
     }
 
@@ -78,9 +72,8 @@ public:
     explicit DataParser(std::shared_ptr<SecurityModule> security) : security(std::move(security)) {}
 
     ParsedData parse(const std::vector<char> &data) {
-//        auto encryptedData = security->encrypt(std::string(data.begin(), data.end())); // TODO change to encryptoin
-        std::string stringData(data.begin(), data.end());
-        auto messageType = parseMessageType(stringData);
+        auto encryptedData = security->decrypt(std::string(data.begin(), data.end()));
+        auto messageType = parseMessageType(encryptedData);
 
         switch (messageType) {
             case PING:
@@ -89,12 +82,10 @@ public:
                 return {GET_TEMP};
             case CHANGE_TEMP: {
                 auto typeOffset = messageTypeToString(CHANGE_TEMP).size();
-                auto doubleData = stringData.substr(typeOffset);
+                auto doubleData = encryptedData.substr(typeOffset);
 
                 return {CHANGE_TEMP, parseDouble(doubleData)};
             }
-            default:
-                throw std::runtime_error("Undefined message type");
         }
     }
 

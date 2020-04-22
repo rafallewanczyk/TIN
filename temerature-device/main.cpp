@@ -10,6 +10,8 @@ int main(int argc, char *argv[]) {
     auto server = Server("20001");
     server.run(ConnectionHandler::getConnectionHandler);
 //    SecurityModule security("regulator.public.rsa");
+//    std::cout << security.encrypt("1").size() << std::endl;
+
     return 0;
 //    char protocol = '\0' + 1;
 //    char contentSize = '\0' + 31;

@@ -23,6 +23,8 @@ class SecurityModule {
     CryptoPP::AutoSeededRandomPool rng;
 
 public:
+    const inline static int SIGNATURE_SIZE = 32;
+    const inline static bool ENCRYPTION_MODE_OFF = true;
 
     SecurityModule(const std::string &regulatorPublicKeyFilename) {
         KeyGenerator generator;
@@ -42,6 +44,11 @@ public:
 
     std::string decrypt(std::string messageToDecrypt) {
         std::lock_guard lock(mutex);
+
+        if (ENCRYPTION_MODE_OFF) { // Only for debugging purpose
+            return messageToDecrypt;
+        }
+
         CryptoPP::RSAES_OAEP_SHA_Decryptor d(serverKeyPair.privateKey);
         std::string decryptedMessage;
 
@@ -53,24 +60,27 @@ public:
 
     std::string encrypt(const std::string &messageToEncrypt) {
         std::lock_guard lock(mutex);
-        if(messageToEncrypt.size() == 0) {
-            return "";
+
+        if (ENCRYPTION_MODE_OFF) { // Only for debugging purpose
+            return messageToEncrypt;
         }
 
         CryptoPP::RSAES_OAEP_SHA_Encryptor e(regulatorPublicKey);
-        std::string cipher;
+        std::string encryptedMessage;
 
         CryptoPP::StringSource ss1(messageToEncrypt, true,
-                                   new CryptoPP::PK_EncryptorFilter(rng, e, new CryptoPP::StringSink(cipher)));
+                                   new CryptoPP::PK_EncryptorFilter(rng, e,
+                                                                    new CryptoPP::StringSink(encryptedMessage)));
 
-        return cipher;
+        return encryptedMessage;
     }
 
-    std::string makeSignature(const std::string &messageToSign) {
+    std::string makeSignature(const std::vector<char> &messageToSign) {
         std::lock_guard lock(mutex);
         SHA256 hash;
         std::string signature;
-        StringSource(messageToSign, true, new HashFilter(hash, new StringSink(signature)));
+        StringSource(std::string(messageToSign.begin(), messageToSign.end()), true,
+                     new HashFilter(hash, new StringSink(signature)));
 
         return signature;
     }
@@ -85,6 +95,7 @@ public:
 
         return result;
     }
+
 };
 
 

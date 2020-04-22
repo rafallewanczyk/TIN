@@ -9,25 +9,45 @@
 #include <string>
 #include <utility>
 #include "../security/security-module.hpp"
+#include "data-parser.hpp"
+
+enum OutputMessageType {
+    CURR_TEMP,
+    PING_RETURN
+};
 
 class DataSender {
     int socketDescriptor;
     std::shared_ptr<SecurityModule> security;
     const static inline int DOUBLE_SIZE = 8;
 
+    std::string messageTypeToString(OutputMessageType type) {
+        switch (type) {
+            case CURR_TEMP:
+                return "CURR_TEMP";
+            case PING_RETURN:
+                return "PING_RETURN";
+        }
+    }
+
     Header buildHeader(const std::string &message) {
-        return {HeaderHandler::PROTOCOL_VERSION, HeaderHandler::HEADER_SIZE + int(message.size()),
+        return {HeaderHandler::PROTOCOL_VERSION,
+                HeaderHandler::HEADER_SIZE + int(message.size()) + SecurityModule::SIGNATURE_SIZE,
                 0}; //what about device id?
     }
 
-    std::vector<char> buildMessage(const std::string &message) {
-        auto encryptedMessage = security->encrypt(message);
-        auto headerBytes = buildHeader(encryptedMessage).toBytes();
+    std::vector<char> buildMessage(const std::vector<char> &message) {
+        auto messageBytes = security->encrypt(std::string(message.begin(), message.end()));
+        auto headerBytes = buildHeader(messageBytes).toBytes();
 
         std::vector<char> wholeMessage;
 
         wholeMessage.insert(wholeMessage.end(), headerBytes.begin(), headerBytes.end());
-        wholeMessage.insert(wholeMessage.end(), encryptedMessage.begin(), encryptedMessage.end());
+        wholeMessage.insert(wholeMessage.end(), messageBytes.begin(), messageBytes.end());
+
+        auto signature = security->makeSignature(wholeMessage);
+
+        wholeMessage.insert(wholeMessage.end(), signature.begin(), signature.end());
 
         return wholeMessage;
     }
@@ -36,23 +56,28 @@ public:
     explicit DataSender(int socketDescriptor, std::shared_ptr<SecurityModule> security)
             : socketDescriptor(socketDescriptor), security(std::move(security)) {}
 
-    void sendMessage(const std::string &message) {
-        auto messageBytes = buildMessage(message);
+    void sendMessage(const std::vector<char> &message) {
+        auto bytesToSend = buildMessage(message);
 
-        if (send(socketDescriptor, message.data(), message.size(), 0) < 0) {
+        if (send(socketDescriptor, bytesToSend.data(), bytesToSend.size(), 0) < 0) {
             throw ConnectionLostDuringReadException(); // TODO
         }
     }
 
     void sendPing() {
-        sendMessage(""); // TODO NO MESSAGE TYPE HERE !!!!! and down there
+        auto messageType = messageTypeToString(PING_RETURN);
+
+        sendMessage(std::vector<char>(messageType.begin(), messageType.end()));
     }
 
     void sendCurrentTemperature(double currentTemperature) {
-        std::array<char, DOUBLE_SIZE> temperatureBytes{};
-        std::memcpy(temperatureBytes.data(), &currentTemperature, DOUBLE_SIZE);
+        auto messageType = messageTypeToString(CURR_TEMP);
+        std::vector<char> message(messageType.size() + DOUBLE_SIZE);
 
-        sendMessage(temperatureBytes.data());
+        std::memcpy(message.data(), messageType.data(), messageType.size());
+        std::memcpy(message.data() + messageType.size(), &currentTemperature, DOUBLE_SIZE);
+
+        sendMessage(message);
     }
 };
 

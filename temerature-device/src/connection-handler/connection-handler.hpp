@@ -45,8 +45,6 @@ class ConnectionHandler {
             case CHANGE_TEMP: {
                 device->setTargetTemperature(parsedData.targetTemp.value());
             }
-            default:
-                break;
         }
 
         destroy();
