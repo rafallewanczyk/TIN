@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29911.84
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Regulator_Oswietlenia", "Regulator_Oswietlenia\Regulator_Oswietlenia.csproj", "{2DD44303-2B5E-4FE8-9569-74AECA3B9F50}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2DD44303-2B5E-4FE8-9569-74AECA3B9F50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DD44303-2B5E-4FE8-9569-74AECA3B9F50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DD44303-2B5E-4FE8-9569-74AECA3B9F50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DD44303-2B5E-4FE8-9569-74AECA3B9F50}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {09F0C083-EAB2-477C-9234-03747CA98F74}
+	EndGlobalSection
+EndGlobal

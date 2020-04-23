@@ -1,0 +1,13 @@
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\bin\Debug\netcoreapp3.1\Regulator_Oswietlenia.exe
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\bin\Debug\netcoreapp3.1\Regulator_Oswietlenia.deps.json
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\bin\Debug\netcoreapp3.1\Regulator_Oswietlenia.runtimeconfig.json
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\bin\Debug\netcoreapp3.1\Regulator_Oswietlenia.runtimeconfig.dev.json
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\bin\Debug\netcoreapp3.1\Regulator_Oswietlenia.dll
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\bin\Debug\netcoreapp3.1\Regulator_Oswietlenia.pdb
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\obj\Debug\netcoreapp3.1\Regulator_Oswietlenia.csprojAssemblyReference.cache
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\obj\Debug\netcoreapp3.1\Regulator_Oswietlenia.csproj.CoreCompileInputs.cache
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\obj\Debug\netcoreapp3.1\Regulator_Oswietlenia.AssemblyInfoInputs.cache
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\obj\Debug\netcoreapp3.1\Regulator_Oswietlenia.AssemblyInfo.cs
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\obj\Debug\netcoreapp3.1\Regulator_Oswietlenia.dll
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\obj\Debug\netcoreapp3.1\Regulator_Oswietlenia.pdb
+C:\Users\rafal\source\repos\TIN\Regulator_Oswietlenia\Regulator_Oswietlenia\obj\Debug\netcoreapp3.1\Regulator_Oswietlenia.genruntimeconfig.cache

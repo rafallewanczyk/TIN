@@ -1,0 +1,13 @@
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\bin\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.exe
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\bin\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.deps.json
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\bin\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.runtimeconfig.json
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\bin\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.runtimeconfig.dev.json
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\bin\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.dll
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\bin\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.pdb
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\obj\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.csprojAssemblyReference.cache
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\obj\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.csproj.CoreCompileInputs.cache
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\obj\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.AssemblyInfoInputs.cache
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\obj\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.AssemblyInfo.cs
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\obj\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.dll
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\obj\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.pdb
+C:\Users\rafal\source\repos\TIN\Urzadzenie_Oswietlenia\Urzadzenie_Oswietlenia\obj\Debug\netcoreapp3.1\Urzadzenie_Oswietlenia.genruntimeconfig.cache
