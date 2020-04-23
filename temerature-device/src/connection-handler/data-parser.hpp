@@ -9,6 +9,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include "../security/security-module.hpp"
+#include "invalid-data-exceptions.hpp"
 
 enum MessageType {
     PING,

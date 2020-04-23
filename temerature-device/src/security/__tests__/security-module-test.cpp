@@ -32,10 +32,10 @@ TEST_CASE_METHOD(TestsFixture, "should verify signature", "[test][security-modul
     SecurityModule security("key.public.rsa");
 
     // and
-    auto message = "Checking signature from test";
+    std::string message = "Checking signature from test";
 
     // and
-    auto signature = security.makeSignature(message);
+    auto signature = security.makeSignature(std::vector<char>(message.begin(), message.end()));
 
     // when
     auto isSignatureCorrect = security.verifySignature(message, signature);
@@ -50,10 +50,10 @@ TEST_CASE_METHOD(TestsFixture, "should not verify signature when message is diff
     SecurityModule security("key.public.rsa");
 
     // and
-    auto message = "Checking signature from test";
+    std::string message = "Checking signature from test";
 
     // and
-    auto signature = security.makeSignature(message);
+    auto signature = security.makeSignature(std::vector<char>(message.begin(), message.end()));
 
     // when
     auto isSignatureCorrect = security.verifySignature(message + std::string("."), signature);
@@ -67,10 +67,10 @@ TEST_CASE_METHOD(TestsFixture, "should not verify signature when signature is di
     SecurityModule security("key.public.rsa");
 
     // and
-    auto message = "Checking signature from test";
+    std::string message = "Checking signature from test";
 
     // and
-    auto signature = security.makeSignature(message);
+    auto signature = security.makeSignature(std::vector<char>(message.begin(), message.end()));
 
     // when
     auto isSignatureCorrect = security.verifySignature(message, signature + std::string("."));
