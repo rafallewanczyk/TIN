@@ -21,7 +21,7 @@ namespace Regulator_Oswietlenia
         private static void SetupServer()
         {
             Console.WriteLine("Setting up server ...");
-            _serverSocket.Bind(new IPEndPoint(IPAddress.Any, 8080));
+            _serverSocket.Bind(new IPEndPoint(IPAddress.Any, 100));
             _serverSocket.Listen(5); 
             _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null); 
 
@@ -44,7 +44,7 @@ namespace Regulator_Oswietlenia
             byte[] dataBuf = new byte[received];
             Array.Copy(_buffer, dataBuf, received);
             string text = Encoding.ASCII.GetString(dataBuf);
-            Console.WriteLine("Text received: +" + text);
+            Console.WriteLine("Text received: " + text);
 
             string response = string.Empty;
             if (text.ToLower() != "get time")
@@ -64,7 +64,8 @@ namespace Regulator_Oswietlenia
         private static void SendCallback(IAsyncResult AR)
         {
             Socket socket = (Socket) AR.AsyncState;
-            socket.EndSend(AR); 
+            socket.EndSend(AR);
+            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, ReceiveCallback, socket); 
         }
     }
 }
