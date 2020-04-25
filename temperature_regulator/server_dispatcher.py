@@ -24,6 +24,7 @@ class ServerDispatcher:
                     connection_socket = None
                 if connection_socket:
                     thread = ServerThread(counter, connection_socket, client_address)
+                    counter += 1
                     thread.run()
         except KeyboardInterrupt:  # SIGINT
             self._listener_socket.close()

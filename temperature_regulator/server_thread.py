@@ -21,15 +21,17 @@ class ServerThread(Thread):
             raise RuntimeError("No socket specified")
 
     def run(self):
-        ServerThread._threaded_print(f"Thread {self._id} started running.\nClient address: {self._client_address} Client port: {self._client_port}")
+        ServerThread._threaded_print(f"Thread {self._id} started running. Client address: {self._client_address} Client port: {self._client_port}")
         try:
             # Select used to defend from half-open connections
             select.select([self._connection_socket], [], [], 3)  # It returns a list, but there is only one element possible that can be read
         except OSError:
-            self.threaded_print(f"No data to read for a long time! Client address: {self._client_address}")
+            self._threaded_print(f"No data to read for a long time! Client address: {self._client_address}")
+            self._print_closing_message()
             return
         data = self._get_data_from_client()  # Socket is ready to be read and has some data
         self._process_data(data)
+        self._print_closing_message()
         return
 
     def _get_data_from_client(self) -> bytearray:
@@ -43,9 +45,12 @@ class ServerThread(Thread):
         return data
 
     def _process_data(self, data: bytearray):
-        ServerThread._threaded_print(data.decode(encoding=ServerThread.TEXT_ENCODING))
+        ServerThread._threaded_print("Message: " + data.decode(encoding=ServerThread.TEXT_ENCODING))
 
     def _threaded_print(text: str):
         ServerThread._print_lock.acquire()
         print(text)
         ServerThread._print_lock.release()
+
+    def _print_closing_message(self):
+        ServerThread._threaded_print(f"Thread {self._id} stopped running. Client address: {self._client_address} Client port: {self._client_port}")
