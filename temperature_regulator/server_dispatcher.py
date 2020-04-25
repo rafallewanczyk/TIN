@@ -21,8 +21,8 @@ class ServerDispatcher:
                 try:
                     connection_socket, client_address = self._listener_socket.accept()
                 except socket.timeout:
-                    connection_socket = None
-                if connection_socket:
+                    pass
+                else:
                     thread = ServerThread(counter, connection_socket, client_address)
                     counter += 1
                     thread.run()
