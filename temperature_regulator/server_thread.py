@@ -7,6 +7,7 @@ class ServerThread(Thread):
 
     RECV_MSG_MAX_SIZE = 1024
     TEXT_ENCODING = 'UTF-8'
+    CLIENT_TIMEOUT = 3
 
     _print_lock = Lock()
 
@@ -14,6 +15,7 @@ class ServerThread(Thread):
         Thread.__init__(self)
         if connection_socket:
             self._connection_socket = connection_socket
+            self._connection_socket.settimeout(ServerThread.CLIENT_TIMEOUT)
             self._client_address, self._client_port = client_address_pair
             self._client_port = int(self._client_port)  # Change str to int
             self._id = id
@@ -23,13 +25,11 @@ class ServerThread(Thread):
     def run(self):
         ServerThread._threaded_print(f"Thread {self._id} started running. Client address: {self._client_address} Client port: {self._client_port}")
         try:
-            # Select used to defend from half-open connections
-            select.select([self._connection_socket], [], [], 3)  # It returns a list, but there is only one element possible that can be read
-        except OSError:
-            self._threaded_print(f"No data to read for a long time! Client address: {self._client_address}")
+            data = self._get_data_from_client()
+        except socket.timeout:
+            ServerThread._threaded_print(f"No data to read for a long time!")
             self._print_closing_message()
             return
-        data = self._get_data_from_client()  # Socket is ready to be read and has some data
         self._process_data(data)
         self._print_closing_message()
         return
