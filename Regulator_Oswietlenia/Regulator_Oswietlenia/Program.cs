@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
+using System.Transactions;
 
 namespace Regulator_Oswietlenia
 {
@@ -16,6 +17,18 @@ namespace Regulator_Oswietlenia
         {
             SetupServer();
             Console.ReadLine();
+            CloseAllSockets(); 
+        }
+
+        private static void CloseAllSockets()
+        {
+            foreach(Socket socket in _clientSockets)
+            {
+                socket.Shutdown(SocketShutdown.Both);
+                socket.Close(); 
+            }
+
+            _serverSocket.Close(); 
         }
 
         private static void SetupServer()
@@ -29,7 +42,16 @@ namespace Regulator_Oswietlenia
 
         private static void AcceptCallback(IAsyncResult AR)
         {
-            Socket socket = _serverSocket.EndAccept(AR);
+            Socket socket;
+            try
+            {
+                socket = _serverSocket.EndAccept(AR);
+            }
+            catch (ObjectDisposedException)
+            {
+                return; 
+            }
+            
             Console.WriteLine("client connected");
             _clientSockets.Add(socket);
             socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, ReceiveCallback, socket); 
@@ -39,21 +61,38 @@ namespace Regulator_Oswietlenia
         private static void ReceiveCallback(IAsyncResult AR)
         {
             Socket socket = (Socket) AR.AsyncState;
+            int received; 
 
-            int received = socket.EndReceive(AR);
+            try
+            {
+                received = socket.EndReceive(AR);
+            }
+            catch(SocketException)
+            {
+                Console.WriteLine("client forcefully disconnected");
+                socket.Close();
+                _clientSockets.Remove(socket);
+                return; 
+            }
+            
             byte[] dataBuf = new byte[received];
             Array.Copy(_buffer, dataBuf, received);
             string text = Encoding.ASCII.GetString(dataBuf);
             Console.WriteLine("Text received: " + text);
 
             string response = string.Empty;
-            if (text.ToLower() != "get time")
+            if (text.ToLower() == "exit")
             {
-                response = "Invalid request";
+                socket.Shutdown(SocketShutdown.Both);
+                socket.Close();
+                _clientSockets.Remove(socket);
+                Console.WriteLine("client disconnected");
+                return; 
+
             }
             else
             {
-                response = DateTime.Now.ToLongTimeString(); 
+                response = text; 
             }
 
             byte[] data = Encoding.ASCII.GetBytes(response);
