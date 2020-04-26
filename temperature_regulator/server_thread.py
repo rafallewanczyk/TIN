@@ -28,9 +28,8 @@ class ServerThread(Thread):
             data = self._get_data_from_client()
         except socket.timeout:
             ServerThread._threaded_print(f"No data to read for a long time!")
-            self._print_closing_message()
-            return
-        self._process_data(data)
+        else:
+            self._process_data(data)
         self._print_closing_message()
         return
 
