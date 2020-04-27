@@ -3,7 +3,7 @@ import sys
 import time
 
 if __name__ == "__main__":
-    receiver_address = ('127.0.0.1', 8080)
+    receiver_address = ('127.0.0.1', 35000)
     try:
         client_socket = socket.create_connection(receiver_address)
     except OSError as err:
