@@ -150,3 +150,7 @@ yarn-debug.log*
 yarn-error.log*
 
 .vs
+*.sln
+*.csproj
+bin
+obj
