@@ -2,7 +2,7 @@ from server_dispatcher import ServerDispatcher
 
 
 def main():
-    server = ServerDispatcher(port=8080)
+    server = ServerDispatcher(port=35000)
     server.run()
 
 

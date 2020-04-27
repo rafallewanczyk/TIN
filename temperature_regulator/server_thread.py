@@ -1,7 +1,7 @@
 from threading import Thread, Lock
 import socket
-import select
 from typing import Tuple
+
 
 class ServerThread(Thread):
 
@@ -13,14 +13,13 @@ class ServerThread(Thread):
 
     def __init__(self, id: int, connection_socket: socket.socket, client_address_pair: Tuple[str, str]):
         Thread.__init__(self)
-        if connection_socket:
-            self._connection_socket = connection_socket
-            self._connection_socket.settimeout(ServerThread.CLIENT_TIMEOUT)
-            self._client_address, self._client_port = client_address_pair
-            self._client_port = int(self._client_port)  # Change str to int
-            self._id = id
-        else:
+        if not connection_socket:
             raise RuntimeError("No socket specified")
+        self._connection_socket = connection_socket
+        self._connection_socket.settimeout(ServerThread.CLIENT_TIMEOUT)
+        self._client_address, self._client_port = client_address_pair
+        self._client_port = int(self._client_port)  # Change str to int
+        self._id = id
 
     def run(self):
         ServerThread._threaded_print(f"Thread {self._id} started running. Client address: {self._client_address} Client port: {self._client_port}")
@@ -31,7 +30,6 @@ class ServerThread(Thread):
         else:
             self._process_data(data)
         self._print_closing_message()
-        return
 
     def _get_data_from_client(self) -> bytearray:
         """ Data receiving protocol """
