@@ -9,7 +9,6 @@
     "plugin:import/typescript",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/eslint-recommended", // overwrites rules that are invalid for TS
-    "plugin:prettier/recommended",
     "prettier/@typescript-eslint", // disables styling rules incompatible with prettier
     "prettier/react" // disables styling rules incompatible with prettier
   ],
@@ -22,6 +21,8 @@
     "@typescript-eslint"
   ],
   "rules": {
+    "object-curly-newline": "off",
+    "arrow-body-style": "warn",
     "no-console": "error",
     "no-underscore-dangle": ["error"],
     "consistent-return": "off",
@@ -41,9 +42,7 @@
       { "blankLine": "always", "prev": "*", "next": ["return", "break", "continue"] },
       { "blankLine": "always", "prev": ["if", "class", "for", "function", "switch", "throw", "while", "with", "block"], "next": "*" },
       { "blankLine": "always", "prev": "*", "next": ["if", "class", "for", "function", "switch", "throw", "while", "with", "block"] },
-      { "blankLine": "always", "prev": ["const", "let"], "next": "expression" },
       { "blankLine": "always", "prev": "expression", "next": ["const", "let"] },
-      { "blankLine": "never", "prev": ["const", "let"], "next": ["const", "let"] },
       { "blankLine": "never", "prev": ["case", "default"], "next": ["case", "default"] }
     ],
     "@typescript-eslint/explicit-function-return-type": "off",
