@@ -20,10 +20,16 @@ public class Server extends Thread {
 
     public Server(ServerSocket socket) throws SocketException {
         serverSocket = socket;
+        serverSocket.setSoTimeout(2000);
+    }
+
+    public void stopServer() {
+        stop = true;
     }
 
     @Override
     public void run() {
+        logger.info("Server started");
         while(!stop) {
             try {
                 Socket clientSocket = serverSocket.accept();
@@ -39,5 +45,6 @@ public class Server extends Thread {
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
+        logger.info("Server stopped");
     }
 }
