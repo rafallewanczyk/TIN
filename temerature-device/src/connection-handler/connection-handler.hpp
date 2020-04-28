@@ -42,7 +42,7 @@ class ConnectionHandler {
     void handleData() {
         auto requestData = reader.readAllData();
         auto parsedData = dataParser.parse(requestData.data);
-        if (!SecurityModule::ENCRYPTION_MODE_OFF) verifySignature(requestData, parsedData.signature);
+        verifySignature(requestData, parsedData.signature);
 
         switch (parsedData.messageType) {
             case PING:

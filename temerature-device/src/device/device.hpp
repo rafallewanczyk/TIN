@@ -7,6 +7,7 @@
 
 
 #include <random>
+#include <optional>
 
 class Device {
     double currentTemperature;
@@ -28,8 +29,8 @@ class Device {
     }
 
 public:
-    Device() : rng(dev()), generateInitialTemp(15, 17), generateTemperatureChange(0, 0) {
-        currentTemperature = generateInitialTemp(rng);
+    Device(std::optional<double> initialTemp = std::nullopt) : rng(dev()), generateInitialTemp(15, 17), generateTemperatureChange(0, 0) {
+        currentTemperature = initialTemp ? initialTemp.value() : generateInitialTemp(rng);
         targetTemperature = currentTemperature;
     }
 

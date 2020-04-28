@@ -23,8 +23,8 @@ class SecurityModule {
     CryptoPP::AutoSeededRandomPool rng;
 
 public:
-    const inline static int SIGNATURE_SIZE = 32;
     const inline static bool ENCRYPTION_MODE_OFF = true;
+    const inline static int SIGNATURE_SIZE = ENCRYPTION_MODE_OFF ? 0 : 32;
 
     SecurityModule(const std::string &regulatorPublicKeyFilename) {
         KeyGenerator generator;
@@ -77,6 +77,9 @@ public:
 
     std::string makeSignature(const std::vector<char> &messageToSign) {
         std::lock_guard lock(mutex);
+        if (ENCRYPTION_MODE_OFF) { // Only for debugging purpose
+            return "";
+        }
         SHA256 hash;
         std::string signature;
         StringSource(std::string(messageToSign.begin(), messageToSign.end()), true,
@@ -87,6 +90,9 @@ public:
 
     bool verifySignature(const std::string &message, const std::string &signature) {
         std::lock_guard lock(mutex);
+        if(ENCRYPTION_MODE_OFF) {
+            return true;
+        }
         SHA256 hash;
         bool result;
         StringSource(signature + message, true, new HashVerificationFilter(hash,

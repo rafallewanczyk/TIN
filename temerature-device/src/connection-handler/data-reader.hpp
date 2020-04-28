@@ -31,7 +31,7 @@ public:
             throw InvalidMessageHeaderException("Received not enough data to form a header");
         }
 
-        return headerHandler.parseHeader(receiveBuffer);
+        return headerHandler.parseHeader(std::vector(receiveBuffer.begin(), receiveBuffer.end()));
     }
 
     RequestData readAllData() {

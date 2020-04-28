@@ -58,12 +58,16 @@ public:
     const static inline int HEADER_SIZE = 12;
     const static inline int PROTOCOL_VERSION = 1;
 
-    Header parseHeader(std::array<char, HEADER_SIZE> array) {
-        int protocolVersion = bytesToInt(std::vector(array.begin(), array.begin() + 4));
-        int contentSize = bytesToInt(std::vector(array.begin() + 4, array.begin() + 8));
-        int senderId = bytesToInt(std::vector(array.begin() + 8, array.end()));
+    Header parseHeader(std::vector<char> headerBytes) {
+        if (headerBytes.size() < HEADER_SIZE)
+            throw InvalidMessageHeaderException("Header was too short");
 
-        auto header = Header{protocolVersion, contentSize, senderId, std::vector<char>(array.begin(), array.end())};
+        int protocolVersion = bytesToInt(std::vector(headerBytes.begin(), headerBytes.begin() + 4));
+        int contentSize = bytesToInt(std::vector(headerBytes.begin() + 4, headerBytes.begin() + 8));
+        int senderId = bytesToInt(std::vector(headerBytes.begin() + 8, headerBytes.end()));
+
+        auto header = Header{protocolVersion, contentSize, senderId,
+                             std::vector<char>(headerBytes.begin(), headerBytes.end())};
 
         validate(header);
 
