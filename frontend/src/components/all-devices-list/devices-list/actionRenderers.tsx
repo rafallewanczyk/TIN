@@ -1,5 +1,5 @@
-import React, { ReactNode, useEffect, useState } from 'react';
-import { Input, InputNumber, Switch, Typography } from 'antd';
+import React, { ReactNode, useState } from 'react';
+import { InputNumber, Switch, Typography } from 'antd';
 import {
   DeviceModel,
   DeviceType,
@@ -9,13 +9,15 @@ import {
 import { useDebounce } from '../../utils/useDebounce';
 import style from './DevicesList.module.css';
 
+const stopPropagation = (e: { stopPropagation: () => void }) => e.stopPropagation();
+
 export const ChangeTemperatureAction: React.FC<{ device: TemperatureDeviceModel }> = (device) => {
   const [defaultValue] = useState(15);
   const changeDeviceTemperature = (value: number | undefined) => console.log(value);
   const handleChange = useDebounce(changeDeviceTemperature, 1000);
 
   return (
-    <>
+    <div onClick={stopPropagation}>
       <Typography.Text strong className={style.numberInputLabel}>
         Target °C:
       </Typography.Text>
@@ -26,7 +28,7 @@ export const ChangeTemperatureAction: React.FC<{ device: TemperatureDeviceModel 
         title="New temperature"
         onChange={handleChange}
       />
-    </>
+    </div>
   );
 };
 
@@ -36,7 +38,7 @@ export const ChangeLightAction: React.FC<{ device: LightDeviceModel }> = ({ devi
   console.log(isLightOn);
 
   return (
-    <div className={style.switchWrapper}>
+    <div className={style.switchWrapper} onClick={stopPropagation}>
       <Typography.Text strong className={style.numberInputLabel}>
         Turn {isLightOn ? 'OFF' : 'ON'}
       </Typography.Text>
@@ -45,10 +47,9 @@ export const ChangeLightAction: React.FC<{ device: LightDeviceModel }> = ({ devi
   );
 };
 
-export const renderAction = (device: DeviceModel): ReactNode => {
-  return device.type === DeviceType.TEMPERATURE ? (
+export const renderAction = (device: DeviceModel): ReactNode =>
+  device.type === DeviceType.TEMPERATURE ? (
     <ChangeTemperatureAction device={device as TemperatureDeviceModel} />
   ) : (
     <ChangeLightAction device={device as LightDeviceModel} />
   );
-};

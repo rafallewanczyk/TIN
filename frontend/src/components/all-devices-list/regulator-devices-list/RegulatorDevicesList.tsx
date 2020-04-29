@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { Table } from 'antd';
+import { useNavigate } from '@reach/router';
 import style from './RegulatorDevicesList.module.css';
 import {
   DeviceType,
@@ -14,6 +15,7 @@ export interface RegulatorDevicesListProps {}
 export const RegulatorDevicesList: React.FC<RegulatorDevicesListProps> = () => {
   const ref = useRef<HTMLDivElement>(null);
   const scroll = useTableScroll(ref, 500);
+  const navigate = useNavigate();
 
   const data: (RegulatorModel & { key: string })[] = [
     {
@@ -48,12 +50,18 @@ export const RegulatorDevicesList: React.FC<RegulatorDevicesListProps> = () => {
 
   return (
     <div ref={ref}>
-      <Table
+      <Table<RegulatorModel>
         className={style.wrapper}
         columns={deviceTableColumns}
         dataSource={data}
         pagination={false}
         scroll={scroll}
+        onRow={(record) => ({
+          onClick: () => {
+            navigate(`/editRegulator/${record.id}`);
+          }, // click row
+          className: style.row,
+        })}
       />
     </div>
   );

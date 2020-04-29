@@ -1,8 +1,7 @@
 import React, { ReactNode, useState } from 'react';
-import { Button, Form, Input, Select, Switch } from 'antd';
+import { Button, Form, Input, PageHeader, Select, Switch } from 'antd';
 import { FormItemProps } from 'antd/es/form';
-import { RouteComponentProps } from '@reach/router';
-import Title from 'antd/es/typography/Title';
+import { RouteComponentProps, useNavigate } from '@reach/router';
 import Text from 'antd/es/typography/Text';
 import EditOutlined from '@ant-design/icons/EditOutlined';
 import style from './NewDevice.module.css';
@@ -39,6 +38,7 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device }) => {
   const editMode = !!device;
   const [keyUploaderVisible, setKeyUploaderVisible] = useState(!editMode);
   const submitButtonTitle = device ? 'Edit device' : 'Add device';
+  const navigate = useNavigate();
 
   const renderRegulatorOption = (regulator: RegulatorModel): ReactNode => (
     <Option key={regulator.id} value={regulator.id}>
@@ -47,9 +47,16 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device }) => {
   );
 
   const renderTitle = (): ReactNode => {
-    const titleText = editMode ? `Edit device with id: ${device!.id}` : 'Add new device';
+    const titleText = editMode ? 'Edit device' : 'Add new device';
 
-    return <Title level={1}>{titleText}</Title>;
+    return (
+      <PageHeader
+        className={style.pageHeader}
+        subTitle={device && `Id: ${device?.id}`}
+        title={titleText}
+        onBack={() => navigate(-1)}
+      />
+    );
   };
 
   const renderKeyUploaderToggle = (): ReactNode => (

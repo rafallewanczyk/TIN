@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
+import { useNavigate } from '@reach/router';
 import style from '../regulator-devices-list/RegulatorDevicesList.module.css';
 import {
   DeviceModel,
@@ -34,6 +35,7 @@ const columns: ColumnsType<DeviceModel> = [
 export const DevicesList: React.FC<DevicesListProps> = () => {
   const ref = useRef<HTMLDivElement>(null);
   const scroll = useTableScroll(ref, 700);
+  const navigate = useNavigate();
   const data: ((TemperatureDeviceModel | LightDeviceModel) & { key: string })[] = [
     {
       name: 'Regulator 1',
@@ -80,6 +82,12 @@ export const DevicesList: React.FC<DevicesListProps> = () => {
       dataSource={data}
       pagination={false}
       scroll={scroll}
+      onRow={(record) => ({
+        onClick: () => {
+          navigate(`/editDevice/${record.id}`);
+        }, // click row
+        className: style.row,
+      })}
     />
   );
 };
