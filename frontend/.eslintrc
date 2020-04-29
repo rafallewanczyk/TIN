@@ -21,6 +21,7 @@
     "@typescript-eslint"
   ],
   "rules": {
+    "implicit-arrow-linebreak": "off",
     "object-curly-newline": "off",
     "arrow-body-style": "warn",
     "no-console": "error",

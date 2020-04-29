@@ -1,34 +1,57 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { RouteComponentProps } from '@reach/router';
 import { Button, Form, Input, Select } from 'antd';
-import TextArea from 'antd/es/input/TextArea';
-import { Rule } from 'antd/es/form';
+import { FormItemProps } from 'antd/es/form';
+import { CheckCircleFilled } from '@ant-design/icons/lib';
+import style from './NewDevice.module.css';
+import { PublicKeyUploader } from '../utils/form/PublicKeyUploader';
+import { NewDeviceFieldNames, useNewDeviceForm } from './NewDeviceFormHook';
+import { RegulatorModel } from '../models/regulator-device-model/RegulatorDeviceModel';
 
 export type NewDeviceProps = RouteComponentProps;
 
 const { Option } = Select;
 
-enum Fields {
-  NAME = 'name',
-  REGULATOR = 'regulator',
-  PUBLIC_KEY = 'public-key',
-}
-
-const rules: Record<string, Rule[]> = {
-  name: [{ required: true, message: 'Please give device name' }],
-  regulator: [{ required: true, message: 'Please choose regulator' }],
+const fields: Record<NewDeviceFieldNames, Omit<FormItemProps, 'children'>> = {
+  [NewDeviceFieldNames.name]: {
+    rules: [{ required: true, message: 'Please give device name' }],
+    name: NewDeviceFieldNames.name,
+    label: 'Device name: ',
+  },
+  [NewDeviceFieldNames.regulator]: {
+    rules: [{ required: true, message: 'Please choose regulator' }],
+    name: NewDeviceFieldNames.regulator,
+    label: 'Choose your regulator',
+  },
+  [NewDeviceFieldNames.publicKey]: {
+    rules: [{ required: true, message: "Please give a device's public key" }],
+    name: NewDeviceFieldNames.publicKey,
+    label: "Device's public key: ",
+  },
 };
 
 export const NewDevice: React.FC<NewDeviceProps> = (props) => {
-  const [form] = Form.useForm();
+  const {
+    form,
+    isPublicKeyValid,
+    onSubmit,
+    onUploadStateChange,
+    uploadButtonDisabled,
+    regulators,
+  } = useNewDeviceForm();
 
-  const onSubmit = async () => {
-    try {
-      const values = await form.validateFields();
+  const renderUploadLabel = (): ReactNode => (
+    <>
+      {fields.publicKey.label}
+      {isPublicKeyValid() && <CheckCircleFilled className={style.publicKeyValidIcon} />}
+    </>
+  );
 
-      console.log(values);
-    } catch {}
-  };
+  const renderRegulatorOption = (regulator: RegulatorModel): ReactNode => (
+    <Option value={regulator.id}>
+      {regulator.name} [type: {regulator.type}]
+    </Option>
+  );
 
   return (
     <div>
@@ -36,22 +59,21 @@ export const NewDevice: React.FC<NewDeviceProps> = (props) => {
         form={form}
         labelCol={{ span: 10 }}
         layout="vertical"
-        size="middle"
+        size="large"
         wrapperCol={{ span: 10 }}
       >
-        <Form.Item label="Name" name="name" rules={rules.name}>
-          <Input autoComplete="off" name="name" />
+        <Form.Item {...fields.name}>
+          <Input autoComplete="off" />
         </Form.Item>
-        <Form.Item label="Choose your regulator" name="regulator" rules={rules.regulator}>
-          <Select onChange={(value) => console.log(value)}>
-            <Option value="Regulator 1">Regulator 1</Option>
-            <Option value="Regulator 2">Regulator 2</Option>
-          </Select>
+        <Form.Item {...fields.regulator}>
+          <Select>{regulators.map(renderRegulatorOption)}</Select>
         </Form.Item>
-        <Form.Item label="Public key">
-          <TextArea />
-        </Form.Item>
-        <Form.Item>
+        <PublicKeyUploader
+          buttonDisabled={uploadButtonDisabled}
+          fieldItemProps={{ ...fields.publicKey, label: renderUploadLabel() }}
+          onChange={onUploadStateChange}
+        />
+        <Form.Item className={style.submitButton}>
           <Button onClick={onSubmit}>Add device</Button>
         </Form.Item>
       </Form>
