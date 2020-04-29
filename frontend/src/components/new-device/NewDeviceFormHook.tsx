@@ -15,19 +15,11 @@ export enum NewDeviceFieldNames {
 }
 
 export const useNewDeviceForm: () => {
-  uploadButtonDisabled: boolean;
-  onUploadStateChange: ({ fileList }: UploadChangeParam) => void;
   form: FormInstance;
   onSubmit: () => Promise<void>;
-  isPublicKeyValid: () => boolean;
   regulators: RegulatorModel[];
 } = () => {
   const [form] = Form.useForm();
-  const [uploadButtonDisabled, setUploadButtonDisabled] = useState(false);
-
-  const onUploadStateChange = ({ fileList }: UploadChangeParam): void => {
-    setUploadButtonDisabled(fileList.length >= 1);
-  };
 
   const onSubmit = async () => {
     try {
@@ -38,13 +30,6 @@ export const useNewDeviceForm: () => {
       console.log('Form.getFieldsValue()', form.getFieldsValue());
       console.log('Form.getFieldsError', form.getFieldsError());
     }
-  };
-
-  const isPublicKeyValid = (): boolean => {
-    const keyValue = form.getFieldValue(NewDeviceFieldNames.publicKey);
-    const keyErrors = form.getFieldError(NewDeviceFieldNames.publicKey);
-
-    return keyValue && keyErrors.length === 0;
   };
 
   const regulators: RegulatorModel[] = [
@@ -64,10 +49,7 @@ export const useNewDeviceForm: () => {
 
   return {
     form,
-    uploadButtonDisabled,
-    onUploadStateChange,
     onSubmit,
-    isPublicKeyValid,
     regulators,
   };
 };

@@ -2,7 +2,6 @@ import React, { ReactNode } from 'react';
 import { RouteComponentProps } from '@reach/router';
 import { Button, Form, Input, Select } from 'antd';
 import { FormItemProps } from 'antd/es/form';
-import { CheckCircleFilled } from '@ant-design/icons/lib';
 import style from './NewDevice.module.css';
 import { PublicKeyUploader } from '../utils/form/PublicKeyUploader';
 import { NewDeviceFieldNames, useNewDeviceForm } from './NewDeviceFormHook';
@@ -31,24 +30,10 @@ const fields: Record<NewDeviceFieldNames, Omit<FormItemProps, 'children'>> = {
 };
 
 export const NewDevice: React.FC<NewDeviceProps> = (props) => {
-  const {
-    form,
-    isPublicKeyValid,
-    onSubmit,
-    onUploadStateChange,
-    uploadButtonDisabled,
-    regulators,
-  } = useNewDeviceForm();
-
-  const renderUploadLabel = (): ReactNode => (
-    <>
-      {fields.publicKey.label}
-      {isPublicKeyValid() && <CheckCircleFilled className={style.publicKeyValidIcon} />}
-    </>
-  );
+  const { form, onSubmit, regulators } = useNewDeviceForm();
 
   const renderRegulatorOption = (regulator: RegulatorModel): ReactNode => (
-    <Option value={regulator.id}>
+    <Option key={regulator.id} value={regulator.id}>
       {regulator.name} [type: {regulator.type}]
     </Option>
   );
@@ -68,11 +53,7 @@ export const NewDevice: React.FC<NewDeviceProps> = (props) => {
         <Form.Item {...fields.regulator}>
           <Select>{regulators.map(renderRegulatorOption)}</Select>
         </Form.Item>
-        <PublicKeyUploader
-          buttonDisabled={uploadButtonDisabled}
-          fieldItemProps={{ ...fields.publicKey, label: renderUploadLabel() }}
-          onChange={onUploadStateChange}
-        />
+        <PublicKeyUploader fieldItemProps={fields.publicKey} form={form} />
         <Form.Item className={style.submitButton}>
           <Button onClick={onSubmit}>Add device</Button>
         </Form.Item>

@@ -1,20 +1,19 @@
-import React, { ReactNode } from 'react';
-import { Spin, Table, Tag } from 'antd';
-import { ColumnsType } from 'antd/es/table';
+import React from 'react';
+import { Table } from 'antd';
 import style from './RegulatorDevicesList.module.css';
-import { renderStatusTag } from '../utils/StatusTag';
 import {
-  RegulatorModel,
   DeviceType,
+  RegulatorModel,
   Status,
 } from '../../models/regulator-device-model/RegulatorDeviceModel';
 import { deviceTableColumns } from '../utils/deviceTableColumns';
 
 export interface RegulatorDevicesListProps {}
 
-export const RegulatorDevicesList: React.FC<RegulatorDevicesListProps> = (props) => {
-  const data: RegulatorModel[] = [
+export const RegulatorDevicesList: React.FC<RegulatorDevicesListProps> = () => {
+  const data: (RegulatorModel & { key: string })[] = [
     {
+      key: '11',
       name: 'Regulator 1',
       id: '11',
       status: Status.ACTIVE,
@@ -23,18 +22,21 @@ export const RegulatorDevicesList: React.FC<RegulatorDevicesListProps> = (props)
     {
       name: 'Regulator 2',
       id: '12',
+      key: '12',
       status: Status.INACTIVE,
       type: DeviceType.LIGHT,
     },
     {
       name: 'Regulator 3',
       id: '13',
+      key: '13',
       status: Status.INVALID,
       type: DeviceType.LIGHT,
     },
     {
       name: 'Regulator 4',
       id: '14',
+      key: '14',
       status: Status.CONNECTING,
       type: DeviceType.LIGHT,
     },

@@ -1,6 +1,7 @@
 import { ColumnsType } from 'antd/es/table';
 import { RegulatorModel } from '../../models/regulator-device-model/RegulatorDeviceModel';
 import { renderStatusTag } from './StatusTag';
+import { capitalize } from '../../utils/string/stringUtils';
 
 export const deviceTableColumns: ColumnsType<RegulatorModel> = [
   {
@@ -26,6 +27,6 @@ export const deviceTableColumns: ColumnsType<RegulatorModel> = [
     title: 'Type',
     dataIndex: 'type',
     key: 'type',
-    render: (text: string) => text[0].toLocaleUpperCase() + text.substring(1).toLowerCase(),
+    render: capitalize,
   },
 ];

@@ -23,7 +23,7 @@ export const ChangeTemperatureAction: React.FC<{ device: TemperatureDeviceModel 
         defaultValue={defaultValue}
         max={100}
         min={-100}
-        title="dupa"
+        title="New temperature"
         onChange={handleChange}
       />
     </>
