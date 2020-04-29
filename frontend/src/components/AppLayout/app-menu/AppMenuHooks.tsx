@@ -33,9 +33,9 @@ const menuTabs: MenuTabItem[] = [
 ];
 const findMatchingMenuItem = (location: string) => menuTabs.find((tab) => tab.to === location);
 
-export const useMenuTabs = (): [MenuTabItem[], string] => {
+export const useMenuTabs = (): [MenuTabItem[], string[]] => {
   const location = useLocation();
   const matchingTab = findMatchingMenuItem(location.pathname);
 
-  return [menuTabs, matchingTab?.key || menuTabs[0].key];
+  return [menuTabs, matchingTab?.key ? [matchingTab?.key] : []];
 };
