@@ -1,10 +1,10 @@
 import React, { ReactNode, useState } from 'react';
 import { Button, Form, Upload } from 'antd';
-import { CheckCircleFilled, UploadOutlined } from '@ant-design/icons/lib';
+import CheckCircleFilled from '@ant-design/icons/CheckCircleFilled';
+import UploadOutlined from '@ant-design/icons/UploadOutlined';
 import { FormInstance, FormItemProps, Rule } from 'antd/es/form';
 import { UploadChangeParam } from 'antd/es/upload';
 import { normFile, publicKeyValidator } from './PublicKeyValidator';
-import { NewDeviceFieldNames } from '../../new-device/NewDeviceFormHook';
 import style from '../../new-device/NewDevice.module.css';
 
 const doNotSendRequest = () => false;

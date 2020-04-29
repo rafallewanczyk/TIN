@@ -4,7 +4,7 @@ import { Button, Form, Input, Select, Switch } from 'antd';
 import { FormItemProps } from 'antd/es/form';
 import Title from 'antd/es/typography/Title';
 import Text from 'antd/es/typography/Text';
-import { EditOutlined } from '@ant-design/icons/lib';
+import EditOutlined from '@ant-design/icons/EditOutlined';
 import style from '../new-device/NewDevice.module.css';
 import { PublicKeyUploader } from '../utils/form/PublicKeyUploader';
 import { NewRegulatorFieldNames, useNewRegulatorForm } from './NewRegulatorFormHook';

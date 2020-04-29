@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Typography } from 'antd';
-import { BulbFilled } from '@ant-design/icons';
+import BulbFilled from '@ant-design/icons/BulbFilled';
 import { animated, useSpring } from 'react-spring';
 import style from '../regulator-devices-list/RegulatorDevicesList.module.css';
 
@@ -34,6 +34,5 @@ export const TemperatureData: React.FC<{ data: number }> = ({ data }) => {
   );
 };
 
-export const renderDeviceData = (data: boolean | number): ReactNode => {
-  return typeof data === 'boolean' ? <LightData data={data} /> : <TemperatureData data={data} />;
-};
+export const renderDeviceData = (data: boolean | number): ReactNode =>
+  typeof data === 'boolean' ? <LightData data={data} /> : <TemperatureData data={data} />;

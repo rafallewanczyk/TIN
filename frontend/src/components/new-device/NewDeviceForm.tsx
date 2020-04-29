@@ -4,7 +4,7 @@ import { FormItemProps } from 'antd/es/form';
 import { RouteComponentProps } from '@reach/router';
 import Title from 'antd/es/typography/Title';
 import Text from 'antd/es/typography/Text';
-import { EditOutlined } from '@ant-design/icons/lib';
+import EditOutlined from '@ant-design/icons/EditOutlined';
 import style from './NewDevice.module.css';
 import { PublicKeyUploader } from '../utils/form/PublicKeyUploader';
 import { NewDeviceFieldNames, useNewDeviceForm } from './NewDeviceFormHook';

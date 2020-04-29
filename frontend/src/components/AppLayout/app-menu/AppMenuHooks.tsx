@@ -1,5 +1,7 @@
 import React, { ReactNode } from 'react';
-import { SettingFilled, UnorderedListOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import SettingFilled from '@ant-design/icons/SettingFilled';
+import UnorderedListOutlined from '@ant-design/icons/UnorderedListOutlined';
+import VideoCameraOutlined from '@ant-design/icons/VideoCameraOutlined';
 import { useLocation } from '@reach/router';
 
 export interface MenuTabItem {
