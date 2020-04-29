@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Table } from 'antd';
 import style from './RegulatorDevicesList.module.css';
 import {
@@ -7,10 +7,14 @@ import {
   Status,
 } from '../../models/regulator-device-model/RegulatorDeviceModel';
 import { deviceTableColumns } from '../utils/deviceTableColumns';
+import { useTableScroll } from '../utils/useTableScroll';
 
 export interface RegulatorDevicesListProps {}
 
 export const RegulatorDevicesList: React.FC<RegulatorDevicesListProps> = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const scroll = useTableScroll(ref, 500);
+
   const data: (RegulatorModel & { key: string })[] = [
     {
       key: '11',
@@ -43,12 +47,14 @@ export const RegulatorDevicesList: React.FC<RegulatorDevicesListProps> = () => {
   ];
 
   return (
-    <Table
-      className={style.wrapper}
-      columns={deviceTableColumns}
-      dataSource={data}
-      pagination={false}
-      scroll={{ x: 700 }}
-    />
+    <div ref={ref}>
+      <Table
+        className={style.wrapper}
+        columns={deviceTableColumns}
+        dataSource={data}
+        pagination={false}
+        scroll={scroll}
+      />
+    </div>
   );
 };

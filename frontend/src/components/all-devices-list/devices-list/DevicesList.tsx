@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import style from '../regulator-devices-list/RegulatorDevicesList.module.css';
@@ -12,6 +12,7 @@ import {
 import { deviceTableColumns } from '../utils/deviceTableColumns';
 import { renderDeviceData } from './dataRenderers';
 import { renderAction } from './actionRenderers';
+import { useTableScroll } from '../utils/useTableScroll';
 
 export interface DevicesListProps {}
 
@@ -31,6 +32,8 @@ const columns: ColumnsType<DeviceModel> = [
 ];
 
 export const DevicesList: React.FC<DevicesListProps> = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const scroll = useTableScroll(ref, 700);
   const data: ((TemperatureDeviceModel | LightDeviceModel) & { key: string })[] = [
     {
       name: 'Regulator 1',
@@ -72,7 +75,7 @@ export const DevicesList: React.FC<DevicesListProps> = () => {
       columns={columns}
       dataSource={data}
       pagination={false}
-      scroll={{ x: 900 }}
+      scroll={scroll}
     />
   );
 };
