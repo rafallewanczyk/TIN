@@ -1,8 +1,7 @@
 import { Form } from 'antd';
-import { useState } from 'react';
-import { UploadChangeParam } from 'antd/es/upload';
 import { FormInstance } from 'antd/es/form';
 import {
+  DeviceModel,
   DeviceType,
   RegulatorModel,
   Status,
@@ -14,18 +13,41 @@ export enum NewDeviceFieldNames {
   publicKey = 'publicKey',
 }
 
-export const useNewDeviceForm: () => {
+function createInitialValues(device: DeviceModel): Record<NewDeviceFieldNames, any> {
+  return {
+    name: device.name,
+    regulator: device.regulatorId,
+    publicKey: undefined,
+  };
+}
+
+export const useNewDeviceForm: (
+  device?: DeviceModel,
+) => {
+  initialValues: undefined | Record<NewDeviceFieldNames, any>;
   form: FormInstance;
   onSubmit: () => Promise<void>;
   regulators: RegulatorModel[];
-} = () => {
+} = (device) => {
   const [form] = Form.useForm();
+  const initialValues = device && createInitialValues(device);
 
-  const onSubmit = async () => {
+  const onAddSubmit = async () => {
     try {
       const values = await form.validateFields();
 
-      console.log(values);
+      console.log('adding', values);
+    } catch {
+      console.log('Form.getFieldsValue()', form.getFieldsValue());
+      console.log('Form.getFieldsError', form.getFieldsError());
+    }
+  };
+
+  const onEditSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+
+      console.log('editing', values);
     } catch {
       console.log('Form.getFieldsValue()', form.getFieldsValue());
       console.log('Form.getFieldsError', form.getFieldsError());
@@ -41,7 +63,7 @@ export const useNewDeviceForm: () => {
     },
     {
       name: 'Regulator 3',
-      id: '12',
+      id: '14',
       status: Status.INACTIVE,
       type: DeviceType.LIGHT,
     },
@@ -49,7 +71,8 @@ export const useNewDeviceForm: () => {
 
   return {
     form,
-    onSubmit,
+    onSubmit: device ? onEditSubmit : onAddSubmit,
     regulators,
+    initialValues,
   };
 };

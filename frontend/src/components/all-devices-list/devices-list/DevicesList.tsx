@@ -37,6 +37,7 @@ export const DevicesList: React.FC<DevicesListProps> = () => {
   const data: ((TemperatureDeviceModel | LightDeviceModel) & { key: string })[] = [
     {
       name: 'Regulator 1',
+      regulatorId: '14',
       id: '11',
       key: '11',
       status: Status.ACTIVE,
@@ -45,6 +46,7 @@ export const DevicesList: React.FC<DevicesListProps> = () => {
     },
     {
       name: 'Regulator 2',
+      regulatorId: '14',
       id: '12',
       key: '12',
       status: Status.INACTIVE,
@@ -53,6 +55,7 @@ export const DevicesList: React.FC<DevicesListProps> = () => {
     },
     {
       name: 'Regulator 3',
+      regulatorId: '14',
       id: '13',
       key: '13',
       status: Status.INVALID,
@@ -61,6 +64,7 @@ export const DevicesList: React.FC<DevicesListProps> = () => {
     },
     {
       name: 'Regulator 4',
+      regulatorId: '14',
       id: '14',
       key: '14',
       status: Status.CONNECTING,

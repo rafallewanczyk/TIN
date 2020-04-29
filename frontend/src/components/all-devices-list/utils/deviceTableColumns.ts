@@ -1,9 +1,8 @@
 import { ColumnsType } from 'antd/es/table';
-import { RegulatorModel } from '../../models/regulator-device-model/RegulatorDeviceModel';
 import { renderStatusTag } from './StatusTag';
 import { capitalize } from '../../utils/string/stringUtils';
 
-export const deviceTableColumns: ColumnsType<RegulatorModel> = [
+export const deviceTableColumns: ColumnsType<any> = [
   {
     title: 'Name',
     dataIndex: 'name',

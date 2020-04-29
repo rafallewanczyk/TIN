@@ -18,23 +18,24 @@ export interface RegulatorModel {
 }
 
 export interface DeviceModel {
-  name: string;
   id: string;
+  regulatorId: string;
+  name: string;
   status: Status;
   type: DeviceType;
 }
 
 export interface TemperatureDeviceModel extends DeviceModel {
-  name: string;
   id: string;
+  name: string;
   status: Status;
   type: DeviceType.TEMPERATURE;
   data: number;
 }
 
 export interface LightDeviceModel extends DeviceModel {
-  name: string;
   id: string;
+  name: string;
   status: Status;
   type: DeviceType.LIGHT;
   data: boolean;
