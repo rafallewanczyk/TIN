@@ -1,13 +1,11 @@
-# My app
+# Frontend app for TIN application
 ## Run
 In order to run the app:
-- type in console 
+- download the node.js from their official [SITE](https://nodejs.org/en/) 
+- go to the folder .../tin/frontend and type in console 
 ```shell script
-yarn install
-```
-- then
-```shell script
-yarn start
+npm install
+npm run start
 ```
 
-And you are ready to go
+After about 2 min the browser window should pop up with the project. Only tested in CHROME other browser might not work.
