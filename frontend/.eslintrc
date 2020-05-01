@@ -8,10 +8,13 @@
     "airbnb/hooks",
     "plugin:import/typescript",
     "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/eslint-recommended", // overwrites rules that are invalid for TS
+    "plugin:@typescript-eslint/eslint-recommended",
+    // overwrites rules that are invalid for TS
     "plugin:prettier/recommended",
-    "prettier/@typescript-eslint", // disables styling rules incompatible with prettier
-    "prettier/react" // disables styling rules incompatible with prettier
+    "prettier/@typescript-eslint",
+    // disables styling rules incompatible with prettier
+    "prettier/react"
+    // disables styling rules incompatible with prettier
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -22,6 +25,7 @@
     "@typescript-eslint"
   ],
   "rules": {
+    "max-classes-per-file": "off",
     "no-useless-constructor": "off",
     "implicit-arrow-linebreak": "off",
     "object-curly-newline": "off",
@@ -115,11 +119,17 @@
     "react/prop-types": "off",
     "react/jsx-filename-extension": [
       "error",
-      { "extensions": [ ".tsx" ] }
+      {
+        "extensions": [
+          ".tsx"
+        ]
+      }
     ],
     "import/no-extraneous-dependencies": [
       "error",
-      { "devDependencies": true }
+      {
+        "devDependencies": true
+      }
     ]
   }
 }

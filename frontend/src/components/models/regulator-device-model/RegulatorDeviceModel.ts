@@ -10,33 +10,47 @@ export enum DeviceType {
   LIGHT = 'LIGHT',
 }
 
-export interface RegulatorModel {
-  name: string;
-  id: string;
-  status: Status;
-  type: DeviceType;
+export class RegulatorModel {
+  public constructor(
+    public name: string,
+    public id: string,
+    public status: Status,
+    public type: DeviceType,
+  ) {}
 }
 
-export interface DeviceModel {
-  id: string;
-  regulatorId: string;
-  name: string;
-  status: Status;
-  type: DeviceType;
+export class DeviceModel {
+  public constructor(
+    public id: string,
+    public regulatorId: string,
+    public name: string,
+    public status: Status,
+    public type: DeviceType,
+  ) {}
 }
 
-export interface TemperatureDeviceModel extends DeviceModel {
-  id: string;
-  name: string;
-  status: Status;
-  type: DeviceType.TEMPERATURE;
-  data: number;
+export class TemperatureDeviceModel extends DeviceModel {
+  public constructor(
+    id: string,
+    regulatorId: string,
+    name: string,
+    status: Status,
+    public data: number,
+    public targetData: number,
+  ) {
+    super(id, regulatorId, name, status, DeviceType.TEMPERATURE);
+  }
 }
 
-export interface LightDeviceModel extends DeviceModel {
-  id: string;
-  name: string;
-  status: Status;
-  type: DeviceType.LIGHT;
-  data: boolean;
+export class LightDeviceModel extends DeviceModel {
+  public constructor(
+    id: string,
+    regulatorId: string,
+    name: string,
+    status: Status,
+    public data: boolean,
+    public targetData: boolean,
+  ) {
+    super(id, regulatorId, name, status, DeviceType.LIGHT);
+  }
 }
