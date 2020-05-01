@@ -11,6 +11,7 @@ import { DeviceModel, RegulatorModel } from '../models/regulator-device-model/Re
 
 export interface NewDeviceProps extends RouteComponentProps {
   device?: DeviceModel;
+  editMode?: boolean;
 }
 
 const { Option } = Select;
@@ -33,11 +34,10 @@ const fields: Record<NewDeviceFieldNames, Omit<FormItemProps, 'children'>> = {
   },
 };
 
-export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device }) => {
+export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = false }) => {
   const { form, onSubmit, regulators, initialValues } = useNewDeviceForm(device);
-  const editMode = !!device;
   const [keyUploaderVisible, setKeyUploaderVisible] = useState(!editMode);
-  const submitButtonTitle = device ? 'Edit device' : 'Add device';
+  const submitButtonTitle = editMode ? 'Edit device' : 'Add device';
   const navigate = useNavigate();
 
   const renderRegulatorOption = (regulator: RegulatorModel): ReactNode => (

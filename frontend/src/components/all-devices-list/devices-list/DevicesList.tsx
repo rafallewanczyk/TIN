@@ -1,19 +1,15 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Table } from 'antd';
+import axios from 'axios';
 import { ColumnsType } from 'antd/es/table';
 import { useNavigate } from '@reach/router';
 import style from '../regulator-devices-list/RegulatorDevicesList.module.css';
-import {
-  DeviceModel,
-  DeviceType,
-  LightDeviceModel,
-  Status,
-  TemperatureDeviceModel,
-} from '../../models/regulator-device-model/RegulatorDeviceModel';
+import { DeviceModel } from '../../models/regulator-device-model/RegulatorDeviceModel';
 import { deviceTableColumns } from '../utils/deviceTableColumns';
 import { renderDeviceData } from './dataRenderers';
 import { renderAction } from './actionRenderers';
 import { useTableScroll } from '../utils/useTableScroll';
+import { useDevicesQuery } from './useDevicesQuery';
 
 export interface DevicesListProps {}
 
@@ -36,50 +32,14 @@ export const DevicesList: React.FC<DevicesListProps> = () => {
   const ref = useRef<HTMLDivElement>(null);
   const scroll = useTableScroll(ref, 700);
   const navigate = useNavigate();
-  const data: ((TemperatureDeviceModel | LightDeviceModel) & { key: string })[] = [
-    {
-      name: 'Regulator 1',
-      regulatorId: '14',
-      id: '11',
-      key: '11',
-      status: Status.ACTIVE,
-      type: DeviceType.TEMPERATURE,
-      data: 12.12,
-    },
-    {
-      name: 'Regulator 2',
-      regulatorId: '14',
-      id: '12',
-      key: '12',
-      status: Status.INACTIVE,
-      type: DeviceType.LIGHT,
-      data: true,
-    },
-    {
-      name: 'Regulator 3',
-      regulatorId: '14',
-      id: '13',
-      key: '13',
-      status: Status.INVALID,
-      type: DeviceType.LIGHT,
-      data: true,
-    },
-    {
-      name: 'Regulator 4',
-      regulatorId: '14',
-      id: '14',
-      key: '14',
-      status: Status.CONNECTING,
-      type: DeviceType.LIGHT,
-      data: false,
-    },
-  ];
+  const [devices, loading] = useDevicesQuery();
 
   return (
     <Table
       className={style.wrapper}
       columns={columns}
-      dataSource={data}
+      dataSource={devices}
+      loading={loading}
       pagination={false}
       scroll={scroll}
       onRow={(record) => ({

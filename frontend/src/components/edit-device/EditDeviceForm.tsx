@@ -7,6 +7,7 @@ import {
   TemperatureDeviceModel,
 } from '../models/regulator-device-model/RegulatorDeviceModel';
 import { NewDeviceForm } from '../new-device/NewDeviceForm';
+import { useFetchDevice } from './useFetchDevice';
 
 interface RouteParams {
   deviceId: string;
@@ -16,6 +17,7 @@ export type EditDeviceFormProps = RouteComponentProps<RouteParams>;
 
 export const EditDeviceForm: React.FC<EditDeviceFormProps> = ({ deviceId }) => {
   const navigate = useNavigate();
+  const device = useFetchDevice(deviceId);
 
   if (!deviceId) {
     console.log('deviceId', deviceId);
@@ -24,14 +26,5 @@ export const EditDeviceForm: React.FC<EditDeviceFormProps> = ({ deviceId }) => {
     return null;
   }
 
-  const device: TemperatureDeviceModel | LightDeviceModel = {
-    id: deviceId,
-    regulatorId: '14',
-    name: 'Regulator 4',
-    status: Status.CONNECTING,
-    type: DeviceType.LIGHT,
-    data: false,
-  };
-
-  return <NewDeviceForm device={device} />;
+  return <NewDeviceForm device={device} editMode={Boolean(deviceId)} />;
 };

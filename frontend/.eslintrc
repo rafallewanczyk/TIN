@@ -9,6 +9,7 @@
     "plugin:import/typescript",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/eslint-recommended", // overwrites rules that are invalid for TS
+    "plugin:prettier/recommended",
     "prettier/@typescript-eslint", // disables styling rules incompatible with prettier
     "prettier/react" // disables styling rules incompatible with prettier
   ],
@@ -21,6 +22,7 @@
     "@typescript-eslint"
   ],
   "rules": {
+    "no-useless-constructor": "off",
     "implicit-arrow-linebreak": "off",
     "object-curly-newline": "off",
     "arrow-body-style": "warn",

@@ -1,6 +1,9 @@
+// ts
 const express = require('express');
 const bodyParser = require('body-parser');
 const faker = require('faker');
+const morgan = require('morgan');
+const cors = require('cors');
 
 let devices = [
   {
@@ -90,6 +93,8 @@ function randomData(type) {
 }
 
 app.use(bodyParser.json());
+app.use(morgan('combined'));
+app.use(cors());
 
 const timeoutDelay = 1500;
 

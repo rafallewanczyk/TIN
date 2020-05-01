@@ -1,5 +1,13 @@
 .content {
+  position: relative;
   padding: 24px;
   min-height: 360px;
   background: #141414;
+}
+
+.fullscreenSpinner {
+  position:absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }

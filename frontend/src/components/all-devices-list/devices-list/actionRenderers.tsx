@@ -35,8 +35,6 @@ export const ChangeTemperatureAction: React.FC<{ device: TemperatureDeviceModel 
 export const ChangeLightAction: React.FC<{ device: LightDeviceModel }> = ({ device }) => {
   const [isLightOn, setIsLightOn] = useState(false);
 
-  console.log(isLightOn);
-
   return (
     <div className={style.switchWrapper} onClick={stopPropagation}>
       <Typography.Text strong className={style.numberInputLabel}>
