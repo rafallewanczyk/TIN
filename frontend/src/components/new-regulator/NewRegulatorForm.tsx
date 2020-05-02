@@ -1,14 +1,15 @@
-import React, { ReactNode, useState } from 'react';
-import { RouteComponentProps, useNavigate } from '@reach/router';
-import { Button, Form, Input, PageHeader, Select, Switch } from 'antd';
+import React, { ReactNode } from 'react';
+import { RouteComponentProps } from '@reach/router';
+import { Button, Form, Input, Select } from 'antd';
 import { FormItemProps } from 'antd/es/form';
-import Text from 'antd/es/typography/Text';
 import EditOutlined from '@ant-design/icons/EditOutlined';
 import style from '../new-device/NewDevice.module.css';
 import { PublicKeyUploader } from '../utils/form/PublicKeyUploader';
 import { NewRegulatorFieldNames, useNewRegulatorForm } from './NewRegulatorFormHook';
 import { DeviceType, RegulatorModel } from '../models/regulator-device-model/RegulatorDeviceModel';
 import { capitalize } from '../utils/string/stringUtils';
+import { FormTitle } from '../utils/form/FormTitle';
+import { OptionalKeyUploader } from '../utils/form/OptionalKeyUploader';
 
 export interface NewRegulatorProps extends RouteComponentProps {
   regulator?: RegulatorModel;
@@ -37,9 +38,7 @@ const fields: Record<NewRegulatorFieldNames, Omit<FormItemProps, 'children'>> = 
 export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => {
   const { form, onSubmit, initialValues } = useNewRegulatorForm(regulator);
   const editMode = !!regulator;
-  const [keyUploaderVisible, setKeyUploaderVisible] = useState(!editMode);
   const submitButtonTitle = editMode ? 'Edit regulator' : 'Add regulator';
-  const navigate = useNavigate();
 
   const renderDeviceTypeOption = (type: DeviceType): ReactNode => (
     <Option key={type} value={type}>
@@ -47,36 +46,9 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
     </Option>
   );
 
-  const renderTitle = (): ReactNode => {
-    const titleText = editMode ? 'Edit regulator' : 'Add new regulator';
-
-    return (
-      <PageHeader
-        className={style.pageHeader}
-        extra={[
-          editMode && (
-            <Button key="1" type="danger">
-              Delete
-            </Button>
-          ),
-        ]}
-        subTitle={regulator && `Id: ${regulator?.id}`}
-        title={titleText}
-        onBack={() => navigate(-1)}
-      />
-    );
-  };
-
-  const renderKeyUploaderToggle = (): ReactNode => (
-    <div className={style.switchWrapper}>
-      <Switch onClick={(toggleOn) => setKeyUploaderVisible(toggleOn)} />
-      <Text className={style.switchText}>Would you like to change public key?</Text>
-    </div>
-  );
-
   return (
     <div className={style.wrapper}>
-      {renderTitle()}
+      <FormTitle deleteButtonVisible={editMode} id={regulator?.id} titleSubject="regulator" />
       <Form
         className={style.form}
         form={form}
@@ -93,8 +65,11 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
             {renderDeviceTypeOption(DeviceType.TEMPERATURE)}
           </Select>
         </Form.Item>
-        {editMode && renderKeyUploaderToggle()}
-        {keyUploaderVisible && <PublicKeyUploader fieldItemProps={fields.publicKey} form={form} />}
+        {editMode ? (
+          <OptionalKeyUploader form={form} formProps={fields.publicKey} />
+        ) : (
+          <PublicKeyUploader fieldItemProps={fields.publicKey} form={form} />
+        )}
         <Form.Item className={style.submitButton}>
           <Button icon={<EditOutlined />} type="primary" onClick={onSubmit}>
             {submitButtonTitle}

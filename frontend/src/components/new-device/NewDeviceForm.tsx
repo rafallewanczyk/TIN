@@ -1,13 +1,14 @@
-import React, { ReactNode, useState } from 'react';
-import { Button, Form, Input, PageHeader, Select, Switch } from 'antd';
+import React, { ReactNode } from 'react';
+import { Button, Form, Input, Select } from 'antd';
 import { FormItemProps } from 'antd/es/form';
-import { RouteComponentProps, useNavigate } from '@reach/router';
-import Text from 'antd/es/typography/Text';
+import { RouteComponentProps } from '@reach/router';
 import EditOutlined from '@ant-design/icons/EditOutlined';
 import style from './NewDevice.module.css';
 import { PublicKeyUploader } from '../utils/form/PublicKeyUploader';
 import { NewDeviceFieldNames, useNewDeviceForm } from './NewDeviceFormHook';
 import { DeviceModel, RegulatorModel } from '../models/regulator-device-model/RegulatorDeviceModel';
+import { FormTitle } from '../utils/form/FormTitle';
+import { OptionalKeyUploader } from '../utils/form/OptionalKeyUploader';
 
 export interface NewDeviceProps extends RouteComponentProps {
   device?: DeviceModel;
@@ -36,9 +37,7 @@ const fields: Record<NewDeviceFieldNames, Omit<FormItemProps, 'children'>> = {
 
 export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = false }) => {
   const { form, onSubmit, regulators, initialValues } = useNewDeviceForm(device);
-  const [keyUploaderVisible, setKeyUploaderVisible] = useState(!editMode);
   const submitButtonTitle = editMode ? 'Edit device' : 'Add device';
-  const navigate = useNavigate();
 
   const renderRegulatorOption = (regulator: RegulatorModel): ReactNode => (
     <Option key={regulator.id} value={regulator.id}>
@@ -46,36 +45,9 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
     </Option>
   );
 
-  const renderTitle = (): ReactNode => {
-    const titleText = editMode ? 'Edit device' : 'Add new device';
-
-    return (
-      <PageHeader
-        className={style.pageHeader}
-        extra={[
-          editMode && (
-            <Button key="1" type="danger">
-              Delete
-            </Button>
-          ),
-        ]}
-        subTitle={device && `Id: ${device?.id}`}
-        title={titleText}
-        onBack={() => navigate(-1)}
-      />
-    );
-  };
-
-  const renderKeyUploaderToggle = (): ReactNode => (
-    <div className={style.switchWrapper}>
-      <Switch onClick={(toggleOn) => setKeyUploaderVisible(toggleOn)} />
-      <Text className={style.switchText}>Would you like to change public key?</Text>
-    </div>
-  );
-
   return (
     <div className={style.wrapper}>
-      {renderTitle()}
+      <FormTitle deleteButtonVisible={editMode} id={device?.id} titleSubject="device" />
       <Form
         className={style.form}
         form={form}
@@ -89,8 +61,11 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
         <Form.Item {...fields.regulator}>
           <Select>{regulators.map(renderRegulatorOption)}</Select>
         </Form.Item>
-        {editMode && renderKeyUploaderToggle()}
-        {keyUploaderVisible && <PublicKeyUploader fieldItemProps={fields.publicKey} form={form} />}
+        {editMode ? (
+          <OptionalKeyUploader form={form} formProps={fields.publicKey} />
+        ) : (
+          <PublicKeyUploader fieldItemProps={fields.publicKey} form={form} />
+        )}
         <Form.Item className={style.submitButton}>
           <Button icon={<EditOutlined />} type="primary" onClick={onSubmit}>
             {submitButtonTitle}
