@@ -19,3 +19,33 @@ export const changeTargetData: MutationFunction<void,
 
   return data;
 };
+
+export const deleteDevice: MutationFunction<void, { id: string }> = async ({
+  id,
+}): Promise<void> => {
+  const { data } = await axios.delete<void>(`${BASE_URL}/devices/${id}`);
+
+  return data;
+};
+
+interface NewDeviceRequestDTO {
+  name: string;
+  regulatorId: string;
+  publicKey: string;
+}
+
+export const addNewDevice: MutationFunction<void, NewDeviceRequestDTO> = async (
+  request,
+): Promise<void> => {
+  const { data } = await axios.post<void>(`${BASE_URL}/devices`, request);
+
+  return data;
+};
+
+type EditDeviceRequestDTO = Partial<NewDeviceRequestDTO>;
+
+export const editDeviceWithId = (id: string) => async (request: EditDeviceRequestDTO) => {
+  const { data } = await axios.patch<void>(`${BASE_URL}/devices/${id}`, request);
+
+  return data;
+};

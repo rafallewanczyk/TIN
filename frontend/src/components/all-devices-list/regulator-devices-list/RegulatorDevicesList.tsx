@@ -1,59 +1,31 @@
 import React, { useRef } from 'react';
 import { Table } from 'antd';
 import { useNavigate } from '@reach/router';
+import produce from 'immer';
 import style from './RegulatorDevicesList.module.css';
-import {
-  DeviceType,
-  RegulatorModel,
-  Status,
-} from '../../models/regulator-device-model/RegulatorDeviceModel';
+import { RegulatorModel } from '../../models/regulator-device-model/RegulatorDeviceModel';
 import { deviceTableColumns } from '../utils/deviceTableColumns';
 import { useTableScroll } from '../utils/useTableScroll';
+import { useRegulatorsQuery } from '../devices-list/useDevicesQuery';
 
-export interface RegulatorDevicesListProps {}
-
-export const RegulatorDevicesList: React.FC<RegulatorDevicesListProps> = () => {
+export const RegulatorDevicesList: React.FC = () => {
   const ref = useRef<HTMLDivElement>(null);
   const scroll = useTableScroll(ref, 500);
   const navigate = useNavigate();
-
-  const data: (RegulatorModel & { key: string })[] = [
-    {
-      key: '11',
-      name: 'Regulator 1',
-      id: '11',
-      status: Status.ACTIVE,
-      type: DeviceType.TEMPERATURE,
-    },
-    {
-      name: 'Regulator 2',
-      id: '12',
-      key: '12',
-      status: Status.INACTIVE,
-      type: DeviceType.LIGHT,
-    },
-    {
-      name: 'Regulator 3',
-      id: '13',
-      key: '13',
-      status: Status.INVALID,
-      type: DeviceType.LIGHT,
-    },
-    {
-      name: 'Regulator 4',
-      id: '14',
-      key: '14',
-      status: Status.CONNECTING,
-      type: DeviceType.LIGHT,
-    },
-  ];
+  const [regulators, loading] = useRegulatorsQuery();
+  const regulatorsWithKeys = regulators?.map((it) =>
+    produce(it, (regulatorWithKey) => {
+      (regulatorWithKey as RegulatorModel & { key: string }).key = it.id;
+    }),
+  );
 
   return (
     <div ref={ref}>
       <Table<RegulatorModel>
         className={style.wrapper}
         columns={deviceTableColumns}
-        dataSource={data}
+        dataSource={regulatorsWithKeys}
+        loading={loading}
         pagination={false}
         scroll={scroll}
         onRow={(record) => ({

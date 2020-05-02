@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { RouteComponentProps } from '@reach/router';
 import { Button, Form, Input, Select } from 'antd';
 import { FormItemProps } from 'antd/es/form';
@@ -10,6 +10,7 @@ import { DeviceType, RegulatorModel } from '../models/regulator-device-model/Reg
 import { capitalize } from '../utils/string/stringUtils';
 import { FormTitle } from '../utils/form/FormTitle';
 import { OptionalKeyUploader } from '../utils/form/OptionalKeyUploader';
+import { FormSpinner } from './FormSpinner';
 
 export interface NewRegulatorProps extends RouteComponentProps {
   regulator?: RegulatorModel;
@@ -36,7 +37,9 @@ const fields: Record<NewRegulatorFieldNames, Omit<FormItemProps, 'children'>> = 
 };
 
 export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => {
-  const { form, onSubmit, initialValues } = useNewRegulatorForm(regulator);
+  const [deleteInProgress, setDeleteInProgress] = useState(false);
+  const { form, onSubmit, initialValues, loading } = useNewRegulatorForm(regulator);
+  const fetchingInProgress = loading || deleteInProgress;
   const editMode = !!regulator;
   const submitButtonTitle = editMode ? 'Edit regulator' : 'Add regulator';
 
@@ -48,7 +51,12 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
 
   return (
     <div className={style.wrapper}>
-      <FormTitle deleteButtonVisible={editMode} id={regulator?.id} titleSubject="regulator" />
+      <FormTitle
+        deleteButtonVisible={editMode}
+        id={regulator?.id}
+        subject="regulator"
+        onFetchingStateChange={setDeleteInProgress}
+      />
       <Form
         className={style.form}
         form={form}
@@ -56,6 +64,7 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
         layout="vertical"
         size="middle"
       >
+        {fetchingInProgress && <FormSpinner />}
         <Form.Item {...fields.name}>
           <Input autoComplete="off" />
         </Form.Item>
@@ -71,7 +80,12 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
           <PublicKeyUploader fieldItemProps={fields.publicKey} form={form} />
         )}
         <Form.Item className={style.submitButton}>
-          <Button icon={<EditOutlined />} type="primary" onClick={onSubmit}>
+          <Button
+            disabled={fetchingInProgress}
+            icon={<EditOutlined />}
+            type="primary"
+            onClick={onSubmit}
+          >
             {submitButtonTitle}
           </Button>
         </Form.Item>

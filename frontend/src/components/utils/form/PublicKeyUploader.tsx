@@ -4,7 +4,7 @@ import CheckCircleFilled from '@ant-design/icons/CheckCircleFilled';
 import UploadOutlined from '@ant-design/icons/UploadOutlined';
 import { FormInstance, FormItemProps, Rule } from 'antd/es/form';
 import { UploadChangeParam } from 'antd/es/upload';
-import { normFile, publicKeyValidator } from './PublicKeyValidator';
+import { normFile, publicKeyValidator } from './PublicKeyUtils';
 import style from '../../new-device/NewDevice.module.css';
 
 const doNotSendRequest = () => false;

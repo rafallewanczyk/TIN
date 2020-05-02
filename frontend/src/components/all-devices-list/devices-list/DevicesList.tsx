@@ -17,8 +17,6 @@ import { useDevicesQuery } from './useDevicesQuery';
 import { ChangeTemperatureAction } from './change-temperature-action/ChangeTemperatureAction';
 import { ChangeLightAction } from './change-light-action/ChangeLightAction';
 
-export interface DevicesListProps {}
-
 const renderAction = (device: DeviceModel): ReactNode =>
   device.type === DeviceType.TEMPERATURE ? (
     <ChangeTemperatureAction device={device as TemperatureDeviceModel} />
@@ -42,7 +40,7 @@ const columns: ColumnsType<DeviceModel> = [
   },
 ];
 
-export const DevicesList: React.FC<DevicesListProps> = () => {
+export const DevicesList: React.FC = () => {
   const ref = useRef<HTMLDivElement>(null);
   const scroll = useTableScroll(ref, 700);
   const navigate = useNavigate();

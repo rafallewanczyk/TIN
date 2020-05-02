@@ -1,22 +1,27 @@
 import { Form } from 'antd';
 import { FormInstance } from 'antd/es/form';
+import { queryCache, useMutation } from 'react-query';
+import { useNavigate } from '@reach/router';
 import {
   DeviceModel,
   DeviceType,
   RegulatorModel,
   Status,
 } from '../models/regulator-device-model/RegulatorDeviceModel';
+import { addNewDevice, editDeviceWithId } from '../rest-client/devices/DevicesRestClient';
+import { ALL_DEVICES_QUERY } from '../all-devices-list/devices-list/useDevicesQuery';
+import { encodeInBase64 } from '../utils/form/PublicKeyUtils';
 
 export enum NewDeviceFieldNames {
   name = 'name',
-  regulator = 'regulator',
+  regulatorId = 'regulatorId',
   publicKey = 'publicKey',
 }
 
 function createInitialValues(device: DeviceModel): Record<NewDeviceFieldNames, any> {
   return {
     name: device.name,
-    regulator: device.regulatorId,
+    regulatorId: device.regulatorId,
     publicKey: undefined,
   };
 }
@@ -28,30 +33,36 @@ export const useNewDeviceForm: (
   form: FormInstance;
   onSubmit: () => Promise<void>;
   regulators: RegulatorModel[];
+  loading: boolean;
 } = (device) => {
   const [form] = Form.useForm();
+  const navigate = useNavigate();
   const initialValues = device && createInitialValues(device);
+  const [sendDevice, { status }] = useMutation(
+    device ? editDeviceWithId(device.id) : addNewDevice,
+    {
+      onSuccess: () => {
+        queryCache.removeQueries(ALL_DEVICES_QUERY);
+        navigate('/');
+      },
+    },
+  );
 
-  const onAddSubmit = async () => {
+  const onSubmit = async () => {
+    let values: Record<string, any> = {};
     try {
-      const values = await form.validateFields();
-
-      console.log('adding', values);
+      values = await form.validateFields();
     } catch {
-      console.log('Form.getFieldsValue()', form.getFieldsValue());
-      console.log('Form.getFieldsError', form.getFieldsError());
+      return;
     }
-  };
 
-  const onEditSubmit = async () => {
-    try {
-      const values = await form.validateFields();
+    console.log('Values', values);
 
-      console.log('editing', values);
-    } catch {
-      console.log('Form.getFieldsValue()', form.getFieldsValue());
-      console.log('Form.getFieldsError', form.getFieldsError());
-    }
+    await sendDevice({
+      name: values.name,
+      regulatorId: values.regulatorId,
+      publicKey: values.publicKey && (await encodeInBase64(values.publicKey)),
+    });
   };
 
   const regulators: RegulatorModel[] = [
@@ -71,8 +82,9 @@ export const useNewDeviceForm: (
 
   return {
     form,
-    onSubmit: device ? onEditSubmit : onAddSubmit,
+    onSubmit,
     regulators,
     initialValues,
+    loading: status === 'loading',
   };
 };

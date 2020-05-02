@@ -115,7 +115,7 @@ app.post('/devices', delayMiddleware(timeoutDelay), (req, res) => {
     {
       name,
       regulatorId,
-      id: faker.random.number(10000),
+      id: `${faker.random.number(10000)}`,
       status: randomStatus(),
       type,
       data: randomData(type),
@@ -125,7 +125,15 @@ app.post('/devices', delayMiddleware(timeoutDelay), (req, res) => {
 
   res.status(201).send();
 });
-app.put('/devices/:id', delayMiddleware(timeoutDelay), (req, res) => res.status(200).send());
+app.patch('/devices/:id', delayMiddleware(timeoutDelay), (req, res) => {
+  devices = devices.map((device) => (device.id === req.params.id ? {
+    ...device,
+    name: req.body.name,
+    regulatorId: req.body.regulatorId,
+  } : device));
+
+  return res.status(200).send();
+});
 app.delete('/devices/:id', delayMiddleware(timeoutDelay), (req, res) => {
   devices = devices.filter((device) => device.id !== req.params.id);
 
@@ -154,12 +162,12 @@ app.post('/regulators', delayMiddleware(timeoutDelay), (req, res) => {
 
   res.status(201).send();
 });
-app.put('/regulators/:id', delayMiddleware(timeoutDelay), (req, res) => {
-  regulators = regulators.map((device) => ({
+app.patch('/regulators/:id', delayMiddleware(timeoutDelay), (req, res) => {
+  regulators = regulators.map((device) => (device.id === req.params.id ? {
     ...device,
     name: req.body.name,
     type: req.body.type,
-  }));
+  } : device));
 
   res.status(200).send();
 });
@@ -173,9 +181,9 @@ app.post('/devices/setTargetData', delayMiddleware(timeoutDelay), (req, res) => 
   devices = devices.map((device) =>
     device.id === req.body.id
       ? {
-          ...device,
-          targetData: req.body.targetData,
-        }
+        ...device,
+        targetData: req.body.targetData,
+      }
       : device,
   );
 

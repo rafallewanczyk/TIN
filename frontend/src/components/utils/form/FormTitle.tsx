@@ -1,31 +1,65 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button, PageHeader } from 'antd';
 import { useNavigate } from '@reach/router';
+import { queryCache, useMutation } from 'react-query';
 import style from '../../new-device/NewDevice.module.css';
+import { deleteDevice } from '../../rest-client/devices/DevicesRestClient';
+import {
+  ALL_DEVICES_QUERY,
+  ALL_REGULATORS_QUERY,
+} from '../../all-devices-list/devices-list/useDevicesQuery';
+import { deleteRegulator } from '../../rest-client/devices/RegulatorsRestClient';
 
 export interface FormTitleProps {
   deleteButtonVisible: boolean;
   id: string | undefined;
-  titleSubject: 'device' | 'regulator';
+  subject: 'device' | 'regulator';
+
+  onFetchingStateChange(fetching: boolean): void;
 }
 
-export const FormTitle: React.FC<FormTitleProps> = ({ deleteButtonVisible, id, titleSubject }) => {
+export const FormTitle: React.FC<FormTitleProps> = ({
+  deleteButtonVisible,
+  id,
+  subject,
+  onFetchingStateChange,
+}) => {
   const navigate = useNavigate();
-  const title = id ? `Edit ${titleSubject}` : `Add new ${titleSubject}`;
+  const queryName = subject === 'device' ? ALL_DEVICES_QUERY : ALL_REGULATORS_QUERY;
+  const deleteMutation = subject === 'device' ? deleteDevice : deleteRegulator;
+  const [sendDeleteRequest, { status }] = useMutation(deleteMutation, {
+    onSuccess: () => {
+      queryCache.removeQueries(queryName);
+      navigate('/');
+    },
+  });
+  const title = id ? `Edit ${subject}` : `Add new ${subject}`;
+
+  useEffect(() => {
+    onFetchingStateChange(status === 'loading');
+  }, [status]);
+
+  const handleDelete = (): void => {
+    if (id) {
+      sendDeleteRequest({ id });
+    }
+  };
 
   const renderDeleteButton = () => (
-    <Button key="1" type="danger">
+    <Button disabled={status === 'loading'} key="1" type="danger" onClick={handleDelete}>
       Delete
     </Button>
   );
 
   return (
-    <PageHeader
-      className={style.pageHeader}
-      extra={[deleteButtonVisible && renderDeleteButton()]}
-      subTitle={id && `Id: ${id}`}
-      title={title}
-      onBack={() => navigate(-1)}
-    />
+    <div className={style.pageHeaderWrapper}>
+      <PageHeader
+        className={style.pageHeader}
+        extra={[deleteButtonVisible && renderDeleteButton()]}
+        subTitle={id && `Id: ${id}`}
+        title={title}
+        onBack={() => navigate(-1)}
+      />
+    </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { Button, Form, Input, Select } from 'antd';
 import { FormItemProps } from 'antd/es/form';
 import { RouteComponentProps } from '@reach/router';
@@ -9,6 +9,7 @@ import { NewDeviceFieldNames, useNewDeviceForm } from './NewDeviceFormHook';
 import { DeviceModel, RegulatorModel } from '../models/regulator-device-model/RegulatorDeviceModel';
 import { FormTitle } from '../utils/form/FormTitle';
 import { OptionalKeyUploader } from '../utils/form/OptionalKeyUploader';
+import { FormSpinner } from '../new-regulator/FormSpinner';
 
 export interface NewDeviceProps extends RouteComponentProps {
   device?: DeviceModel;
@@ -23,9 +24,9 @@ const fields: Record<NewDeviceFieldNames, Omit<FormItemProps, 'children'>> = {
     name: NewDeviceFieldNames.name,
     label: 'Device name: ',
   },
-  [NewDeviceFieldNames.regulator]: {
+  [NewDeviceFieldNames.regulatorId]: {
     rules: [{ required: true, message: 'Please choose regulator' }],
-    name: NewDeviceFieldNames.regulator,
+    name: NewDeviceFieldNames.regulatorId,
     label: 'Choose your regulator',
   },
   [NewDeviceFieldNames.publicKey]: {
@@ -36,7 +37,9 @@ const fields: Record<NewDeviceFieldNames, Omit<FormItemProps, 'children'>> = {
 };
 
 export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = false }) => {
-  const { form, onSubmit, regulators, initialValues } = useNewDeviceForm(device);
+  const [deleteInProgress, setDeleteInProgress] = useState(false);
+  const { form, onSubmit, regulators, initialValues, loading } = useNewDeviceForm(device);
+  const fetchingInProgress = loading || deleteInProgress;
   const submitButtonTitle = editMode ? 'Edit device' : 'Add device';
 
   const renderRegulatorOption = (regulator: RegulatorModel): ReactNode => (
@@ -47,7 +50,12 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
 
   return (
     <div className={style.wrapper}>
-      <FormTitle deleteButtonVisible={editMode} id={device?.id} titleSubject="device" />
+      <FormTitle
+        deleteButtonVisible={editMode}
+        id={device?.id}
+        subject="device"
+        onFetchingStateChange={setDeleteInProgress}
+      />
       <Form
         className={style.form}
         form={form}
@@ -55,10 +63,11 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
         layout="vertical"
         size="middle"
       >
+        {fetchingInProgress && <FormSpinner />}
         <Form.Item {...fields.name}>
           <Input autoComplete="off" />
         </Form.Item>
-        <Form.Item {...fields.regulator}>
+        <Form.Item {...fields.regulatorId}>
           <Select>{regulators.map(renderRegulatorOption)}</Select>
         </Form.Item>
         {editMode ? (
@@ -67,7 +76,12 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
           <PublicKeyUploader fieldItemProps={fields.publicKey} form={form} />
         )}
         <Form.Item className={style.submitButton}>
-          <Button icon={<EditOutlined />} type="primary" onClick={onSubmit}>
+          <Button
+            disabled={fetchingInProgress}
+            icon={<EditOutlined />}
+            type="primary"
+            onClick={onSubmit}
+          >
             {submitButtonTitle}
           </Button>
         </Form.Item>
