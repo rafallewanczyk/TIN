@@ -1,23 +1,37 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { ReactNode, useRef } from 'react';
 import { Table } from 'antd';
-import axios from 'axios';
 import { ColumnsType } from 'antd/es/table';
 import { useNavigate } from '@reach/router';
+import produce from 'immer';
 import style from '../regulator-devices-list/RegulatorDevicesList.module.css';
-import { DeviceModel } from '../../models/regulator-device-model/RegulatorDeviceModel';
+import {
+  DeviceModel,
+  DeviceType,
+  LightDeviceModel,
+  TemperatureDeviceModel,
+} from '../../models/regulator-device-model/RegulatorDeviceModel';
 import { deviceTableColumns } from '../utils/deviceTableColumns';
 import { renderDeviceData } from './dataRenderers';
-import { renderAction } from './actionRenderers';
 import { useTableScroll } from '../utils/useTableScroll';
 import { useDevicesQuery } from './useDevicesQuery';
+import { ChangeTemperatureAction } from './change-temperature-action/ChangeTemperatureAction';
+import { ChangeLightAction } from './change-light-action/ChangeLightAction';
 
 export interface DevicesListProps {}
+
+const renderAction = (device: DeviceModel): ReactNode =>
+  device.type === DeviceType.TEMPERATURE ? (
+    <ChangeTemperatureAction device={device as TemperatureDeviceModel} />
+  ) : (
+    <ChangeLightAction device={device as LightDeviceModel} />
+  );
 
 const columns: ColumnsType<DeviceModel> = [
   ...deviceTableColumns.filter((column) => column.key !== 'type'),
   {
     title: 'State',
     dataIndex: 'data',
+    width: 300,
     key: 'state',
     render: renderDeviceData,
   },
@@ -33,12 +47,17 @@ export const DevicesList: React.FC<DevicesListProps> = () => {
   const scroll = useTableScroll(ref, 700);
   const navigate = useNavigate();
   const [devices, loading] = useDevicesQuery();
+  const devicesWithKeys = devices?.map((it) =>
+    produce(it, (deviceWithKey) => {
+      (deviceWithKey as DeviceModel & { key: string }).key = it.id;
+    }),
+  );
 
   return (
     <Table
       className={style.wrapper}
       columns={columns}
-      dataSource={devices}
+      dataSource={devicesWithKeys}
       loading={loading}
       pagination={false}
       scroll={scroll}

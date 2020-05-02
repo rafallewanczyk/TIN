@@ -13,7 +13,7 @@ export const deviceTableColumns: ColumnsType<any> = [
     title: 'Id',
     dataIndex: 'id',
     key: 'id',
-    width: 150,
+    width: 100,
   },
   {
     title: 'Status',

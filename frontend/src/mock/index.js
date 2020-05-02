@@ -12,7 +12,7 @@ let devices = [
     id: '11',
     status: 'ACTIVE',
     type: 'TEMPERATURE',
-    data: 12.12,
+    data: 13.12,
     targetData: 13.12,
   },
   {
@@ -40,7 +40,7 @@ let devices = [
     status: 'CONNECTING',
     type: 'LIGHT',
     data: false,
-    targetData: true,
+    targetData: false,
   },
 ];
 
@@ -102,6 +102,7 @@ app.get('/devices', delayMiddleware(timeoutDelay), (req, res) => {
   const response = devices.map((device) => ({
     ...device,
     status: randomStatus(),
+    data: device.targetData,
   }));
 
   return res.send(response);

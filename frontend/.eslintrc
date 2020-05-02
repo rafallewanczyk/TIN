@@ -25,6 +25,9 @@
     "@typescript-eslint"
   ],
   "rules": {
+    "react-hooks/exhaustive-deps": "off",
+    "no-return-assign": "off",
+    "no-param-reassign": "off",
     "max-classes-per-file": "off",
     "no-useless-constructor": "off",
     "implicit-arrow-linebreak": "off",
