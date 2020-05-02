@@ -14,7 +14,7 @@ const LOGO_SIZE = 32;
 
 export const AppLayout: React.FC<HelloWorldProps> = ({}) => (
   <Layout className={style.layout}>
-    <Sider breakpoint="md" collapsedWidth="0">
+    <Sider breakpoint="md" className={style.sider} collapsedWidth="0">
       <Link to="/">
         <div className={style.logo}>
           <img alt="logo" height={LOGO_SIZE} src={logo} width={LOGO_SIZE} />

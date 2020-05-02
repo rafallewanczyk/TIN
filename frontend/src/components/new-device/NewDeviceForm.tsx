@@ -52,6 +52,13 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
     return (
       <PageHeader
         className={style.pageHeader}
+        extra={[
+          editMode && (
+            <Button key="1" type="danger">
+              Delete
+            </Button>
+          ),
+        ]}
         subTitle={device && `Id: ${device?.id}`}
         title={titleText}
         onBack={() => navigate(-1)}

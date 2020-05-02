@@ -10,9 +10,11 @@ const getCachedDevices = (): DeviceModel[] | undefined =>
   queryCache.getQueryData(ALL_DEVICES_QUERY) as DeviceModel[] | undefined;
 
 export const useFetchDevice = (id: string | undefined): DeviceModel | undefined => {
-  const { data } = useQuery(!getCachedDevices() && ALL_DEVICES_QUERY, fetchDevices, {
+  const { data, status } = useQuery(!getCachedDevices() && ALL_DEVICES_QUERY, fetchDevices, {
     suspense: true,
   });
+  console.log('Status', status);
+
   const cachedData = getCachedDevices();
 
   return getDeviceById(cachedData || data || [], id);

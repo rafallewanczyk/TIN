@@ -53,6 +53,13 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
     return (
       <PageHeader
         className={style.pageHeader}
+        extra={[
+          editMode && (
+            <Button key="1" type="danger">
+              Delete
+            </Button>
+          ),
+        ]}
         subTitle={regulator && `Id: ${regulator?.id}`}
         title={titleText}
         onBack={() => navigate(-1)}

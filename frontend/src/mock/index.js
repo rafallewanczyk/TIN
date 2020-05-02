@@ -102,7 +102,6 @@ app.get('/devices', delayMiddleware(timeoutDelay), (req, res) => {
   const response = devices.map((device) => ({
     ...device,
     status: randomStatus(),
-    data: randomData(device.type),
   }));
 
   return res.send(response);
