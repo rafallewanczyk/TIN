@@ -4,10 +4,13 @@ import { DeviceModel } from '../../models/regulator-device-model/RegulatorDevice
 import { BASE_URL } from '../constants';
 import { DeviceModelDTO } from './DevicesDTO';
 
+interface DevicesResponseDTO {
+  devices: DeviceModelDTO[];
+}
 export const fetchDevices = async (): Promise<DeviceModel[]> => {
-  const { data } = await axios.get<DeviceModelDTO[]>(`${BASE_URL}/devices`);
+  const { data } = await axios.get<DevicesResponseDTO>(`${BASE_URL}/devices`);
 
-  return data;
+  return data.devices;
 };
 
 export const changeTargetData: MutationFunction<void,

@@ -107,7 +107,7 @@ app.get('/devices', delayMiddleware(timeoutDelay), (req, res) => {
     data: device.targetData,
   }));
 
-  return res.send(response);
+  return res.send({ devices: response });
 });
 app.post('/devices', delayMiddleware(timeoutDelay), (req, res) => {
   const { name, regulatorId } = req.body;
@@ -148,7 +148,7 @@ app.get('/regulators', delayMiddleware(timeoutDelay), (req, res) => {
     status: randomStatus(),
   }));
 
-  res.send(response);
+  res.status(200).send({ regulators: response });
 });
 app.post('/regulators', delayMiddleware(timeoutDelay), (req, res) => {
   const { name, type } = req.body;
