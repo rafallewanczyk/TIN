@@ -120,6 +120,91 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
 - Dodaj regulator
 - Dodaj urządzenie
 
+## API
+```text
+// undefined oznacza, że może nie być tego w requeście
+{
+  //GET /devices - zwrotka
+  "devices": [
+    {
+      "id": "string",
+      "regulatorId": "string",
+      "name": "string",
+      "status": "ENUM: ACTIVE | INACTIVE | INVALID | CONNECTING",
+      "type": "ENUM: TEMPERATURE | LIGHT",
+      "data": "string | boolean",
+      "targetData": "string | boolean"
+    }
+    // ...
+  ],
+
+  //POST /devices - request klienta
+  "body": {
+    "regulatorId": "string",
+    "name": "string",
+    "publicKey": "BASE64 encoded string"
+  },
+
+  //PATCH /devices/:deviceId request klienta
+  "body": {
+    "regulatorId": "string | undefined",
+    "name": "string | undefined",
+    "publicKey": "BASE64 encoded string | undefined"
+  },
+  // ...,
+
+  //DELETE /devices/:deviceId
+  "devices request": "puste body",
+
+  // POST /devices/setTargetData
+  "target data request": {
+    "id": "string",
+    "targetData": "string | boolean"
+  },
+
+  //GET /regulators - tak powinna wyglądać zwrotka
+  "regulators": [
+    {
+      "id": "string",
+      "name": "string",
+      "status": "ENUM: ACTIVE | INACTIVE | INVALID | CONNECTING",
+      "type": "ENUM: TEMPERATURE | LIGHT"
+    }
+    // ...
+  ],
+
+  //POST /regulators request klienta
+  "body": {
+    "regulatorId": "string",
+    "name": "string",
+    "publicKey": "BASE64 encoded string"
+  }
+
+  //PATCH /regulators/:regulatorId request klienta
+  "body": {
+    "type": "ENUM: TEMPERATURE | LIGHT",
+    "name": "string | undefined",
+    "publicKey": "BASE64 encoded string | undefined"
+  },
+
+  // DELETE /regulators/:deviceId
+  "regulators request": "puste body"
+}
+
+// Error jeżeli będzie jakiś błąd to chciałbym otrzymać takie body
+{
+  "error": "string"
+}
+// albo
+{
+  "errors": [
+    "string",
+    ...
+  ]
+}
+```
+
+
 ## Potencjalne błędy komunikacji
 
 Ogólne błędy przy komunikacji socketami:
