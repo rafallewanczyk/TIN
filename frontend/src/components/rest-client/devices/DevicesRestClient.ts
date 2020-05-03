@@ -28,7 +28,7 @@ export const deleteDevice: MutationFunction<void, { id: string }> = async ({
   return data;
 };
 
-interface NewDeviceRequestDTO {
+export interface NewDeviceRequestDTO {
   name: string;
   regulatorId: string;
   publicKey: string;
@@ -42,7 +42,7 @@ export const addNewDevice: MutationFunction<void, NewDeviceRequestDTO> = async (
   return data;
 };
 
-type EditDeviceRequestDTO = Partial<NewDeviceRequestDTO>;
+export type EditDeviceRequestDTO = Partial<NewDeviceRequestDTO>;
 
 export const editDeviceWithId = (id: string) => async (request: EditDeviceRequestDTO) => {
   const { data } = await axios.patch<void>(`${BASE_URL}/devices/${id}`, request);

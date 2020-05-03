@@ -96,7 +96,7 @@ app.use(bodyParser.json());
 app.use(morgan('combined'));
 app.use(cors());
 
-const timeoutDelay = 1500;
+const timeoutDelay = 100;
 
 app.get('/devices', delayMiddleware(timeoutDelay), (req, res) => {
   const response = devices.map((device) => ({
@@ -123,7 +123,7 @@ app.post('/devices', delayMiddleware(timeoutDelay), (req, res) => {
     },
   ];
 
-  res.status(201).send();
+  res.status(400).send({ error: 'Something went wrong' });
 });
 app.patch('/devices/:id', delayMiddleware(timeoutDelay), (req, res) => {
   devices = devices.map((device) => (device.id === req.params.id ? {

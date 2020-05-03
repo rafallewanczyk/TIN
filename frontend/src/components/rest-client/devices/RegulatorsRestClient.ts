@@ -20,7 +20,7 @@ export const deleteRegulator: MutationFunction<void, { id: string }> = async ({
   return data;
 };
 
-interface NewRegulatorRequestDTO {
+export interface NewRegulatorRequestDTO {
   name: string;
   type: DeviceType;
   publicKey: string;
@@ -34,7 +34,7 @@ export const addNewRegulator: MutationFunction<void, NewRegulatorRequestDTO> = a
   return data;
 };
 
-type EditRegulatorRequestDTO = Partial<NewRegulatorRequestDTO>;
+export type EditRegulatorRequestDTO = Partial<NewRegulatorRequestDTO>;
 
 export const editRegulatorWithId = (id: string) => async (request: EditRegulatorRequestDTO) => {
   const { data } = await axios.patch<void>(`${BASE_URL}/regulators/${id}`, request);

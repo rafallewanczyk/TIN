@@ -1,11 +1,14 @@
 import { Form } from 'antd';
 import { FormInstance } from 'antd/es/form';
-import { queryCache, useMutation } from 'react-query';
-import { useNavigate } from '@reach/router';
 import { RegulatorModel } from '../models/regulator-device-model/RegulatorDeviceModel';
 import { encodeInBase64 } from '../utils/form/PublicKeyUtils';
-import { ALL_REGULATORS_QUERY, } from '../all-devices-list/devices-list/useDevicesQuery';
-import { addNewRegulator, editRegulatorWithId } from '../rest-client/devices/RegulatorsRestClient';
+import { ALL_REGULATORS_QUERY } from '../all-devices-list/devices-list/useDevicesQuery';
+import {
+  addNewRegulator,
+  editRegulatorWithId,
+  NewRegulatorRequestDTO,
+} from '../rest-client/devices/RegulatorsRestClient';
+import { useDeviceMutation } from '../utils/form/useDeviceMutation';
 
 export enum NewRegulatorFieldNames {
   name = 'name',
@@ -30,17 +33,13 @@ export const useNewRegulatorForm: (
   loading: boolean;
 } = (regulator) => {
   const [form] = Form.useForm();
-  const navigate = useNavigate();
   const initialValues = regulator && createInitialValues(regulator);
-  const [sendRegulator, { status }] = useMutation(
-    regulator ? editRegulatorWithId(regulator.id) : addNewRegulator,
-    {
-      onSuccess: () => {
-        queryCache.removeQueries(ALL_REGULATORS_QUERY);
-        navigate('/');
-      },
-    },
-  );
+  const [sendRegulator, { status }] = useDeviceMutation<NewRegulatorRequestDTO>({
+    deviceId: regulator?.id || null,
+    queryToReset: ALL_REGULATORS_QUERY,
+    addMutation: addNewRegulator,
+    editMutation: editRegulatorWithId,
+  });
 
   const onSubmit = async () => {
     let values: Record<string, any> = {};

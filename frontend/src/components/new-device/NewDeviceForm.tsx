@@ -70,7 +70,7 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
         <Form.Item {...fields.regulatorId}>
           <Select>{regulators.map(renderRegulatorOption)}</Select>
         </Form.Item>
-        {editMode ? (
+        {!editMode ? (
           <OptionalKeyUploader form={form} formProps={fields.publicKey} />
         ) : (
           <PublicKeyUploader fieldItemProps={fields.publicKey} form={form} />

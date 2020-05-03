@@ -1,5 +1,5 @@
 // const [data, setData] = useState<any>([]);
-import { useQuery } from 'react-query';
+import { QueryOptions, useQuery } from 'react-query';
 import {
   DeviceModel,
   RegulatorModel,
@@ -20,8 +20,11 @@ export const useDevicesQuery = (): [DeviceModel[] | undefined, boolean] => {
   return [data, status === 'loading'];
 };
 
+export const useAllRegulatorsQuery = (options: QueryOptions<RegulatorModel[]>) =>
+  useQuery(ALL_REGULATORS_QUERY, fetchRegulators, options);
+
 export const useRegulatorsQuery = (): [RegulatorModel[] | undefined, boolean] => {
-  const { data, status } = useQuery(ALL_REGULATORS_QUERY, fetchRegulators, {
+  const { data, status } = useAllRegulatorsQuery({
     refetchOnWindowFocus: false,
     refetchInterval: REFETCH_INTERVAL,
   });
