@@ -29,7 +29,7 @@ const columns: ColumnsType<DeviceModel> = [
   {
     title: 'State',
     dataIndex: 'data',
-    width: 300,
+    width: 250,
     key: 'state',
     render: renderDeviceData,
   },

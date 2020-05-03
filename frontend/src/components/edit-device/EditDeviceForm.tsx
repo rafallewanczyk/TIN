@@ -14,7 +14,7 @@ export const EditDeviceForm: React.FC<EditDeviceFormProps> = ({ deviceId }) => {
   const device = useFetchDevice(deviceId);
 
   if (!device) {
-    navigate('/newDevice');
+    navigate('/');
 
     return null;
   }

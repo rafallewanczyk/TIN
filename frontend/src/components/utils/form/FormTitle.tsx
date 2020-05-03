@@ -25,6 +25,7 @@ export const FormTitle: React.FC<FormTitleProps> = ({
   onFetchingStateChange,
 }) => {
   const navigate = useNavigate();
+  const title = id ? `Edit ${subject}` : `Add new ${subject}`;
   const queryName = subject === 'device' ? ALL_DEVICES_QUERY : ALL_REGULATORS_QUERY;
   const deleteMutation = subject === 'device' ? deleteDevice : deleteRegulator;
   const [sendDeleteRequest, { status }] = useMutation(deleteMutation, {
@@ -33,17 +34,12 @@ export const FormTitle: React.FC<FormTitleProps> = ({
       navigate('/');
     },
   });
-  const title = id ? `Edit ${subject}` : `Add new ${subject}`;
+
+  const handleDelete = () => id && sendDeleteRequest({ id });
 
   useEffect(() => {
     onFetchingStateChange(status === 'loading');
   }, [status]);
-
-  const handleDelete = (): void => {
-    if (id) {
-      sendDeleteRequest({ id });
-    }
-  };
 
   const renderDeleteButton = () => (
     <Button disabled={status === 'loading'} key="1" type="danger" onClick={handleDelete}>

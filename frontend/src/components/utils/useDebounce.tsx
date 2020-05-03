@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 
 export const useDebounce: (
-  handler: (value: number | undefined) => void,
+  handler: (value?: number) => void,
   timeout: number,
-) => [(value: number | undefined) => void, boolean] = (handler, timeout) => {
+) => [(value?: number) => void, boolean] = (handler, timeout) => {
   const [timeoutId, setTimeoutId] = useState<number | undefined>(undefined);
   const [isTimeoutOn, setIsTimeoutOn] = useState(false);
   const handleChange = (value: number | undefined) => {

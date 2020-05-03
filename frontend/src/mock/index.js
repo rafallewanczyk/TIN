@@ -96,7 +96,9 @@ app.use(bodyParser.json());
 app.use(morgan('combined'));
 app.use(cors());
 
-const timeoutDelay = 100;
+const timeoutDelay = 2000;
+
+// app.use((req, res, next) => res.status(400).send({error: "Service unavailable"}));
 
 app.get('/devices', delayMiddleware(timeoutDelay), (req, res) => {
   const response = devices.map((device) => ({
@@ -123,7 +125,7 @@ app.post('/devices', delayMiddleware(timeoutDelay), (req, res) => {
     },
   ];
 
-  res.status(400).send({ error: 'Something went wrong' });
+  res.status(200).send({ error: 'Something went wrong' });
 });
 app.patch('/devices/:id', delayMiddleware(timeoutDelay), (req, res) => {
   devices = devices.map((device) => (device.id === req.params.id ? {
@@ -137,7 +139,7 @@ app.patch('/devices/:id', delayMiddleware(timeoutDelay), (req, res) => {
 app.delete('/devices/:id', delayMiddleware(timeoutDelay), (req, res) => {
   devices = devices.filter((device) => device.id !== req.params.id);
 
-  res.status(204).send();
+  res.status(200).send();
 });
 
 app.get('/regulators', delayMiddleware(timeoutDelay), (req, res) => {

@@ -21,8 +21,8 @@ export enum NewDeviceFieldNames {
 
 function createInitialValues(device?: DeviceModel): Record<NewDeviceFieldNames, any> {
   return {
-    name: device?.name || 'jarek',
-    regulatorId: device?.regulatorId || '14',
+    name: device?.name,
+    regulatorId: device?.regulatorId,
     publicKey: undefined,
   };
 }
@@ -44,7 +44,7 @@ export const useNewDeviceForm: (
     addMutation: addNewDevice,
     editMutation: editDeviceWithId,
   });
-  const initialValues = createInitialValues(device); // TODO REVERT
+  const initialValues = device && createInitialValues(device);
 
   const onSubmit = async () => {
     let values: Record<string, any>;

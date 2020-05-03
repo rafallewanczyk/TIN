@@ -18,7 +18,7 @@ export const deviceTableColumns: ColumnsType<any> = [
   {
     title: 'Status',
     key: 'status',
-    width: 200,
+    width: 180,
     dataIndex: 'status',
     render: renderStatusTag,
   },

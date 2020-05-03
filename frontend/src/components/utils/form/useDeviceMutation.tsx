@@ -4,7 +4,6 @@ import {
   ALL_DEVICES_QUERY,
   ALL_REGULATORS_QUERY,
 } from '../../all-devices-list/devices-list/useDevicesQuery';
-import { sendServerError } from '../error/errors';
 
 interface UseDeviceMutationProps<AddRequest> {
   deviceId: string | null;
@@ -29,6 +28,5 @@ export const useDeviceMutation = <AddRequest, >({
 
   return useMutation(mutation, {
     onSuccess,
-    onError: sendServerError,
   });
 };
