@@ -154,10 +154,10 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
   // ...,
 
   //DELETE /devices/:deviceId
-  "devices request": "puste body",
+  "body": {},
 
   // POST /devices/setTargetData
-  "target data request": {
+  "body": {
     "id": "string",
     "targetData": "string | boolean"
   },
@@ -188,20 +188,17 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
   },
 
   // DELETE /regulators/:deviceId
-  "regulators request": "puste body"
+  "body": {}
 }
 
-// Error jeżeli będzie jakiś błąd to chciałbym otrzymać takie body
-{
+// ERROR jeżeli będzie jakiś błąd to chciałbym otrzymać takie body
   "error": "string"
-}
+
 // albo
-{
   "errors": [
     "string",
     ...
   ]
-}
 ```
 
 
