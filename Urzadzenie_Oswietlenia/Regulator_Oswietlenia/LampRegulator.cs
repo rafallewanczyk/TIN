@@ -4,15 +4,15 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace Regulator_Oswietlenia
+namespace Lamp_Regulator 
 {
     class Regulator
     {
-        private static byte[] _buffer = new byte[1024];
-        private static List<Socket> _clientSockets = new List<Socket>();
-        private static Socket _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        private static int BACKLOG;
-        private static int PORT;
+        private byte[] _buffer = new byte[1024];
+        private List<Socket> _clientSockets = new List<Socket>();
+        private Socket _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        private int BACKLOG;
+        private int PORT;
 
 
         public Regulator(int port, int backlog)
@@ -31,7 +31,7 @@ namespace Regulator_Oswietlenia
             CloseAllSockets();
         }
 
-        private static void CloseAllSockets()
+        private void CloseAllSockets()
         {
             foreach (Socket socket in _clientSockets)
             {
@@ -42,17 +42,17 @@ namespace Regulator_Oswietlenia
             _serverSocket.Close();
         }
 
-        private static void SetupServer()
+        private void SetupServer()
         {
             Console.WriteLine("Setting up server ...");
             _serverSocket.Bind(new IPEndPoint(IPAddress.Any, PORT));
             _serverSocket.Listen(BACKLOG);
             _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
-            Console.ReadLine();
+            Console.Read();
 
         }
 
-        private static void AcceptCallback(IAsyncResult AR)
+        private void AcceptCallback(IAsyncResult AR)
         {
             Socket socket;
             try
@@ -64,15 +64,18 @@ namespace Regulator_Oswietlenia
                 return;
             }
 
+            byte[] buffer = new byte[1024];
             Console.WriteLine("client connected");
             _clientSockets.Add(socket);
-            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, ReceiveCallback, socket);
+            socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, ReceiveCallback, new SocketMemory(socket, buffer));
             _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
         }
 
-        private static void ReceiveCallback(IAsyncResult AR)
+        private void ReceiveCallback(IAsyncResult AR)
         {
-            Socket socket = (Socket)AR.AsyncState;
+            SocketMemory memory = (SocketMemory)AR.AsyncState;
+            Socket socket = memory.socket; 
+
             int received;
 
             try
@@ -88,7 +91,7 @@ namespace Regulator_Oswietlenia
             }
 
             byte[] dataBuf = new byte[received];
-            Array.Copy(_buffer, dataBuf, received);
+            Array.Copy(memory.buffer, dataBuf, received);
             string text = Encoding.ASCII.GetString(dataBuf);
             Console.WriteLine("Text received: " + text);
 
@@ -107,16 +110,29 @@ namespace Regulator_Oswietlenia
                 response = text;
             }
 
-            byte[] data = Encoding.ASCII.GetBytes(response);
-            socket.BeginSend(data, 0, data.Length, SocketFlags.None, new AsyncCallback(SendCallback), socket);
+            Array.Copy(Encoding.ASCII.GetBytes(response), memory.buffer, received);
+            socket.BeginSend(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendCallback), memory);
         }
 
 
-        private static void SendCallback(IAsyncResult AR)
+        private void SendCallback(IAsyncResult AR)
         {
-            Socket socket = (Socket)AR.AsyncState;
+            SocketMemory memory= (SocketMemory)AR.AsyncState;
+            Socket socket = memory.socket; 
             socket.EndSend(AR);
-            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, ReceiveCallback, socket);
+            socket.BeginReceive(memory.buffer, 0,memory.buffer.Length, SocketFlags.None, ReceiveCallback, memory);
         }
+
+        private class SocketMemory
+        {
+            public Socket socket;
+            public byte[] buffer = new byte[1024];
+            public SocketMemory(Socket socket, byte[] buffer)
+            {
+                this.socket = socket;
+                this.buffer = buffer; 
+            }
+        }
+        
     }
 }
