@@ -4,38 +4,51 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-
 namespace Regulator_Oswietlenia
 {
-    class Program
+    class Regulator
     {
-        private static byte[] _buffer = new byte[1024]; 
-        private static List<Socket> _clientSockets = new List<Socket>(); 
-        private static Socket _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); 
-        static void Main(string[] args)
+        private static byte[] _buffer = new byte[1024];
+        private static List<Socket> _clientSockets = new List<Socket>();
+        private static Socket _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        private static int BACKLOG;
+        private static int PORT;
+
+
+        public Regulator(int port, int backlog)
+        {
+            BACKLOG = backlog;
+            PORT = port;
+        }
+
+        public void StartRegulator()
         {
             SetupServer();
-            Console.ReadLine();
-            CloseAllSockets(); 
+        }
+
+        public void CloseRegulator()
+        {
+            CloseAllSockets();
         }
 
         private static void CloseAllSockets()
         {
-            foreach(Socket socket in _clientSockets)
+            foreach (Socket socket in _clientSockets)
             {
                 socket.Shutdown(SocketShutdown.Both);
-                socket.Close(); 
+                socket.Close();
             }
 
-            _serverSocket.Close(); 
+            _serverSocket.Close();
         }
 
         private static void SetupServer()
         {
             Console.WriteLine("Setting up server ...");
-            _serverSocket.Bind(new IPEndPoint(IPAddress.Any, 100));
-            _serverSocket.Listen(5); 
-            _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null); 
+            _serverSocket.Bind(new IPEndPoint(IPAddress.Any, PORT));
+            _serverSocket.Listen(BACKLOG);
+            _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
+            Console.ReadLine();
 
         }
 
@@ -48,32 +61,32 @@ namespace Regulator_Oswietlenia
             }
             catch (ObjectDisposedException)
             {
-                return; 
+                return;
             }
-            
+
             Console.WriteLine("client connected");
             _clientSockets.Add(socket);
-            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, ReceiveCallback, socket); 
+            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, ReceiveCallback, socket);
             _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
         }
 
         private static void ReceiveCallback(IAsyncResult AR)
         {
-            Socket socket = (Socket) AR.AsyncState;
-            int received; 
+            Socket socket = (Socket)AR.AsyncState;
+            int received;
 
             try
             {
                 received = socket.EndReceive(AR);
             }
-            catch(SocketException)
+            catch (SocketException)
             {
                 Console.WriteLine("client forcefully disconnected");
                 socket.Close();
                 _clientSockets.Remove(socket);
-                return; 
+                return;
             }
-            
+
             byte[] dataBuf = new byte[received];
             Array.Copy(_buffer, dataBuf, received);
             string text = Encoding.ASCII.GetString(dataBuf);
@@ -86,12 +99,12 @@ namespace Regulator_Oswietlenia
                 socket.Close();
                 _clientSockets.Remove(socket);
                 Console.WriteLine("client disconnected");
-                return; 
+                return;
 
             }
             else
             {
-                response = text; 
+                response = text;
             }
 
             byte[] data = Encoding.ASCII.GetBytes(response);
@@ -101,9 +114,9 @@ namespace Regulator_Oswietlenia
 
         private static void SendCallback(IAsyncResult AR)
         {
-            Socket socket = (Socket) AR.AsyncState;
+            Socket socket = (Socket)AR.AsyncState;
             socket.EndSend(AR);
-            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, ReceiveCallback, socket); 
+            socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, ReceiveCallback, socket);
         }
     }
 }
