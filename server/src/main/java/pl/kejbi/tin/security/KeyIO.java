@@ -9,9 +9,8 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
 
-public class KeyUtils {
+public class KeyIO {
 
     public static void writeKeyToFile(String path, Key key) throws IOException {
         File file = new File(path);
