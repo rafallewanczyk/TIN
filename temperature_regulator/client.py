@@ -10,8 +10,8 @@ if __name__ == "__main__":
         print("Cannot connect to server!")
         print(str(err))
         sys.exit(1)
-    time.sleep(5)
-    # with client_socket:    
-        # data = 'Hello world'
-        # client_socket.sendall(data.encode(encoding='utf-8'))
-        # print("Data sent")
+    # time.sleep(5)
+    with client_socket:    
+        data = 'Hello world'
+        client_socket.sendall(data.encode(encoding='utf-8'))
+        print("Data sent")
