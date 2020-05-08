@@ -1,4 +1,4 @@
-from server_dispatcher import ServerDispatcher
+from server.dispatcher import ServerDispatcher
 from config_loader.txt_config_loader import TxtConfigLoader
 
 
