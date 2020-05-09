@@ -1,15 +1,18 @@
-import socket, threading
+import socket
+import threading
+from server_processer import ServerProcesser
 from processer import Processer
 from config_handling.config_handler import ConfigHandler
 from cryptography_handler import CryptographyHandler
+from temperature_device.temperature_device_info_list import TemperatureDeviceInfoList
 
 
 class ServerDispatcher:
     def __init__(self, config_handler: ConfigHandler, cryptography_handler: CryptographyHandler):
-        self._loader = loader
+        self._config_handler = config_handler
         Processer.configure(config_handler, cryptography_handler)
         self._create_listener_socket()
-        self._devices = list()
+        self._device_list = TemperatureDeviceInfoList()
     
     def _create_listener_socket(self):
         try:
@@ -17,10 +20,10 @@ class ServerDispatcher:
         except OSError:
             print("Couldnt create socket!")
             exit(2)
-        self._listener_socket.bind((self._loader.listener_socket_address, self._loader.listener_socket_port))
-        self._listener_socket.listen(self._loader.listener_socket_max_connections)
-        self._listener_socket.settimeout(self._loader.listener_socket_timeout)
-        print(f"Server created. Interface: {self._loader.listener_socket_address} Port: {self._loader.listener_socket_port}")
+        self._listener_socket.bind((self._config_handler.listener_socket_address, self._config_handler.listener_socket_port))
+        self._listener_socket.listen(self._config_handler.listener_socket_max_connections)
+        self._listener_socket.settimeout(self._config_handler.listener_socket_timeout)
+        print(f"Server created. Interface: {self._config_handler.listener_socket_address} Port: {self._loader.listener_socket_port}")
 
     def run(self):
         counter = 0  # Used as unique id
@@ -36,7 +39,7 @@ class ServerDispatcher:
                         self._listener_socket.close()
                         return
                 else:
-                    thread = Processer(counter, connection_socket, client_address)
+                    thread = ServerProcesser(counter, connection_socket, client_address, self._device_list)
                     counter += 1
                     thread.run()
         except KeyboardInterrupt:  # SIGINT
