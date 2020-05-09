@@ -33,6 +33,7 @@ export interface NewDeviceRequestDTO {
   name: string;
   regulatorId: string;
   publicKey: string;
+  port: number;
   address: string;
 }
 

@@ -6,6 +6,7 @@ export interface DeviceModelDTO {
   name: string;
   status: Status;
   type: DeviceType;
+  port: number;
   address: string;
   data: number | boolean;
   targetData: number | boolean;

@@ -10,11 +10,9 @@ import { AppMenu } from './app-menu/AppMenu';
 
 const { Content, Footer, Sider } = Layout;
 
-export interface HelloWorldProps {}
-
 const LOGO_SIZE = 32;
 
-export const AppLayout: React.FC<HelloWorldProps> = () => (
+export const AppLayout: React.FC = () => (
   <Layout className={style.layout}>
     <Sider breakpoint="md" className={style.sider} collapsedWidth="0">
       <Link to="/">

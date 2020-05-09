@@ -18,14 +18,21 @@ export enum NewDeviceFieldNames {
   regulatorId = 'regulatorId',
   publicKey = 'publicKey',
   address = 'address',
+  port = 'port',
 }
 
-function createInitialValues(device?: DeviceModel): Record<NewDeviceFieldNames, any> {
+function createInitialValues(
+  device?: DeviceModel,
+  regulators: RegulatorModel[] = [],
+): Record<NewDeviceFieldNames, any> {
   return {
     name: device?.name,
-    regulatorId: device?.regulatorId,
+    regulatorId: regulators.some((it) => it.id === device?.regulatorId)
+      ? device?.regulatorId
+      : undefined,
     publicKey: undefined,
     address: device?.address || 'localhost',
+    port: device?.port,
   };
 }
 
@@ -46,7 +53,7 @@ export const useNewDeviceForm: (
     addMutation: addNewDevice,
     editMutation: editDeviceWithId,
   });
-  const initialValues = createInitialValues(device);
+  const initialValues = createInitialValues(device, regulators);
 
   const onSubmit = async () => {
     let values: Record<string, any>;
@@ -62,6 +69,7 @@ export const useNewDeviceForm: (
       name: values.name,
       regulatorId: values.regulatorId,
       address: values.address,
+      port: values.port,
       publicKey: values.publicKey && (await encodeInBase64(values.publicKey)),
     });
   };

@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from 'react';
-import { Button, Form, Input, Select } from 'antd';
+import { Button, Form, Input, InputNumber, Select } from 'antd';
 import { FormItemProps } from 'antd/es/form';
 import { RouteComponentProps } from '@reach/router';
 import EditOutlined from '@ant-design/icons/EditOutlined';
@@ -38,6 +38,11 @@ const fields: Record<NewDeviceFieldNames, Omit<FormItemProps, 'children'>> = {
     rules: [{ required: true, message: "Please give a device's address ip:" }],
     name: NewDeviceFieldNames.address,
     label: "Device's address ip:",
+  },
+  [NewDeviceFieldNames.port]: {
+    rules: [{ required: true, message: "Please give a device's port" }],
+    name: NewDeviceFieldNames.port,
+    label: "Device's port: ",
   },
 };
 
@@ -78,6 +83,9 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
         </Form.Item>
         <Form.Item {...fields.address}>
           <Input autoComplete="off" />
+        </Form.Item>
+        <Form.Item {...fields.port}>
+          <InputNumber max={65535} min={1024} />
         </Form.Item>
         {editMode ? (
           <OptionalKeyUploader form={form} formProps={fields.publicKey} />

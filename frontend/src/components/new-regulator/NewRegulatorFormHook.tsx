@@ -15,6 +15,7 @@ export enum NewRegulatorFieldNames {
   type = 'type',
   publicKey = 'publicKey',
   address = 'address',
+  port = 'port',
 }
 
 function createInitialValues(regulator?: RegulatorModel): Record<NewRegulatorFieldNames, any> {
@@ -22,6 +23,7 @@ function createInitialValues(regulator?: RegulatorModel): Record<NewRegulatorFie
     name: regulator?.name,
     type: regulator?.type,
     address: regulator?.address || 'localhost',
+    port: regulator?.port,
     publicKey: undefined,
   };
 }
@@ -51,12 +53,13 @@ export const useNewRegulatorForm: (
       return;
     }
 
-    const { name, type, publicKey, address } = values;
+    const { name, type, publicKey, address, port } = values;
 
     await sendRegulator({
       name,
       type,
       address,
+      port,
       publicKey: publicKey && (await encodeInBase64(publicKey)),
     });
   };

@@ -1,6 +1,6 @@
 import React, { ReactNode, useState } from 'react';
 import { RouteComponentProps } from '@reach/router';
-import { Button, Form, Input, Select } from 'antd';
+import { Button, Form, Input, InputNumber, Select } from 'antd';
 import { FormItemProps } from 'antd/es/form';
 import EditOutlined from '@ant-design/icons/EditOutlined';
 import style from '../new-device/NewDevice.module.css';
@@ -11,7 +11,6 @@ import { capitalize } from '../utils/string/stringUtils';
 import { FormTitle } from '../utils/form/FormTitle';
 import { OptionalKeyUploader } from '../utils/form/OptionalKeyUploader';
 import { FormSpinner } from './FormSpinner';
-import { NewDeviceFieldNames } from '../new-device/NewDeviceFormHook';
 
 export interface NewRegulatorProps extends RouteComponentProps {
   regulator?: RegulatorModel;
@@ -35,12 +34,18 @@ const fields: Record<NewRegulatorFieldNames, Omit<FormItemProps, 'children'>> = 
     name: NewRegulatorFieldNames.publicKey,
     label: "Regulators's public key: ",
   },
+  [NewRegulatorFieldNames.port]: {
+    rules: [{ required: true, message: "Please give a device's port" }],
+    name: NewRegulatorFieldNames.port,
+    label: "Device's port: ",
+  },
   [NewRegulatorFieldNames.address]: {
     rules: [{ required: true, message: "Please give a device's address ip:" }],
-    name: NewDeviceFieldNames.address,
+    name: NewRegulatorFieldNames.address,
     label: "Device's address ip:",
   },
 };
+
 export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => {
   const [deleteInProgress, setDeleteInProgress] = useState(false);
   const { form, onSubmit, initialValues, loading } = useNewRegulatorForm(regulator);
@@ -82,6 +87,9 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
         </Form.Item>
         <Form.Item {...fields.address}>
           <Input autoComplete="off" />
+        </Form.Item>
+        <Form.Item {...fields.port}>
+          <InputNumber max={65535} min={1024} />
         </Form.Item>
         {editMode ? (
           <OptionalKeyUploader form={form} formProps={fields.publicKey} />

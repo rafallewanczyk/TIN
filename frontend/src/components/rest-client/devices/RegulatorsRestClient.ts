@@ -24,6 +24,7 @@ export interface NewRegulatorRequestDTO {
   name: string;
   type: DeviceType;
   publicKey: string;
+  port: number;
   address: string;
 }
 
