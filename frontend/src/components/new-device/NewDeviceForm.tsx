@@ -34,6 +34,11 @@ const fields: Record<NewDeviceFieldNames, Omit<FormItemProps, 'children'>> = {
     name: NewDeviceFieldNames.publicKey,
     label: "Device's public key: ",
   },
+  [NewDeviceFieldNames.address]: {
+    rules: [{ required: true, message: "Please give a device's address ip:" }],
+    name: NewDeviceFieldNames.address,
+    label: "Device's address ip:",
+  },
 };
 
 export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = false }) => {
@@ -51,6 +56,7 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
   return (
     <div className={style.wrapper}>
       <FormTitle
+        deleteButtonDisabled={fetchingInProgress}
         deleteButtonVisible={editMode}
         id={device?.id}
         subject="device"
@@ -69,6 +75,9 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
         </Form.Item>
         <Form.Item {...fields.regulatorId}>
           <Select>{regulators.map(renderRegulatorOption)}</Select>
+        </Form.Item>
+        <Form.Item {...fields.address}>
+          <Input autoComplete="off" />
         </Form.Item>
         {editMode ? (
           <OptionalKeyUploader form={form} formProps={fields.publicKey} />

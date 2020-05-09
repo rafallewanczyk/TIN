@@ -6,13 +6,10 @@ import {
 } from '../../models/regulator-device-model/RegulatorDeviceModel';
 import { BASE_URL } from '../constants';
 
-interface RegulatorsResponseDTO {
-  regulators: RegulatorModel[];
-}
 export const fetchRegulators = async (): Promise<RegulatorModel[]> => {
-  const { data } = await axios.get<RegulatorsResponseDTO>(`${BASE_URL}/regulators`);
+  const { data } = await axios.get<RegulatorModel[]>(`${BASE_URL}/regulators`);
 
-  return data.regulators;
+  return data;
 };
 
 export const deleteRegulator: MutationFunction<void, { id: string }> = async ({
@@ -27,6 +24,7 @@ export interface NewRegulatorRequestDTO {
   name: string;
   type: DeviceType;
   publicKey: string;
+  address: string;
 }
 
 export const addNewRegulator: MutationFunction<void, NewRegulatorRequestDTO> = async (

@@ -16,6 +16,7 @@ export class RegulatorModel {
     public id: string,
     public status: Status,
     public type: DeviceType,
+    public address: string,
   ) {}
 }
 
@@ -26,6 +27,7 @@ export class DeviceModel {
     public name: string,
     public status: Status,
     public type: DeviceType,
+    public address: string,
   ) {}
 }
 
@@ -35,10 +37,11 @@ export class TemperatureDeviceModel extends DeviceModel {
     regulatorId: string,
     name: string,
     status: Status,
+    address: string,
     public data: number,
     public targetData: number,
   ) {
-    super(id, regulatorId, name, status, DeviceType.TEMPERATURE);
+    super(id, regulatorId, name, status, DeviceType.TEMPERATURE, address);
   }
 }
 
@@ -48,9 +51,10 @@ export class LightDeviceModel extends DeviceModel {
     regulatorId: string,
     name: string,
     status: Status,
+    address: string,
     public data: boolean,
     public targetData: boolean,
   ) {
-    super(id, regulatorId, name, status, DeviceType.LIGHT);
+    super(id, regulatorId, name, status, DeviceType.LIGHT, address);
   }
 }

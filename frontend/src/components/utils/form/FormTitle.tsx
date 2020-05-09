@@ -14,6 +14,7 @@ export interface FormTitleProps {
   deleteButtonVisible: boolean;
   id: string | undefined;
   subject: 'device' | 'regulator';
+  deleteButtonDisabled: boolean;
 
   onFetchingStateChange(fetching: boolean): void;
 }
@@ -23,6 +24,7 @@ export const FormTitle: React.FC<FormTitleProps> = ({
   id,
   subject,
   onFetchingStateChange,
+  deleteButtonDisabled,
 }) => {
   const navigate = useNavigate();
   const title = id ? `Edit ${subject}` : `Add new ${subject}`;
@@ -42,7 +44,7 @@ export const FormTitle: React.FC<FormTitleProps> = ({
   }, [status]);
 
   const renderDeleteButton = () => (
-    <Button disabled={status === 'loading'} key="1" type="danger" onClick={handleDelete}>
+    <Button disabled={deleteButtonDisabled} key="1" type="danger" onClick={handleDelete}>
       Delete
     </Button>
   );

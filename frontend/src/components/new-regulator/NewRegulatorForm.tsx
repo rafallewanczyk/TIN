@@ -11,6 +11,7 @@ import { capitalize } from '../utils/string/stringUtils';
 import { FormTitle } from '../utils/form/FormTitle';
 import { OptionalKeyUploader } from '../utils/form/OptionalKeyUploader';
 import { FormSpinner } from './FormSpinner';
+import { NewDeviceFieldNames } from '../new-device/NewDeviceFormHook';
 
 export interface NewRegulatorProps extends RouteComponentProps {
   regulator?: RegulatorModel;
@@ -34,8 +35,12 @@ const fields: Record<NewRegulatorFieldNames, Omit<FormItemProps, 'children'>> = 
     name: NewRegulatorFieldNames.publicKey,
     label: "Regulators's public key: ",
   },
+  [NewRegulatorFieldNames.address]: {
+    rules: [{ required: true, message: "Please give a device's address ip:" }],
+    name: NewDeviceFieldNames.address,
+    label: "Device's address ip:",
+  },
 };
-
 export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => {
   const [deleteInProgress, setDeleteInProgress] = useState(false);
   const { form, onSubmit, initialValues, loading } = useNewRegulatorForm(regulator);
@@ -52,6 +57,7 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
   return (
     <div className={style.wrapper}>
       <FormTitle
+        deleteButtonDisabled={fetchingInProgress}
         deleteButtonVisible={editMode}
         id={regulator?.id}
         subject="regulator"
@@ -73,6 +79,9 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
             {renderDeviceTypeOption(DeviceType.LIGHT)}
             {renderDeviceTypeOption(DeviceType.TEMPERATURE)}
           </Select>
+        </Form.Item>
+        <Form.Item {...fields.address}>
+          <Input autoComplete="off" />
         </Form.Item>
         {editMode ? (
           <OptionalKeyUploader form={form} formProps={fields.publicKey} />

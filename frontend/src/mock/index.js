@@ -12,6 +12,7 @@ let devices = [
     id: '11',
     status: 'ACTIVE',
     type: 'TEMPERATURE',
+    address: 'localhost',
     data: 13.12,
     targetData: 13.12,
   },
@@ -21,6 +22,7 @@ let devices = [
     id: '12',
     status: 'INACTIVE',
     type: 'LIGHT',
+    address: 'localhost',
     data: true,
     targetData: true,
   },
@@ -30,6 +32,7 @@ let devices = [
     id: '13',
     status: 'INVALID',
     type: 'LIGHT',
+    address: 'localhost',
     data: true,
     targetData: true,
   },
@@ -39,6 +42,7 @@ let devices = [
     id: '14',
     status: 'CONNECTING',
     type: 'LIGHT',
+    address: 'localhost',
     data: false,
     targetData: false,
   },
@@ -50,24 +54,28 @@ let regulators = [
     id: '14',
     status: 'ACTIVE',
     type: 'LIGHT',
+    address: 'localhost',
   },
   {
     name: 'Regulator Regulator',
     id: '15',
     status: 'INACTIVE',
     type: 'TEMPERATURE',
+    address: 'localhost',
   },
   {
     name: 'Regulator Regulator Regulator',
     id: '16',
     status: 'INVALID',
     type: 'LIGHT',
+    address: 'localhost',
   },
   {
     name: '1 Regulator Regulator',
     id: '17',
     status: 'CONNECTING',
     type: 'LIGHT',
+    address: 'localhost',
   },
 ];
 
@@ -107,16 +115,18 @@ app.get('/devices', delayMiddleware(timeoutDelay), (req, res) => {
     data: device.targetData,
   }));
 
-  return res.send({ devices: response });
+  return res.send(response);
 });
+
 app.post('/devices', delayMiddleware(timeoutDelay), (req, res) => {
-  const { name, regulatorId } = req.body;
+  const { name, regulatorId, address, } = req.body;
   const type = faker.random.arrayElement(['TEMPERATURE', 'LIGHT']);
   devices = [
     ...devices,
     {
       name,
       regulatorId,
+      address,
       id: `${faker.random.number(10000)}`,
       status: randomStatus(),
       type,
@@ -132,6 +142,7 @@ app.patch('/devices/:id', delayMiddleware(timeoutDelay), (req, res) => {
     ...device,
     name: req.body.name,
     regulatorId: req.body.regulatorId,
+    address: req.body.address,
   } : device));
 
   return res.status(200).send();
@@ -148,17 +159,18 @@ app.get('/regulators', delayMiddleware(timeoutDelay), (req, res) => {
     status: randomStatus(),
   }));
 
-  res.status(200).send({ regulators: response });
+  res.status(200).send(response);
 });
 app.post('/regulators', delayMiddleware(timeoutDelay), (req, res) => {
-  const { name, type } = req.body;
+  const { name, type, address } = req.body;
   regulators = [
     ...regulators,
     {
       name,
-      id: faker.random.number(10000),
+      id: `${faker.random.number(10000)}`,
       status: randomStatus(),
       type,
+      address,
     },
   ];
 
@@ -169,6 +181,7 @@ app.patch('/regulators/:id', delayMiddleware(timeoutDelay), (req, res) => {
     ...device,
     name: req.body.name,
     type: req.body.type,
+    address: req.body.address,
   } : device));
 
   res.status(200).send();

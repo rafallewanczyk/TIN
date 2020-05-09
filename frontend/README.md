@@ -23,19 +23,6 @@ to
 ```text
 "antd": "4.1.3"
 ```
-- If you encounter this error after start 
-```text
-Uncaught TypeError: react_dom__WEBPACK_IMPORTED_MODULE_1___default.a.createRoot is not a function
-```
-In file /frontend/src/index.tsx change line 
-```typescript
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<App />);
-```
-to
-```typescript
-//@ts-ignore
-ReactDOM.unstable_createRoot(document.getElementById('root') as HTMLElement).render(<App />);
-```
 
 When the installation and errors finishes:
  - #### In second terminal

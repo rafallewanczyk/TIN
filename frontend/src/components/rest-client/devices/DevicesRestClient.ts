@@ -2,19 +2,17 @@ import axios from 'axios';
 import { MutationFunction } from 'react-query';
 import { DeviceModel } from '../../models/regulator-device-model/RegulatorDeviceModel';
 import { BASE_URL } from '../constants';
-import { DeviceModelDTO } from './DevicesDTO';
 
-interface DevicesResponseDTO {
-  devices: DeviceModelDTO[];
-}
 export const fetchDevices = async (): Promise<DeviceModel[]> => {
-  const { data } = await axios.get<DevicesResponseDTO>(`${BASE_URL}/devices`);
+  const { data } = await axios.get<DeviceModel[]>(`${BASE_URL}/devices`);
 
-  return data.devices;
+  return data;
 };
 
-export const changeTargetData: MutationFunction<void,
-  { id: string; targetData: number | boolean }> = async ({ id, targetData }): Promise<void> => {
+export const changeTargetData: MutationFunction<
+  void,
+  { id: string; targetData: number | boolean }
+> = async ({ id, targetData }): Promise<void> => {
   const { data } = await axios.post<void>(`${BASE_URL}/devices/setTargetData`, {
     id,
     targetData,
@@ -35,6 +33,7 @@ export interface NewDeviceRequestDTO {
   name: string;
   regulatorId: string;
   publicKey: string;
+  address: string;
 }
 
 export const addNewDevice: MutationFunction<void, NewDeviceRequestDTO> = async (

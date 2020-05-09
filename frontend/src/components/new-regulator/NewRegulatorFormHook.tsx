@@ -14,13 +14,15 @@ export enum NewRegulatorFieldNames {
   name = 'name',
   type = 'type',
   publicKey = 'publicKey',
+  address = 'address',
 }
 
-function createInitialValues(regulator: RegulatorModel): Record<NewRegulatorFieldNames, any> {
+function createInitialValues(regulator?: RegulatorModel): Record<NewRegulatorFieldNames, any> {
   return {
-    name: regulator.name,
+    name: regulator?.name,
+    type: regulator?.type,
+    address: regulator?.address || 'localhost',
     publicKey: undefined,
-    type: regulator.type,
   };
 }
 
@@ -33,7 +35,7 @@ export const useNewRegulatorForm: (
   loading: boolean;
 } = (regulator) => {
   const [form] = Form.useForm();
-  const initialValues = regulator && createInitialValues(regulator);
+  const initialValues = createInitialValues(regulator);
   const [sendRegulator, { status }] = useDeviceMutation<NewRegulatorRequestDTO>({
     deviceId: regulator?.id || null,
     queryToReset: ALL_REGULATORS_QUERY,
@@ -49,11 +51,12 @@ export const useNewRegulatorForm: (
       return;
     }
 
-    const { name, type, publicKey } = values;
+    const { name, type, publicKey, address } = values;
 
     await sendRegulator({
       name,
       type,
+      address,
       publicKey: publicKey && (await encodeInBase64(publicKey)),
     });
   };

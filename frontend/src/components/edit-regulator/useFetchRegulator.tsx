@@ -15,8 +15,10 @@ const getCachedRegulators = (): RegulatorModel[] | undefined =>
 
 export const useFetchRegulator = (id: string | undefined): RegulatorModel | undefined => {
   const navigate = useNavigate();
+  console.log('GetCachedRegulators()', getCachedRegulators());
+
   const { data } = useQuery(!getCachedRegulators() && ALL_REGULATORS_QUERY, fetchRegulators, {
-    // suspense: true,
+    suspense: true,
     onError: (e: unknown) => {
       sendServerError(e);
       navigate('/');

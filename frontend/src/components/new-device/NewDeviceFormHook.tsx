@@ -17,6 +17,7 @@ export enum NewDeviceFieldNames {
   name = 'name',
   regulatorId = 'regulatorId',
   publicKey = 'publicKey',
+  address = 'address',
 }
 
 function createInitialValues(device?: DeviceModel): Record<NewDeviceFieldNames, any> {
@@ -24,6 +25,7 @@ function createInitialValues(device?: DeviceModel): Record<NewDeviceFieldNames, 
     name: device?.name,
     regulatorId: device?.regulatorId,
     publicKey: undefined,
+    address: device?.address || 'localhost',
   };
 }
 
@@ -44,7 +46,7 @@ export const useNewDeviceForm: (
     addMutation: addNewDevice,
     editMutation: editDeviceWithId,
   });
-  const initialValues = device && createInitialValues(device);
+  const initialValues = createInitialValues(device);
 
   const onSubmit = async () => {
     let values: Record<string, any>;
@@ -59,6 +61,7 @@ export const useNewDeviceForm: (
     await sendDevice({
       name: values.name,
       regulatorId: values.regulatorId,
+      address: values.address,
       publicKey: values.publicKey && (await encodeInBase64(values.publicKey)),
     });
   };

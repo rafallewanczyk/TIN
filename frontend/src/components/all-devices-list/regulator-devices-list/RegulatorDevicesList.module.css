@@ -2,19 +2,6 @@
   margin-bottom: 24px;
 }
 
-.tag {
-  /*display: flex;*/
-  /*justify-content: center;*/
-  /*align-items: center;*/
-}
-
-.spin {
-  /*display: grid;*/
-  /*grid-template-columns: 3fr 1fr;*/
-  /*justify-items: center;*/
-  /*align-items: center;*/
-}
-
 .bulb {
   margin-right: 8px;
 }
