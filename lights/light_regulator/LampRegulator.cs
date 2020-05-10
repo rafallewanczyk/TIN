@@ -1,24 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
+using System.Net.Sockets;
+using System.Net;
+using System.Threading.Tasks;
+using System.Threading;
+using System.Reflection.Metadata;
+using System.ComponentModel;
+using TSHP;
 
-namespace Lamp_Regulator 
+namespace light_regulator
 {
-    class Regulator
+    class LampRegulator
     {
         private byte[] _buffer = new byte[1024];
         private List<Socket> _clientSockets = new List<Socket>();
         private Socket _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        private int BACKLOG;
-        private int PORT;
+        private int backlog;
+        private int port;
+        private int id;
+        private String randomSignature = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"; //only for testing purpose 
 
 
-        public Regulator(int port, int backlog)
+        public LampRegulator(int port, int backlog, int id)
         {
-            BACKLOG = backlog;
-            PORT = port;
+            this.backlog = backlog;
+            this.port = port;
+            this.id = id;
         }
 
         public void StartRegulator()
@@ -45,8 +53,8 @@ namespace Lamp_Regulator
         private void SetupServer()
         {
             Console.WriteLine("Setting up server ...");
-            _serverSocket.Bind(new IPEndPoint(IPAddress.Any, PORT));
-            _serverSocket.Listen(BACKLOG);
+            _serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
+            _serverSocket.Listen(backlog);
             _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
             Console.Read();
 
@@ -64,17 +72,28 @@ namespace Lamp_Regulator
                 return;
             }
 
-            byte[] buffer = new byte[1024];
             Console.WriteLine("client connected");
             _clientSockets.Add(socket);
-            socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, ReceiveCallback, new SocketMemory(socket, buffer));
+
+
+            StartPinging(new SocketMemory(socket, new byte[1024]));
             _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
         }
+
+        private void StartPinging(SocketMemory memory)
+        {
+            memory.buffer = Messege.CreateMessege(1, id, "PING", randomSignature);
+            memory.socket.BeginSend(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendCallback), memory);
+
+        }
+
+
+
 
         private void ReceiveCallback(IAsyncResult AR)
         {
             SocketMemory memory = (SocketMemory)AR.AsyncState;
-            Socket socket = memory.socket; 
+            Socket socket = memory.socket;
 
             int received;
 
@@ -90,49 +109,35 @@ namespace Lamp_Regulator
                 return;
             }
 
-            byte[] dataBuf = new byte[received];
-            Array.Copy(memory.buffer, dataBuf, received);
-            string text = Encoding.ASCII.GetString(dataBuf);
+            string text = Messege.DecodeMessage(memory.buffer);
             Console.WriteLine("Text received: " + text);
 
-            string response = string.Empty;
-            if (text.ToLower() == "exit")
-            {
-                socket.Shutdown(SocketShutdown.Both);
-                socket.Close();
-                _clientSockets.Remove(socket);
-                Console.WriteLine("client disconnected");
-                return;
+            Array.Copy(Encoding.ASCII.GetBytes("sending ping"), memory.buffer, Encoding.ASCII.GetBytes("sending ping").Length);
+            Thread.Sleep(10000);
 
-            }
-            else
-            {
-                response = text;
-            }
-
-            Array.Copy(Encoding.ASCII.GetBytes(response), memory.buffer, received);
-            socket.BeginSend(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendCallback), memory);
+            //todo catch client disconnected exception 
+            StartPinging(memory);
         }
 
 
         private void SendCallback(IAsyncResult AR)
         {
-            SocketMemory memory= (SocketMemory)AR.AsyncState;
-            Socket socket = memory.socket; 
+            SocketMemory memory = (SocketMemory)AR.AsyncState;
+            Socket socket = memory.socket;
             socket.EndSend(AR);
-            socket.BeginReceive(memory.buffer, 0,memory.buffer.Length, SocketFlags.None, ReceiveCallback, memory);
+            socket.BeginReceive(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, ReceiveCallback, memory);
         }
 
         private class SocketMemory
         {
             public Socket socket;
-            public byte[] buffer = new byte[1024];
+            public byte[] buffer;
             public SocketMemory(Socket socket, byte[] buffer)
             {
                 this.socket = socket;
-                this.buffer = buffer; 
+                this.buffer = buffer;
             }
         }
-        
+
     }
 }

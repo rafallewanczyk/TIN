@@ -1,14 +1,18 @@
-﻿namespace Lamp_Device{
+﻿using System;
+using System.Text;
+
+namespace light_device
+{
     class Program
     {
-
         static void Main(string[] args)
         {
-            Lamp lamp = new Lamp(5000);
+            LampDevice lamp = new LampDevice(5000);
             lamp.StartConnection();
             lamp.StartSending();
             lamp.Close();
         }
 
+       
     }
 }

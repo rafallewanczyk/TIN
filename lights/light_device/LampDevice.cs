@@ -1,17 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-
-namespace Lamp_Device{
-    class Lamp
+using TSHP; 
+namespace light_device
+{
+    class LampDevice
     {
         private readonly Socket _client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        private int PORT;
+        private int port;
 
-        public Lamp(int port)
+        public LampDevice(int port)
         {
-            PORT = port;
+            this.port = port;
         }
 
         public void StartConnection()
@@ -40,18 +42,17 @@ namespace Lamp_Device{
         {
             while (true)
             {
-                Console.WriteLine("Enter a request: ");
-                string request = Console.ReadLine();
-                byte[] buffer = Encoding.ASCII.GetBytes(request);
-                _client.Send(buffer, 0, buffer.Length, SocketFlags.None);
-
                 byte[] receivedBytes = new byte[1024];
                 int receive = _client.Receive(receivedBytes, SocketFlags.None);
-                if (receive == 0) return;
+                //todo handle server closing exception
                 byte[] data = new byte[receive];
                 Array.Copy(receivedBytes, data, receive);
-                Console.WriteLine("received :" + Encoding.ASCII.GetString(data));
+                Console.WriteLine("received :" + Messege.DecodeMessage(data));
+
+                byte[] answer = Messege.CreateMessege(1, 1, "REPING", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+                _client.Send(answer, 0, answer.Length, SocketFlags.None);
             }
+
         }
 
         private void ConnectLoop()
@@ -62,7 +63,7 @@ namespace Lamp_Device{
                 try
                 {
                     attempts++;
-                    _client.Connect(IPAddress.Loopback, PORT);
+                    _client.Connect(IPAddress.Loopback, port);
                 }
                 catch (SocketException)
                 {
@@ -73,6 +74,8 @@ namespace Lamp_Device{
             Console.Clear();
             Console.WriteLine("connected");
         }
+
+
+
     }
 }
-
