@@ -5,18 +5,32 @@ namespace TSHP
 {
     public class Messege
     {
-        public static byte[] CreateMessege(int version, int id, string data, string signature)
+        private int version, id, size;
+        private string data, signature;
+
+        public int Size { get => size; set => size = value; }
+        public string Data { get => data; set => data = value; }
+
+        public Messege(int version, int id, string data, string signature)
+        {
+            this.version = version;
+            this.id = id;
+            this.data = data;
+            this.signature = signature;
+        }
+
+        public byte[] ToBytes()
         {
             int data_size = Encoding.ASCII.GetByteCount(data);
             int signature_size = 64; // Encoding.ASCII.GetByteCount(signature);
-            int size = sizeof(int) + sizeof(int) + sizeof(int) + data_size + signature_size;
-            byte[] messege = new byte[size];
+            Size = sizeof(int) + sizeof(int) + sizeof(int) + data_size + signature_size;
+            byte[] messege = new byte[Size];
             int offset = 0;
 
             Array.Copy(BitConverter.GetBytes(version), 0, messege, offset, sizeof(int));
             offset += sizeof(int);
 
-            Array.Copy(BitConverter.GetBytes(size), 0, messege, offset, sizeof(int));
+            Array.Copy(BitConverter.GetBytes(Size), 0, messege, offset, sizeof(int));
             offset += sizeof(int);
 
             Array.Copy(BitConverter.GetBytes(id), 0, messege, offset, sizeof(int));
@@ -29,24 +43,29 @@ namespace TSHP
             return messege;
         }
 
-        public static string DecodeMessage(byte[] messege)
+        public Messege(byte[] messege)
         {
             int offset = 0;
-            int version = BitConverter.ToInt32(messege, offset);
+            version = BitConverter.ToInt32(messege, offset);
             offset += sizeof(int);
 
-            int size = BitConverter.ToInt32(messege, offset);
+            Size = BitConverter.ToInt32(messege, offset);
             offset += sizeof(int);
 
-            int id = BitConverter.ToInt32(messege, offset);
+            id = BitConverter.ToInt32(messege, offset);
             offset += sizeof(int);
 
-            string data = Encoding.ASCII.GetString(messege, offset, size - 3 * sizeof(int) - 64); //todo set constant 
+            data = Encoding.ASCII.GetString(messege, offset, Size - 3 * sizeof(int) - 64); //todo set constant 
             offset += Encoding.ASCII.GetByteCount(data);
 
-            string signature = Encoding.ASCII.GetString(messege, offset, 64);
+            signature = Encoding.ASCII.GetString(messege, offset, 64);
 
-            return ("version:" + version + " size:" + size + " id:" + id + " data:" + data + " signature:" + signature);
+        }
+
+        public override string ToString()
+        {
+
+            return ("version:" + version + " size:" + Size + " id:" + id + " data:" + data + " signature:" + signature);
         }
     }
 }

@@ -14,11 +14,12 @@ namespace light_regulator
     class LampRegulator
     {
         private byte[] _buffer = new byte[1024];
-        private List<Socket> _clientSockets = new List<Socket>();
+        private List<SocketMemory> clientSockets = new List<SocketMemory>();
         private Socket _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private int backlog;
         private int port;
         private int id;
+        private int connected_clients = 0;
         private String randomSignature = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"; //only for testing purpose 
 
 
@@ -29,9 +30,9 @@ namespace light_regulator
             this.id = id;
         }
 
-        public void StartRegulator()
+        public async Task StartRegulatorAsync()
         {
-            SetupServer();
+            await SetupServerAsync();
         }
 
         public void CloseRegulator()
@@ -41,23 +42,47 @@ namespace light_regulator
 
         private void CloseAllSockets()
         {
-            foreach (Socket socket in _clientSockets)
+            foreach (SocketMemory memory in clientSockets)
             {
-                socket.Shutdown(SocketShutdown.Both);
-                socket.Close();
+                memory.socket.Shutdown(SocketShutdown.Both);
+                memory.socket.Close();
             }
 
             _serverSocket.Close();
         }
 
-        private void SetupServer()
+        private async Task SetupServerAsync()
         {
             Console.WriteLine("Setting up server ...");
             _serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
             _serverSocket.Listen(backlog);
             _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
-            Console.Read();
 
+            CustomMessege();
+        }
+
+
+        private void CustomMessege()
+        {
+            int lampId = 1;
+            string operation;
+
+            while (lampId != 0)
+            {
+                lampId = Int32.Parse(Console.ReadLine()); //todo handle exception
+                operation = Console.ReadLine(); 
+                SocketMemory selected = null;
+                foreach (SocketMemory memory in clientSockets)
+                {
+                    if (memory.id == lampId)
+                    {
+                        selected = memory;
+                        break;
+                    }
+                }
+
+                StartCustom(selected, operation);
+            }
         }
 
         private void AcceptCallback(IAsyncResult AR)
@@ -73,24 +98,39 @@ namespace light_regulator
             }
 
             Console.WriteLine("client connected");
-            _clientSockets.Add(socket);
 
 
-            StartPinging(new SocketMemory(socket, new byte[1024]));
+            SocketMemory memory = new SocketMemory(socket, new byte[1024], ++connected_clients);
+            clientSockets.Add(memory);
+
+
+            StartPinging(memory);
             _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
         }
 
+
         private void StartPinging(SocketMemory memory)
         {
-            memory.buffer = Messege.CreateMessege(1, id, "PING", randomSignature);
-            memory.socket.BeginSend(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendCallback), memory);
+            Messege msg = new Messege(1, id, "PING", randomSignature);
+            Array.Copy(msg.ToBytes(), memory.buffer, msg.Size);
+            memory.socket.BeginSend(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendPing), memory);
+
+        }
+        private void StartCustom(SocketMemory memory, string operation)
+        {
+            Messege msg = new Messege(1, id, operation, randomSignature);
+            Array.Copy(msg.ToBytes(), memory.buffer, msg.Size); //todo delete parralel access to memory
+            memory.socket.BeginSend(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendCustom), memory);//todo merge with startping
 
         }
 
 
 
 
-        private void ReceiveCallback(IAsyncResult AR)
+
+
+
+        private void ReceivePing(IAsyncResult AR)
         {
             SocketMemory memory = (SocketMemory)AR.AsyncState;
             Socket socket = memory.socket;
@@ -105,37 +145,73 @@ namespace light_regulator
             {
                 Console.WriteLine("client forcefully disconnected");
                 socket.Close();
-                _clientSockets.Remove(socket);
+                clientSockets.Remove(memory);
                 return;
             }
 
-            string text = Messege.DecodeMessage(memory.buffer);
-            Console.WriteLine("Text received: " + text);
+            Messege msg = new Messege(memory.buffer);
+            string text = msg.ToString();
+            Console.WriteLine("received: " + text);
 
-            Array.Copy(Encoding.ASCII.GetBytes("sending ping"), memory.buffer, Encoding.ASCII.GetBytes("sending ping").Length);
-            Thread.Sleep(10000);
+            Thread.Sleep(5000);
 
             //todo catch client disconnected exception 
             StartPinging(memory);
         }
 
 
-        private void SendCallback(IAsyncResult AR)
+        private void SendPing(IAsyncResult AR)
         {
             SocketMemory memory = (SocketMemory)AR.AsyncState;
             Socket socket = memory.socket;
             socket.EndSend(AR);
-            socket.BeginReceive(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, ReceiveCallback, memory);
+            socket.BeginReceive(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, ReceivePing, memory);
+        }
+
+        private void SendCustom(IAsyncResult AR)
+        {
+            SocketMemory memory = (SocketMemory)AR.AsyncState;
+            Socket socket = memory.socket;
+            socket.EndSend(AR);
+            socket.BeginReceive(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, ReceiveCustom, memory);
+        }
+
+        private void ReceiveCustom(IAsyncResult AR)
+        {
+            SocketMemory memory = (SocketMemory)AR.AsyncState;
+            Socket socket = memory.socket;
+
+            int received;
+
+            try
+            {
+                received = socket.EndReceive(AR);
+            }
+            catch (SocketException)
+            {
+                Console.WriteLine("client forcefully disconnected");
+                socket.Close();
+                clientSockets.Remove(memory);
+                return;
+            }
+
+
+            Messege msg = new Messege(memory.buffer);
+
+            string text = msg.ToString();
+            Console.WriteLine("received: " + text);
         }
 
         private class SocketMemory
         {
             public Socket socket;
             public byte[] buffer;
-            public SocketMemory(Socket socket, byte[] buffer)
+            public int id;
+            public SocketMemory(Socket socket, byte[] buffer, int id)
             {
                 this.socket = socket;
                 this.buffer = buffer;
+                this.id = id;
             }
         }
 
