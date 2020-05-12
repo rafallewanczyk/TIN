@@ -36,6 +36,8 @@ public class SendMessageController {
         return temperatureDevices;
     }
 
+    
+
     @PostMapping("/light")
     public List<LightDevice> sendLightChangeConfig(@RequestParam int port) throws IOException {
         List<LightDevice> lightDevices = new ArrayList<>();

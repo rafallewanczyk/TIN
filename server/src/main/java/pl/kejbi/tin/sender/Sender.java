@@ -38,6 +38,10 @@ public class Sender {
         sendData(port, lightDevicesToByteArray(devices));
     }
 
+    public void sendCurrData(int port) throws IOException {
+        sendData(port, "CURR_DATA".getBytes());
+    }
+
     private void sendData(int port, byte[] data) throws IOException {
 //        byte[] encryptedData = cryptography.encryptData(data, receiverKey);
         byte[] wholeMessage = Protocol.messageWithHeader(data);
