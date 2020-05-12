@@ -25,8 +25,8 @@ public class SendMessageController {
     @PostMapping("/temp")
     public List<TemperatureDevice> sendTempChangeConfig(@RequestParam int port, @RequestParam int devicePort) throws IOException {
         List<TemperatureDevice> temperatureDevices = new ArrayList<>();
-        temperatureDevices.add(new TemperatureDevice(1, devicePort, 120.5));
-//        temperatureDevices.add(new TemperatureDevice(2, 20003, 21.5));
+        temperatureDevices.add(new TemperatureDevice(1, devicePort, -150.5));
+        temperatureDevices.add(new TemperatureDevice(2, 20002, 121.5));
 //        temperatureDevices.add(new TemperatureDevice(3, 20004, 22.5));
 //        temperatureDevices.add(new TemperatureDevice(4, 20005, 23.5));
         logger.info("Sending CHANGE_CONFIG TEMP");

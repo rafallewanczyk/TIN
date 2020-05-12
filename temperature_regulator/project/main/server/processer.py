@@ -12,6 +12,8 @@ class Processer(ABC):
 
     _print_lock = Lock()
 
+    HEADER_SIZE = 12
+
     def configure(loader: ConfigHandler):
         Processer.RECV_MSG_MAX_SIZE = loader.recv_msg_max_size
         Processer.TEXT_ENCODING = loader.text_encoding
@@ -22,7 +24,7 @@ class Processer(ABC):
         Processer.configured = True
 
     def __init__(self, connection_socket: socket.socket, address_pair: Tuple[str, str]):
-        if(not self.configured):
+        if (not self.configured):
             raise RuntimeError("Processer not configured!")
         Thread.__init__(self)
         if not connection_socket:
@@ -67,7 +69,8 @@ class Processer(ABC):
         return self.__get_relevant_information(data)
 
     def __encapsulate_data(self, data: bytearray) -> bytearray:
-        header = bytearray(self.__create_header(self.TSHP_PROTOCOL_VERSION, len(data), 0))  # id should be dynamic
+        header = bytearray(self.__create_header(self.TSHP_PROTOCOL_VERSION, len(data) + Processer.HEADER_SIZE,
+                                                0))  # id should be dynamic
         # signature = self.__cryptography_handler.create_signature(data)
         # data = self.__cryptography_handler.encrypt_data(data)
         header.extend(data)  # Just add data to the header

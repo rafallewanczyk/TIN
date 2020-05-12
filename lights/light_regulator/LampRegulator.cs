@@ -80,6 +80,7 @@ namespace light_regulator
                 catch (SocketException)
                 {
                     Console.WriteLine("conneciton attmpts :" + attempts);
+                    Thread.Sleep(2000);
                 }
             }
 
