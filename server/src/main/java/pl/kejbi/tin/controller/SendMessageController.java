@@ -36,7 +36,12 @@ public class SendMessageController {
         return temperatureDevices;
     }
 
-    
+    @PostMapping
+    public void sendCurrData(@RequestParam int port) throws IOException {
+        logger.info("Sending CURR_DATA");
+        sender.sendCurrData(port);
+        logger.info("DONE SENDING");
+    }
 
     @PostMapping("/light")
     public List<LightDevice> sendLightChangeConfig(@RequestParam int port) throws IOException {
