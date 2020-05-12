@@ -1,0 +1,59 @@
+.wrapper {
+  max-width: 524px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.form {
+  position: relative;
+  z-index: 0;
+  max-width: 500px;
+}
+
+.submitButton {
+  margin-top: 32px;
+}
+
+.uploadFormItem {
+  /*display: flex;*/
+  /*align-items: center;*/
+}
+
+.publicKeyValidIcon {
+  margin-left: 8px;
+  font-size: 20px;
+  color: #47a319;
+}
+
+.switchWrapper {
+  display: flex;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.switchText {
+  margin-left: 8px;
+}
+
+.pageHeader {
+  margin-bottom: 16px;
+}
+
+.pageHeaderWrapper {
+  position: relative;
+}
+
+.wholeScreenSpinner {
+  position: absolute;
+  background: #141414;
+  left: -32px;
+  right: -32px;
+  top: -32px;
+  bottom: -32px;
+  opacity: 0.7;
+  border-radius: 10px;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

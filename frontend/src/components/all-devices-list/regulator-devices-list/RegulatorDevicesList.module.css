@@ -1,0 +1,11 @@
+.wrapper {
+  margin-bottom: 24px;
+}
+
+.bulb {
+  margin-right: 8px;
+}
+
+.row {
+  cursor: pointer;
+}

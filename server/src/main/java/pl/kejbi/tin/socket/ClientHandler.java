@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Arrays;
 
-public class ClientHandler implements Runnable{
+public class ClientHandler implements Runnable {
     private final Socket clientSocket;
 
     public ClientHandler(Socket socket) {
