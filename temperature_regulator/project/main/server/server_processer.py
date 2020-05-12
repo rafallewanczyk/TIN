@@ -20,14 +20,14 @@ class ServerProcesser(Processer):
         self._devices_list = devices_list
 
     def run(self):
-        self._threaded_print(f"Server thread started running. Client address: {self._client_address} Client port: {self._client_port}")
+        self._threaded_print(f"Server thread started running. Client address: {self._address} Client port: {self._port}")
         data = self._receive_data()
         if data is None:  # timed out
-            self._threaded_print(f"Client timed out. Client address: {self._client_address} Client port: {self._client_port}")
+            self._threaded_print(f"Client timed out. Client address: {self._address} Client port: {self._port}")
             return
         message_type, data = self._get_message_type_and_stripped_data(data)
         if message_type is None:
-            self._threaded_print(f"Message type unrecognizable. Client address: {self._client_address} Client port: {self._client_port}")
+            self._threaded_print(f"Message type unrecognizable. Client address: {self._address} Client port: {self._port}")
             return 
         else:
             queue = Queue()
