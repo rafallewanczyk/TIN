@@ -23,12 +23,12 @@ public class SendMessageController {
     private final Logger logger = LoggerFactory.getLogger(SendMessageController.class);
 
     @PostMapping("/temp")
-    public List<TemperatureDevice> sendTempChangeConfig(@RequestParam int port) throws IOException {
+    public List<TemperatureDevice> sendTempChangeConfig(@RequestParam int port, @RequestParam int devicePort) throws IOException {
         List<TemperatureDevice> temperatureDevices = new ArrayList<>();
-        temperatureDevices.add(new TemperatureDevice(1, 60000, 20.5));
-        temperatureDevices.add(new TemperatureDevice(2, 60001, 21.5));
-        temperatureDevices.add(new TemperatureDevice(3, 60002, 22.5));
-        temperatureDevices.add(new TemperatureDevice(4, 60003, 23.5));
+        temperatureDevices.add(new TemperatureDevice(1, devicePort, -150.5));
+        temperatureDevices.add(new TemperatureDevice(2, 20002, 121.5));
+//        temperatureDevices.add(new TemperatureDevice(3, 20004, 22.5));
+//        temperatureDevices.add(new TemperatureDevice(4, 20005, 23.5));
         logger.info("Sending CHANGE_CONFIG TEMP");
         sender.sendTemperatureChangeConfig(port, temperatureDevices);
         logger.info("DONE SENDING");

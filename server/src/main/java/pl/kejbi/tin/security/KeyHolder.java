@@ -23,10 +23,10 @@ public class KeyHolder {
 
     @PostConstruct
     private void loadKeys() throws NoSuchAlgorithmException, IOException, InvalidKeySpecException {
-        PrivateKey privateKey = KeyIO.loadPrivateKey("keys/privateKey");
-        PublicKey publicKey = KeyIO.loadPublicKey("keys/publicKey");
-        myPrivateKey = privateKey;
-        myPublicKey = publicKey;
+//        PrivateKey privateKey = KeyIO.loadPrivateKey("keys/privateKey");
+//        PublicKey publicKey = KeyIO.loadPublicKey("keys/publicKey");
+//        myPrivateKey = privateKey;
+//        myPublicKey = publicKey;
         logger.info("Successfully loaded keys");
     }
 

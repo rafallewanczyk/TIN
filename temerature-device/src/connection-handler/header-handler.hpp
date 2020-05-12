@@ -7,6 +7,8 @@
 
 #include "connection-exceptions.hpp"
 #include "invalid-data-exceptions.hpp"
+#include <algorithm>    // std::reverse
+
 
 struct Header {
 private:
@@ -40,6 +42,7 @@ public:
 class HeaderHandler {
 
     int bytesToInt(std::vector<char> bytes) {
+        std::reverse(bytes.begin(), bytes.end());
         int value = *(reinterpret_cast<int *>(bytes.data()));
 
         return value;

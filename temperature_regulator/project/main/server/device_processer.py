@@ -25,25 +25,25 @@ class DeviceProcesser(Processer):
             self._send_request(sender_message_type, data_to_send)
         except socket.timeout:
             self._threaded_print(f"Couldnt send data to device. Device address: {self._address} Device port: {self._port}")
-            queue.put((id, None))
+            self._queue.put((self._id, None))
             return
         except OSError:
             self._threaded_print(f"Couldnt send data to device. Device address: {self._address} Device port: {self._port}")
-            queue.put((id, None))
+            self._queue.put((self._id, None))
             return
         data = self._receive_data()
         if len(data) == 0:
-            queue.put((id, 0))
+            self._queue.put((self._id, 0))
             self._print_closing_message()
             return
         if data is None:  # Timed out
             self._threaded_print(f"Device didnt send any data. Device address: {self._address} Device port: {self._port}")
-            queue.put((id, None))
+            self._queue.put((self._id, None))
             return
         message_type, data = self._get_message_type_and_stripped_data(data)
         if message_type is None:
             self._threaded_print(f"Message type unrecognizable. Device address: {self._address} Device port: {self._port}")
-            queue.put((id, None))
+            self._queue.put((self._id, None))
             return
         else:
             self._process_data(message_type, data)
@@ -57,7 +57,7 @@ class DeviceProcesser(Processer):
             self._request_change_device_temperature(temperature)
 
     def _request_change_device_temperature(self, temperature: float):
-        data = bytearray(self.SenderMessageType.CHANGE_TEMP)
+        data = bytearray(self.SenderMessageType.CHANGE_TEMP.value, encoding=self.TEXT_ENCODING)
         temperature = pack("!d", temperature)
         data.extend(bytearray(temperature))
         self._send_data(data)
@@ -73,7 +73,7 @@ class DeviceProcesser(Processer):
             if message_type is None:
                 return None, None
         return message_type, data[len(message_type):]
-        
+
 
     def _check_message_type(self, potential_message_type: SenderMessageType, data: bytearray) -> SenderMessageType:
         message_type = data[:len(potential_message_type)]

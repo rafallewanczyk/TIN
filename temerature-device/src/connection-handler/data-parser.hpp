@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <algorithm>
 #include "../security/security-module.hpp"
 #include "invalid-data-exceptions.hpp"
 
@@ -66,6 +67,7 @@ class DataParser {
 
     double parseDouble(const std::string &bytes) {
         std::vector<char> b(bytes.begin(), bytes.end());
+        std::reverse(b.begin(), b.end());
         double value = *(reinterpret_cast<double *>(b.data()));
 
         return value;

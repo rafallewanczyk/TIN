@@ -62,8 +62,12 @@ class ConnectionHandler {
         try {
             handleData();
         } catch (const ConnectionException &e) {
+        } catch (const InvalidMessageHeaderException &e) {
+           std::cout << e.what() << std::endl;
         } catch (const InvalidDataException &e) {
             sender.sendError(e.what());
+        } catch (...) {
+            std::cout << "Other exception" <<std::endl;
         }
 
         destroy();

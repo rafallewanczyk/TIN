@@ -2,7 +2,6 @@ from threading import Thread, Lock
 import socket
 from typing import Tuple
 from config_handling.config_handler import ConfigHandler
-from cryptography_handler import CryptographyHandler
 from abc import ABC, abstractclassmethod
 from struct import pack, unpack
 
@@ -12,6 +11,8 @@ class Processer(ABC):
     configured = False
 
     _print_lock = Lock()
+
+    HEADER_SIZE = 12
 
     def configure(loader: ConfigHandler):
         Processer.RECV_MSG_MAX_SIZE = loader.recv_msg_max_size
@@ -23,7 +24,7 @@ class Processer(ABC):
         Processer.configured = True
 
     def __init__(self, connection_socket: socket.socket, address_pair: Tuple[str, str]):
-        if(not self.configured):
+        if (not self.configured):
             raise RuntimeError("Processer not configured!")
         Thread.__init__(self)
         if not connection_socket:
@@ -35,15 +36,24 @@ class Processer(ABC):
 
     def __receive_from_host(self) -> bytearray:
         data = bytearray()
+        portion = self._connection_socket.recv(Processer.RECV_MSG_MAX_SIZE)
+        if not portion:
+            return data
+        protocol_version, amount_of_bytes, sender_id = self.__process_header(portion)
         while True:
-            portion = self._connection_socket.recv(Processer.RECV_MSG_MAX_SIZE)
-            if not portion:
+            if amount_of_bytes - Processer.RECV_MSG_MAX_SIZE > 0:
+                data.extend(portion)
+                portion = self._connection_socket.recv(Processer.RECV_MSG_MAX_SIZE)
+                amount_of_bytes -= Processer.RECV_MSG_MAX_SIZE
+            else:
+                data.extend(portion[:amount_of_bytes])
                 break
-            data.extend(portion)
         return data
-    
+
     def __send_to_host(self, data: bytearray) -> bool:
-        self._connection_socket.sendall(data) 
+        print(data)
+        self._connection_socket.sendall(data)
+        print("sent")
 
     def _send_data(self, relevant_data: bytearray) -> bool:
         data = self.__encapsulate_data(relevant_data)
@@ -59,7 +69,8 @@ class Processer(ABC):
         return self.__get_relevant_information(data)
 
     def __encapsulate_data(self, data: bytearray) -> bytearray:
-        header = self.__create_header(self.TSHP_PROTOCOL_VERSION, len(data), 0)  # id should be dynamic
+        header = bytearray(self.__create_header(self.TSHP_PROTOCOL_VERSION, len(data) + Processer.HEADER_SIZE,
+                                                0))  # id should be dynamic
         # signature = self.__cryptography_handler.create_signature(data)
         # data = self.__cryptography_handler.encrypt_data(data)
         header.extend(data)  # Just add data to the header
@@ -79,7 +90,7 @@ class Processer(ABC):
         return relevant_information
 
     def __create_header(self, protocol_version: int, amount_of_bytes: int, id: int) -> bytearray:
-        header = pack("!i!i!i", protocol_version, amount_of_bytes, id)
+        header = pack("!iii", protocol_version, amount_of_bytes, id)
         return header
 
     def __process_header(self, data: bytearray) -> Tuple[int, int, int]:
@@ -89,13 +100,13 @@ class Processer(ABC):
         return protocol_version, amount_of_bytes, sender_id
 
     def __get_protocol_version(self, data: bytearray) -> int:
-        return unpack("!i", data[:4])
+        return unpack("!i", data[:4])[0]
 
     def __get_amount_of_bytes_sent(self, data: bytearray) -> int:
-        return unpack("!i", data[4:8])
+        return unpack("!i", data[4:8])[0]
 
     def __get_sender_id(self, data: bytearray) -> int:
-        return unpack("!i", data[8:12])
+        return unpack("!i", data[8:12])[0]
 
     def __get_data(self, data: bytearray) -> bytearray:
         # return data[12:-128]
@@ -104,10 +115,11 @@ class Processer(ABC):
     def __get_signature(self, data: bytearray) -> bytearray:
         return data[-128:]
 
-    def _threaded_print(text: str):
+    def _threaded_print(self, text: str):
         Processer._print_lock.acquire()
         print(text)
         Processer._print_lock.release()
 
     def _print_closing_message(self):
-        Processer._threaded_print(f"Thread stopped running. Client address: {self._client_address} Client port: {self._client_port}")
+        print("Thread stopped running. Client address: {2999} Client port: {2999}")
+        # Processer._threaded_print(f"Thread stopped running. Client address: {2999} Client port: {2999}") # TODO CHANGE TO ADDRESS NIE DZIAŁA
