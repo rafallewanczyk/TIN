@@ -8,6 +8,7 @@
 
 #include <string>
 #include <utility>
+#include <algorithm>
 #include "../security/security-module.hpp"
 #include "data-parser.hpp"
 
@@ -79,6 +80,7 @@ public:
 
         std::memcpy(message.data(), messageType.data(), messageType.size());
         std::memcpy(message.data() + messageType.size(), &currentTemperature, DOUBLE_SIZE);
+        std::reverse(messageType.end() - DOUBLE_SIZE, message.end());
 
         sendMessage(message);
     }
