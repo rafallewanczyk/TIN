@@ -26,7 +26,6 @@ class ServerDispatcher:
         print(f"Server created. Interface: {self._config_handler.listener_socket_address} Port: {self._loader.listener_socket_port}")
 
     def run(self):
-        counter = 0  # Used as unique id
         try:
             while(True):
                 try:
@@ -39,8 +38,7 @@ class ServerDispatcher:
                         self._listener_socket.close()
                         return
                 else:
-                    thread = ServerProcesser(counter, connection_socket, client_address, self._device_list)
-                    counter += 1
+                    thread = ServerProcesser(connection_socket, client_address, self._device_list)
                     thread.run()
         except KeyboardInterrupt:  # SIGINT
             self._listener_socket.close()
