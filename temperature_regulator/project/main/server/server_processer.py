@@ -1,11 +1,12 @@
-from processer import Processer
+from server.processer import Processer
 import socket
 from typing import Tuple, List
 from enum import Enum
 from temperature_device.temperature_device_info_list import TemperatureDeviceInfoList
 from struct import unpack
-from device_processer import DeviceProcesser
-from Queue import Queue
+from server.device_processer import DeviceProcesser
+from queue import Queue
+import threading
 
 
 class ServerProcesser(Processer):
@@ -19,16 +20,20 @@ class ServerProcesser(Processer):
         self._devices_list = devices_list
 
     def run(self):
-        self._threaded_print(f"Server thread {self._id} started running. Client address: {self._client_address} Client port: {self._client_port}")
+        self._threaded_print(f"Server thread started running. Client address: {self._client_address} Client port: {self._client_port}")
         data = self._receive_data()
+        if data is None:  # timed out
+            self._threaded_print(f"Client timed out. Client address: {self._client_address} Client port: {self._client_port}")
+            return
         message_type, data = self._get_message_type_and_stripped_data(data)
         if message_type is None:
-            pass  # TODO: send info that message type unrecognizable
+            self._threaded_print(f"Message type unrecognizable. Client address: {self._client_address} Client port: {self._client_port}")
+            return 
         else:
             queue = Queue()
             queue.devices_count = 0
-            self._process_data(message_type, data)
-            self._process_queue(queue)
+            self._delegate_to_device(message_type, data, queue)
+            self._process_queue(message_type, queue)
         self._print_closing_message()
 
     def _get_message_type_and_stripped_data(self, data: bytearray) -> Tuple[MessageType, bytearray]:
@@ -42,31 +47,34 @@ class ServerProcesser(Processer):
                     pass
         if message_type is not None:
             return message_type, data[len(message_type):]
-        return None
+        return None, None
 
     def _check_message_type(self, potential_message_type: MessageType, data: bytearray) -> MessageType:
-        message_type = data[:len(potential_message_type)]
+        message_type = data[:len(potential_message_type.value)]
         if message_type.decode(self.TEXT_ENCODING) == potential_message_type:
             return potential_message_type
         return None
 
-    def _process_queue(self, queue: Queue):
-        received_messages_count = 0
+    def _process_queue(self, message_type, queue: Queue):
+        processed_messages_count = 0
         data_to_send_to_server = bytearray()
-        while(received_messages_count < queue.devices_count):
+        while(processed_messages_count < queue.devices_count):
             message = queue.get(block=True)
             id, data = message
             id = bytearray(pack("!i", id))
             data_to_send_to_server.extend(id)
-            if(type(data) is int):
-                data = bytearray(pack("!i", id))
-            elif(type(data) is str):
-                data = bytearray(data)
-            data_to_send_to_server.extend(data)
+            if(data is not None):
+                if(type(data) is int):
+                    data = bytearray(pack("!i", id))
+                elif(type(data) is str):
+                    data = bytearray(data)
+                data_to_send_to_server.extend(data)
+        if message_type == self.MessageType.CHANGE_CONFIG or message_type == self.MessageType.CHANGE_PARAMS:
+            status = 0
+            self._send_data(bytearray(status))  # !!!!
         self._send_data(data_to_send_to_server)
 
-
-    def _process_data(self, message_type: MessageType, data: bytearray, queue: Queue):
+    def _delegate_to_device(self, message_type: MessageType, data: bytearray, queue: Queue):
         if message_type == self.MessageType.CHANGE_CONFIG:
             self._change_devices_config(data, queue)
         elif message_type == self.MessageType.CHANGE_PARAMS:
@@ -78,13 +86,12 @@ class ServerProcesser(Processer):
         devices_info_list = list()
         while len(data) > 0:
             id, data = data[:4], data[4:]
-            id = int.from_bytes(id, byteorder=self.BYTEORDER)
-            # public_key, data = data[:512], data[512:]
-            address, data = data[:4], data[4:]
-            try:
-                address = socket.inet_ntoa(bytes(address))
-            except OSError:
-                address = None
+            id, = unpack("!i", id)
+            public_key = None # public_key, data = data[:512], data[512:]
+            # address, data = data[:4], data[4:]
+            address = "127.0.0.1" # socket.  address, self._TEXT_ENCODING)
+            port, data = data[:4], data[4:]
+            port = bytearray(port)
             parameters, data = self._get_parameters_from_data(data)
             devices_info_list.append((id, public_key, address, parameters))
         return devices_info_list
@@ -111,24 +118,29 @@ class ServerProcesser(Processer):
     def _send_parameters_to_device(self, id: int, address: Tuple[str, int], parameters: Tuple, queue: Queue):
         device_socket = self._connect_to_device(address)
         device_thread = DeviceProcesser(id, device_socket, address, queue)
-        device_thread.run(DeviceProcesser.SenderMessageType.CHANGE_TEMP, parameters)
+        thread = threading.Thread(target=DeviceProcesser.run, args=(DeviceProcesser.SenderMessageType.CHANGE_TEMP, parameters))
+        thread.run()
+        queue.devices_count += 1
 
     def _connect_to_device(self, address: Tuple[str, int]) -> socket.socket:
-        try:
-            device_socket = socket.create_connection(address)
-        except OSError:
-            print("Couldnt create socket for device!")
-            return
-        except socket.timeout:
-            print("Couldnt connect to device!")
-            return
+        device_socket = socket.create_connection(address)
         print(f"Connected to device. Address: {self._config_handler.listener_socket_address} Port: {self._loader.listener_socket_port}")
         return device_socket
 
     def _get_devices_current_data(self, address: Tuple[str, int], queue: Queue):
         devices = self._devices_list.get_all_devices_info()
         for id, devices_infos in devices:
-            device_socket = self._connect_to_device(devices_infos.address)
+            try:
+                device_socket = self._connect_to_device(devices_infos.address)
+            except OSError:
+                ip, port = devices_infos.address
+                print(f"Couldnt create socket for device! Device address: {ip} Device port: {port}")
+                pass
+            except socket.timeout:
+                ip, port = devices_infos.address
+                print(f"Couldnt connect to device! Device address: {ip} Device port: {port} ")
+                pass
             device_thread = DeviceProcesser(id, device_socket, devices_infos.address, queue)
-            device_thread.run(DeviceProcesser.SenderMessageType.GET_TEMP)
+            thread = threading.Thread(target=DeviceProcesser.run, args=(DeviceProcesser.SenderMessageType.GET_TEMP, None))
+            thread.run()
             queue.devices_count += 1

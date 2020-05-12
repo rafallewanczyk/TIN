@@ -35,3 +35,11 @@ class ConfigHandler(ABC):
     def client_timeout(self):
         return int(self._data['client timeout'])
 
+    @property
+    def tshp_protocol_version(self):
+        return int(self._data['TSHP protocol version'])
+
+    @property
+    def byte_order(self):
+        return 'big'
+

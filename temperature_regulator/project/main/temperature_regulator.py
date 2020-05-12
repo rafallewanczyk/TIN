@@ -1,9 +1,9 @@
 from server.dispatcher import ServerDispatcher
-from config_loader.txt_config_loader import TxtConfigLoader
+from config_handling.txt_config_handler import TxtConfigHandler
 
 
 def main():
-    loader = TxtConfigLoader("server_configuration.config")
+    loader = TxtConfigHandler("server_configuration.config")
     server = ServerDispatcher(loader)
     server.run()
 

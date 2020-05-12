@@ -7,23 +7,19 @@ from abc import ABC, abstractclassmethod
 from struct import pack, unpack
 
 
-class Processer(Thread, ABC):
+class Processer(ABC):
 
     configured = False
 
     _print_lock = Lock()
 
-    @abstractclassmethod
-    def run(self):
-        pass
-
-    def configure(loader: ConfigHandler, cryptography_handler: CryptographyHandler):
+    def configure(loader: ConfigHandler):
         Processer.RECV_MSG_MAX_SIZE = loader.recv_msg_max_size
         Processer.TEXT_ENCODING = loader.text_encoding
-        Processer.CLIENT_TIMEOUT = loader.receiving_timeout
+        Processer.SEND_AND_RECEIVE_TIMEOUT = loader.client_timeout
         Processer.TSHP_PROTOCOL_VERSION = loader.tshp_protocol_version
         Processer.BYTE_ORDER = loader.byte_order
-        Processer.__cryptography_handler = cryptography_handler
+        # Processer.__cryptography_handler = cryptography_handler
         Processer.configured = True
 
     def __init__(self, connection_socket: socket.socket, address_pair: Tuple[str, str]):
@@ -33,7 +29,7 @@ class Processer(Thread, ABC):
         if not connection_socket:
             raise RuntimeError("No socket specified")
         self._connection_socket = connection_socket
-        self._connection_socket.settimeout(Processer.CLIENT_TIMEOUT)
+        self._connection_socket.settimeout(Processer.SEND_AND_RECEIVE_TIMEOUT)
         self._address, self._port = address_pair
         self._port = int(self._port)  # Change str to int
 
@@ -47,12 +43,7 @@ class Processer(Thread, ABC):
         return data
     
     def __send_to_host(self, data: bytearray) -> bool:
-        try:
-            self._connection_socket.sendall(data) 
-        except OSError:
-            return False  # Didnt send data
-        else:
-            return True  # Everything's fine
+        self._connection_socket.sendall(data) 
 
     def _send_data(self, relevant_data: bytearray) -> bool:
         data = self.__encapsulate_data(relevant_data)
@@ -63,13 +54,15 @@ class Processer(Thread, ABC):
             data = self.__receive_from_host()
         except socket.timeout:
             return None  # Sender stopped responding
+        if len(data) == 0:
+            return data
         return self.__get_relevant_information(data)
 
     def __encapsulate_data(self, data: bytearray) -> bytearray:
-        header = self.__create_header()
+        header = self.__create_header(self.TSHP_PROTOCOL_VERSION, len(data), 0)  # id should be dynamic
         # signature = self.__cryptography_handler.create_signature(data)
         # data = self.__cryptography_handler.encrypt_data(data)
-        header.extend(data)
+        header.extend(data)  # Just add data to the header
         # header.extend(signature)
         return header
 
@@ -79,7 +72,7 @@ class Processer(Thread, ABC):
         if protocol_version != Processer.TSHP_PROTOCOL_VERSION:
             pass  # TODO: send info that protocol version doesnt match
         relevant_information = self.__get_data(data)
-        relevant_information = self.__cryptography_handler.decrypt_data(relevant_information)
+        # relevant_information = self.__cryptography_handler.decrypt_data(relevant_information)
         # signature = self.__get_signature(data)
         # if not self._cryptography_handler.check_signature(signature, relevant_information, sender_id):
         #    pass  # TODO: send info that signature doesnt match
@@ -105,7 +98,8 @@ class Processer(Thread, ABC):
         return unpack("!i", data[8:12])
 
     def __get_data(self, data: bytearray) -> bytearray:
-        return data[12:-128]
+        # return data[12:-128]
+        return data[12:]
 
     def __get_signature(self, data: bytearray) -> bytearray:
         return data[-128:]
@@ -116,4 +110,4 @@ class Processer(Thread, ABC):
         Processer._print_lock.release()
 
     def _print_closing_message(self):
-        Processer._threaded_print(f"Thread {self._id} stopped running. Client address: {self._client_address} Client port: {self._client_port}")
+        Processer._threaded_print(f"Thread stopped running. Client address: {self._client_address} Client port: {self._client_port}")

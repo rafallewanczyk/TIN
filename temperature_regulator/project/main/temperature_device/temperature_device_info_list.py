@@ -1,4 +1,4 @@
-from temperature_device_info import TemperatureDeviceInfo
+from temperature_device.temperature_device_info import TemperatureDeviceInfo
 from readerwriterlock import rwlock
 from typing import Tuple, Dict
 

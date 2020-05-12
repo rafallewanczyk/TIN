@@ -1,9 +1,9 @@
-from processer import Processer
+from server.processer import Processer
 import socket
 from typing import Tuple, List
 from enum import Enum
 from struct import pack, unpack
-from Queue import Queue
+from queue import Queue
 
 
 class DeviceProcesser(Processer):
@@ -20,12 +20,31 @@ class DeviceProcesser(Processer):
         self._queue = queue
 
     def run(self, sender_message_type: SenderMessageType, data_to_send: Tuple):
-        self._threaded_print(f"Client thread {self._id} started running. Device address: {self._client_address} Device port: {self._client_port}")
-        self._send_request(sender_message_type, data_to_send)
+        self._threaded_print(f"Device thread started running. Device address: {self._address} Device port: {self._port}")
+        try:
+            self._send_request(sender_message_type, data_to_send)
+        except socket.timeout:
+            self._threaded_print(f"Couldnt send data to device. Device address: {self._address} Device port: {self._port}")
+            queue.put((id, None))
+            return
+        except OSError:
+            self._threaded_print(f"Couldnt send data to device. Device address: {self._address} Device port: {self._port}")
+            queue.put((id, None))
+            return
         data = self._receive_data()
+        if len(data) == 0:
+            queue.put((id, 0))
+            self._print_closing_message()
+            return
+        if data is None:  # Timed out
+            self._threaded_print(f"Device didnt send any data. Device address: {self._address} Device port: {self._port}")
+            queue.put((id, None))
+            return
         message_type, data = self._get_message_type_and_stripped_data(data)
         if message_type is None:
-            pass  # TODO: send info that message type unrecognizable
+            self._threaded_print(f"Message type unrecognizable. Device address: {self._address} Device port: {self._port}")
+            queue.put((id, None))
+            return
         else:
             self._process_data(message_type, data)
         self._print_closing_message()
@@ -47,27 +66,26 @@ class DeviceProcesser(Processer):
         data_to_send = bytearray(self.SenderMessageType.GET_TEMP.value)
         self._send_data(data_to_send)
 
-    def _get_message_type_and_stripped_data(self, data: bytearray) -> Tuple[MessageType, bytearray]:
+    def _get_message_type_and_stripped_data(self, data: bytearray) -> Tuple[SenderMessageType, bytearray]:
         message_type = None
         if message_type is None:
             message_type = self._check_message_type(self.MessageType.CURR_TEMP, data)
             if message_type is None:
-                pass
-        if message_type is not None:
-            return message_type, data[len(message_type):]
-        return None
+                return None, None
+        return message_type, data[len(message_type):]
+        
 
-    def _check_message_type(self, potential_message_type: MessageType, data: bytearray) -> MessageType:
+    def _check_message_type(self, potential_message_type: SenderMessageType, data: bytearray) -> SenderMessageType:
         message_type = data[:len(potential_message_type)]
         if message_type.decode(self.TEXT_ENCODING) == potential_message_type:
             return potential_message_type
         return None
 
-    def _process_data(self, message_type: MessageType, data: bytearray):
+    def _process_data(self, message_type: SenderMessageType, data: bytearray):
         if message_type == self.MessageType.CURR_TEMP:
             self._process_current_temperature_from_device(data)
         else:
-            pass  # There should me more message types
+            pass  # There should be more message types
 
     def _process_current_temperature_from_device(self, data: bytearray):
         temperature, = unpack("!d", bytes(data))
