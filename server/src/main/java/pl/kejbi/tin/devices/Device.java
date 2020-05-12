@@ -1,14 +1,13 @@
 package pl.kejbi.tin.devices;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.security.PublicKey;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public abstract class Device {
     private int id;
-    private PublicKey publicKey;
+    private int port;
 }

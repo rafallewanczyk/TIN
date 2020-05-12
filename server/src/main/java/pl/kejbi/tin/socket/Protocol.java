@@ -8,7 +8,7 @@ public interface Protocol {
     int PROTOCOL_VERSION = 1;
     int HEADER_SIZE = 12;
 
-    default byte[] messageWithHeader(byte[] dataByteArray) throws IOException {
+    static byte[] messageWithHeader(byte[] dataByteArray) throws IOException {
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         byteStream.write(PROTOCOL_VERSION);
         byteStream.write(dataByteArray.length + HEADER_SIZE);
@@ -17,5 +17,4 @@ public interface Protocol {
 
         return byteStream.toByteArray();
     }
-
 }

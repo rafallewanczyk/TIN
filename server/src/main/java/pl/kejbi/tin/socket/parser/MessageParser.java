@@ -10,7 +10,7 @@ public class MessageParser {
             put("OK", MessageType.OK);
             put("ERROR_CONFIG", MessageType.ERROR_CONFIG);
             put("ERROR_PARAMS", MessageType.ERROR_PARAMS);
-            put("ERROR_CURR_D", MessageType.ERROR_CURR_D);
+            put("CURR_DATA_RE", MessageType.CURR_DATA_RE);
         }
     };
 

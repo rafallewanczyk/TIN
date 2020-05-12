@@ -7,4 +7,9 @@ import lombok.Setter;
 @Setter
 public class LightDevice extends Device {
     private boolean turnedOn;
+
+    public LightDevice(int id, int port, boolean turnedOn) {
+        super(id, port);
+        this.turnedOn = turnedOn;
+    }
 }
