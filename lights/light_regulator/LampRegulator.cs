@@ -21,7 +21,7 @@ namespace light_regulator
         private int port;
         private int id;
         private int connected_clients = 0;
-        private String randomSignature = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"; //only for testing purpose 
+        private String randomSignature = "414140de5dae2223b00361a396177a9cb410ff61f20015ad"; //only for testing purpose 
 
 
         public LampRegulator(int port, int backlog, int id)
@@ -55,8 +55,6 @@ namespace light_regulator
         {
 
             SearchForServer(4000);
-            Task.Run(() => TryToConnect(5000));
-            Task.Run(() => TryToConnect(5001));
 
 
             //TryToConnect(port);
@@ -179,7 +177,7 @@ namespace light_regulator
             Console.WriteLine("found server");
 
             SocketMemory memory = new SocketMemory(listener, new byte[1024], 0);
-            listener.BeginReceive(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendCustom), memory); 
+            listener.BeginReceive(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(StartReceivingFromServer), memory); 
 
         }
 
@@ -204,11 +202,22 @@ namespace light_regulator
             }
 
             Messege msg = new Messege(memory.buffer);
+            msg.ReadMessegeFromServer(); 
+
             string text = msg.ToString();
             Console.WriteLine("received: " + text);
+            Console.WriteLine("received settigns");
+            msg.Settings.ForEach(Console.WriteLine);
 
 
-            listener.BeginReceive(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendCustom), memory); 
+            foreach(DeviceSetting operation in msg.Settings){
+                if(typeof(ChangeConfig).IsInstanceOfType(operation))
+                {
+                    Task.Run(() => TryToConnect(((ChangeConfig)operation).Port)); 
+                }
+            }
+            // listener.BeginReceive(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendCustom), memory); 
+            StartCustom(memory, "OK"); 
             //todo catch client disconnected exception 
             //todo forward messege to device
         }
