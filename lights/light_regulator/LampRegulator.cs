@@ -15,7 +15,8 @@ namespace light_regulator
     {
         private byte[] _buffer = new byte[1024];
         private List<SocketMemory> clientSockets = new List<SocketMemory>();
-        //private Socket _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        private Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        private Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private int backlog;
         private int port;
         private int id;
@@ -53,6 +54,7 @@ namespace light_regulator
         private void SetupServer()
         {
 
+            SearchForServer(4000);
             Task.Run(() => TryToConnect(5000));
             Task.Run(() => TryToConnect(5001));
 
@@ -167,8 +169,49 @@ namespace light_regulator
 
 
 
+        private void SearchForServer(int port)
+        {
+            Console.WriteLine("searching for server");
+            serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
+            serverSocket.Listen(1); //todo put backlog in variable
+            listener = serverSocket.Accept();
+
+            Console.WriteLine("found server");
+
+            SocketMemory memory = new SocketMemory(listener, new byte[1024], 0);
+            listener.BeginReceive(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendCustom), memory); 
+
+        }
 
 
+        private void StartReceivingFromServer(IAsyncResult AR)
+        {
+            SocketMemory memory = (SocketMemory)AR.AsyncState;
+            Socket socket = memory.socket;
+
+            int received;
+
+            try
+            {
+                received = socket.EndReceive(AR);
+            }
+            catch (SocketException)
+            {
+                Console.WriteLine("client forcefully disconnected");
+                socket.Close();
+                clientSockets.Remove(memory);
+                return;
+            }
+
+            Messege msg = new Messege(memory.buffer);
+            string text = msg.ToString();
+            Console.WriteLine("received: " + text);
+
+
+            listener.BeginReceive(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendCustom), memory); 
+            //todo catch client disconnected exception 
+            //todo forward messege to device
+        }
 
 
         private void ReceivePing(IAsyncResult AR)
