@@ -75,7 +75,7 @@ public class Sender {
         for(LightDevice device: lightDevices) {
             dataOutputStream.writeInt(device.getId());
             dataOutputStream.writeInt(device.getPort());
-            dataOutputStream.writeShort(device.isTurnedOn() ? 1 : 0);
+            dataOutputStream.writeInt(device.isTurnedOn() ? 1 : 0);
         }
 
         return byteStream.toByteArray();
