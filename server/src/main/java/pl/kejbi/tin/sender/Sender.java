@@ -60,7 +60,7 @@ public class Sender {
         DataOutputStream dataOutputStream = new DataOutputStream(byteStream);
         dataOutputStream.write("CHANGE_CONFIG".getBytes());
         for(TemperatureDevice device: temperatureDevices) {
-            dataOutputStream.write(device.getId());
+            dataOutputStream.writeInt(device.getId());
             dataOutputStream.writeInt(device.getPort());
             dataOutputStream.writeDouble(device.getTemperature());
         }
@@ -73,7 +73,7 @@ public class Sender {
         DataOutputStream dataOutputStream = new DataOutputStream(byteStream);
         dataOutputStream.write("CHANGE_CONFIG".getBytes());
         for(LightDevice device: lightDevices) {
-            dataOutputStream.write(device.getId());
+            dataOutputStream.writeInt(device.getId());
             dataOutputStream.writeInt(device.getPort());
             dataOutputStream.writeShort(device.isTurnedOn() ? 1 : 0);
         }
