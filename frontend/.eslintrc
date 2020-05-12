@@ -8,10 +8,13 @@
     "airbnb/hooks",
     "plugin:import/typescript",
     "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/eslint-recommended", // overwrites rules that are invalid for TS
+    "plugin:@typescript-eslint/eslint-recommended",
+    // overwrites rules that are invalid for TS
     "plugin:prettier/recommended",
-    "prettier/@typescript-eslint", // disables styling rules incompatible with prettier
-    "prettier/react" // disables styling rules incompatible with prettier
+    "prettier/@typescript-eslint",
+    // disables styling rules incompatible with prettier
+    "prettier/react"
+    // disables styling rules incompatible with prettier
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -22,39 +25,114 @@
     "@typescript-eslint"
   ],
   "rules": {
-    "no-console": "error",
-    "no-underscore-dangle": ["error"],
+    "react-hooks/exhaustive-deps": "off",
+    "no-return-assign": "off",
+    "no-param-reassign": "off",
+    "max-classes-per-file": "off",
+    "no-useless-constructor": "off",
+    "implicit-arrow-linebreak": "off",
+    "object-curly-newline": "off",
+    "arrow-body-style": "warn",
+    "no-console": "off",
+    "no-underscore-dangle": [
+      "error"
+    ],
     "consistent-return": "off",
     "react/jsx-props-no-spreading": "off",
-    "import/no-unresolved": ["error", {
-         "ignore": ["@testing-library/react"]
-    }],
+    "import/no-unresolved": [
+      "error",
+      {
+        "ignore": [
+          "@testing-library/react"
+        ]
+      }
+    ],
     "import/prefer-default-export": "off",
     "import/extensions": "off",
-    "react/jsx-sort-props": ["error", {
-      "callbacksLast": true,
-      "shorthandFirst": true,
-      "ignoreCase": true
-    }],
+    "react/jsx-sort-props": [
+      "error",
+      {
+        "callbacksLast": true,
+        "shorthandFirst": true,
+        "ignoreCase": true
+      }
+    ],
     "padding-line-between-statements": [
       "error",
-      { "blankLine": "always", "prev": "*", "next": ["return", "break", "continue"] },
-      { "blankLine": "always", "prev": ["if", "class", "for", "function", "switch", "throw", "while", "with", "block"], "next": "*" },
-      { "blankLine": "always", "prev": "*", "next": ["if", "class", "for", "function", "switch", "throw", "while", "with", "block"] },
-      { "blankLine": "always", "prev": ["const", "let"], "next": "expression" },
-      { "blankLine": "always", "prev": "expression", "next": ["const", "let"] },
-      { "blankLine": "never", "prev": ["const", "let"], "next": ["const", "let"] },
-      { "blankLine": "never", "prev": ["case", "default"], "next": ["case", "default"] }
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": [
+          "return",
+          "break",
+          "continue"
+        ]
+      },
+      {
+        "blankLine": "always",
+        "prev": [
+          "if",
+          "class",
+          "for",
+          "function",
+          "switch",
+          "throw",
+          "while",
+          "with",
+          "block"
+        ],
+        "next": "*"
+      },
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": [
+          "if",
+          "class",
+          "for",
+          "function",
+          "switch",
+          "throw",
+          "while",
+          "with",
+          "block"
+        ]
+      },
+      {
+        "blankLine": "always",
+        "prev": "expression",
+        "next": [
+          "const",
+          "let"
+        ]
+      },
+      {
+        "blankLine": "never",
+        "prev": [
+          "case",
+          "default"
+        ],
+        "next": [
+          "case",
+          "default"
+        ]
+      }
     ],
     "@typescript-eslint/explicit-function-return-type": "off",
     "react/prop-types": "off",
     "react/jsx-filename-extension": [
       "error",
-      { "extensions": [ ".tsx" ] }
+      {
+        "extensions": [
+          ".tsx"
+        ]
+      }
     ],
     "import/no-extraneous-dependencies": [
       "error",
-      { "devDependencies": true }
+      {
+        "devDependencies": true
+      }
     ]
   }
 }
