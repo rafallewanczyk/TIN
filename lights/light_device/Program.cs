@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Text;
 
 namespace light_device
@@ -7,7 +8,8 @@ namespace light_device
     {
         static void Main(string[] args)
         {
-            LampDevice lamp = new LampDevice(5000);
+            int port = Int32.Parse(Console.ReadLine());
+            LampDevice lamp = new LampDevice(port);
             lamp.StartConnection();
             lamp.StartSending();
             lamp.Close();

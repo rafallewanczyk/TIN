@@ -8,13 +8,19 @@ namespace light_device
 {
     class LampDevice
     {
-        private readonly Socket _client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        private Socket socket;
+        private Socket listener; 
         private int port;
         private bool status = false;
+        private int backlog = 1;
 
         public LampDevice(int port)
         {
             this.port = port;
+            socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
         }
 
         public void StartConnection()
@@ -34,8 +40,8 @@ namespace light_device
 
         private void Exit()
         {
-            _client.Shutdown(SocketShutdown.Both);
-            _client.Close();
+            socket.Shutdown(SocketShutdown.Both);
+            //socket.Close();
             Environment.Exit(0);
         }
 
@@ -44,8 +50,20 @@ namespace light_device
             while (true)
             {
                 byte[] receivedBytes = new byte[1024];
-                int receive = _client.Receive(receivedBytes, SocketFlags.None);
-                //todo handle server closing exception
+                int receive = 0;
+                try
+                {
+                    receive = listener.Receive(receivedBytes, SocketFlags.None);
+                }
+                catch (SocketException)
+                {
+                    //regulator disconnected try to connect again
+                    Console.WriteLine("regulator disconnected, searching for new regulator");
+                    listener.Shutdown(SocketShutdown.Both);
+                    listener.Disconnect(true);
+                    listener = socket.Accept();
+                    continue;
+                }
                 byte[] data = new byte[receive];
                 Array.Copy(receivedBytes, data, receive);
 
@@ -75,7 +93,7 @@ namespace light_device
 
 
                 byte[] answer = msg.ToBytes();
-                _client.Send(answer, 0, answer.Length, SocketFlags.None);
+                listener.Send(answer, 0, answer.Length, SocketFlags.None);
                 Console.WriteLine("current staus :" + status);
             }
 
@@ -83,25 +101,29 @@ namespace light_device
 
         private void ConnectLoop()
         {
-            int attempts = 0;
-            while (!_client.Connected)
-            {
-                try
-                {
-                    attempts++;
-                    _client.Connect(IPAddress.Loopback, port);
-                }
-                catch (SocketException)
-                {
-                    Console.WriteLine("conneciton attmpts :" + attempts);
-                }
-            }
+            Console.WriteLine("waiting for regulator to respone");
+            socket.Bind(new IPEndPoint(IPAddress.Any, port));
+            socket.Listen(backlog);
 
-            Console.Clear();
-            Console.WriteLine("connected");
+            listener = socket.Accept();
+            Console.WriteLine("connected to regulator");
+            //int attempts = 0;
+            //while (!socket.Connected)
+            //{
+            //    try
+            //    {
+            //        attempts++;
+            //        socket.Connect(IPAddress.Loopback, port);
+            //    }
+            //    catch (SocketException)
+            //    {
+            //        Console.WriteLine("conneciton attmpts :" + attempts);
+            //    }
+            //}
+
+            //Console.Clear();
+            //Console.WriteLine("connected");
         }
-
-
 
     }
 }

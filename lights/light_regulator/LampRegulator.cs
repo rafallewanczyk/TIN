@@ -15,7 +15,7 @@ namespace light_regulator
     {
         private byte[] _buffer = new byte[1024];
         private List<SocketMemory> clientSockets = new List<SocketMemory>();
-        private Socket _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        //private Socket _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private int backlog;
         private int port;
         private int id;
@@ -30,9 +30,9 @@ namespace light_regulator
             this.id = id;
         }
 
-        public async Task StartRegulatorAsync()
+        public void StartRegulator()
         {
-            await SetupServerAsync();
+            SetupServer();
         }
 
         public void CloseRegulator()
@@ -48,17 +48,49 @@ namespace light_regulator
                 memory.socket.Close();
             }
 
-            _serverSocket.Close();
         }
 
-        private async Task SetupServerAsync()
+        private void SetupServer()
         {
-            Console.WriteLine("Setting up server ...");
-            _serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
-            _serverSocket.Listen(backlog);
-            _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
+
+            Task.Run(() => TryToConnect(5000));
+            Task.Run(() => TryToConnect(5001));
+
+
+            //TryToConnect(port);
+            //TryToConnect(port + 1);
 
             CustomMessege();
+        }
+
+        private void TryToConnect(int p)
+        {
+            Console.WriteLine("searching for device " + p);
+            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            int attempts = 0;
+            while (!socket.Connected)
+            {
+                try
+                {
+                    attempts++;
+                    socket.Connect(IPAddress.Loopback, p);
+                }
+                catch (SocketException)
+                {
+                    Console.WriteLine("conneciton attmpts :" + attempts);
+                }
+            }
+
+            Console.WriteLine("found device\nstarting pings");
+
+
+
+
+            SocketMemory memory = new SocketMemory(socket, new byte[1024], ++connected_clients);
+            clientSockets.Add(memory);
+            StartPinging(memory);
+
+
         }
 
 
@@ -70,7 +102,7 @@ namespace light_regulator
             while (lampId != 0)
             {
                 lampId = Int32.Parse(Console.ReadLine()); //todo handle exception
-                operation = Console.ReadLine(); 
+                operation = Console.ReadLine();
                 SocketMemory selected = null;
                 foreach (SocketMemory memory in clientSockets)
                 {
@@ -85,35 +117,44 @@ namespace light_regulator
             }
         }
 
-        private void AcceptCallback(IAsyncResult AR)
-        {
-            Socket socket;
-            try
-            {
-                socket = _serverSocket.EndAccept(AR);
-            }
-            catch (ObjectDisposedException)
-            {
-                return;
-            }
+        //private void AcceptCallback(IAsyncResult AR)
+        //{
+        //    Socket socket;
+        //    try
+        //    {
+        //        socket = _serverSocket.EndAccept(AR);
+        //    }
+        //    catch (ObjectDisposedException)
+        //    {
+        //        return;
+        //    }
 
-            Console.WriteLine("client connected");
-
-
-            SocketMemory memory = new SocketMemory(socket, new byte[1024], ++connected_clients);
-            clientSockets.Add(memory);
+        //    Console.WriteLine("client connected");
 
 
-            StartPinging(memory);
-            _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
-        }
+        //    SocketMemory memory = new SocketMemory(socket, new byte[1024], ++connected_clients);
+        //    clientSockets.Add(memory);
+
+
+        //    StartPinging(memory);
+        //    _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
+        //}
 
 
         private void StartPinging(SocketMemory memory)
         {
             Messege msg = new Messege(1, id, "PING", randomSignature);
             Array.Copy(msg.ToBytes(), memory.buffer, msg.Size);
-            memory.socket.BeginSend(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendPing), memory);
+            try
+            {
+
+                memory.socket.BeginSend(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(SendPing), memory);
+            }
+            catch (SocketException)
+            {
+                //device disconnected
+                TryToConnect(5000);
+            }
 
         }
         private void StartCustom(SocketMemory memory, string operation)
