@@ -1,5 +1,6 @@
 # Smarthome - dokumentacja
 
+
 ## Podział obowiązków:
 
 1. Jarek Glegoła - C++, typescript - urządzenie temperatury
