@@ -13,6 +13,7 @@ import javax.crypto.IllegalBlockSizeException;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -59,33 +60,33 @@ public class Client implements Protocol {
         }
     }
 
-    private int readHeaderWithSize(DataInputStream inputStream, ByteArrayOutputStream byteStream) throws IOException {
+    private ByteBuffer readHeader(DataInputStream inputStream) throws IOException {
         int version = inputStream.readInt();
         int size = inputStream.readInt();
         int id = inputStream.readInt();
-        byteStream.write(version);
-        byteStream.write(size);
-        byteStream.write(id);
+        ByteBuffer byteBuffer = ByteBuffer.allocate(size);
+        byteBuffer.putInt(version);
+        byteBuffer.putInt(size);
+        byteBuffer.putInt(id);
 
-        return size;
+        return byteBuffer;
     }
 
-    private byte[] readData(int dataSize, ByteArrayOutputStream byteStream, DataInputStream inputStream) throws IOException {
+    private byte[] readData(int dataSize, ByteBuffer byteBuffer, DataInputStream inputStream) throws IOException {
         byte[] dataByteArray = new byte[dataSize];
         if(inputStream.read(dataByteArray, 0, dataSize) != dataSize) {
             throw new IncorrectMessageSizeException();
         }
-        byteStream.write(dataByteArray);
+        byteBuffer.put(dataByteArray);
 
         return dataByteArray;
     }
 
     private byte[] receiveMessage(DataInputStream inputStream) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException {
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        int dataSize = readHeaderWithSize(inputStream, byteStream) - HEADER_SIZE;
-        byte[] data = readData(dataSize, byteStream, inputStream);
+        ByteBuffer byteBuffer = readHeader(inputStream);
+        byte[] data = readData(byteBuffer.capacity() - HEADER_SIZE, byteBuffer, inputStream);
 
-//        if(!signatureManager.verifySignature(byteStream.toByteArray(), receiverKey, inputStream.readAllBytes())) {
+//        if(!signatureManager.verifySignature(byteBuffer.array(), receiverKey, inputStream.readAllBytes())) {
 //            throw new IncorrectSignatureException();
 //        }
 
