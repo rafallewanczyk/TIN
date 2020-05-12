@@ -1,10 +1,13 @@
 import React from 'react';
-import { HelloWorld } from './hello-world/HelloWorld';
+import { AppLayout } from './AppLayout/AppLayout';
+import { LocationProvider } from '@reach/router';
 
 function App() {
   return (
     <div className="App">
-      <HelloWorld what="world" />
+      <LocationProvider>
+        <AppLayout />
+      </LocationProvider>
     </div>
   );
 }

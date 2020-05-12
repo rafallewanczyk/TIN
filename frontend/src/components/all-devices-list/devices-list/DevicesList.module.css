@@ -1,0 +1,12 @@
+.numberInputLabel {
+  margin-right: 8px;
+}
+
+.switchWrapper {
+  display: grid;
+  grid-template-columns: 8ch 5ch 5ch;
+}
+
+.inputSpin {
+  margin-left: 8px;
+}

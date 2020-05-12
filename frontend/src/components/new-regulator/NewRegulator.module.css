@@ -1,0 +1,13 @@
+.submitButton {
+  margin-top: 16px;
+}
+.uploadFormItem{
+  /*display: flex;*/
+  /*align-items: center;*/
+}
+
+.publicKeyValidIcon {
+  margin-left: 8px;
+  font-size: 20px;
+  color: #47a319;
+}
