@@ -12,15 +12,17 @@ class Processer(ABC):
 
     _print_lock = Lock()
 
-    HEADER_SIZE = 12
-
     def configure(loader: ConfigHandler):
         Processer.RECV_MSG_MAX_SIZE = loader.recv_msg_max_size
         Processer.TEXT_ENCODING = loader.text_encoding
         Processer.SEND_AND_RECEIVE_TIMEOUT = loader.client_timeout
         Processer.TSHP_PROTOCOL_VERSION = loader.tshp_protocol_version
         Processer.BYTE_ORDER = loader.byte_order
-        # Processer.__cryptography_handler = cryptography_handler
+        Processer.ID = loader.id
+        if loader.secure == True:
+            Processer.__cryptography_handler = cryptography_handler
+        else
+            Processer__cryptography_handler = None
         Processer.configured = True
 
     def __init__(self, connection_socket: socket.socket, address_pair: Tuple[str, str]):
@@ -69,13 +71,16 @@ class Processer(ABC):
         return self.__get_relevant_information(data)
 
     def __encapsulate_data(self, data: bytearray) -> bytearray:
-        header = bytearray(self.__create_header(self.TSHP_PROTOCOL_VERSION, len(data) + Processer.HEADER_SIZE,
-                                                0))  # id should be dynamic
-        # signature = self.__cryptography_handler.create_signature(data)
-        # data = self.__cryptography_handler.encrypt_data(data)
-        header.extend(data)  # Just add data to the header
-        # header.extend(signature)
-        return header
+        if self.__cryptography_handler:
+            signature = self.__cryptography_handler.create_signature(data)
+            encrypted_data = self.__cryptography_handler.encrypt_data(data)
+            bytes_to_send = bytearray(self.__create_header(self.TSHP_PROTOCOL_VERSION, 12 + len(encrypted_data) + len(signature) , self.ID))
+            bytes_to_send.extend(encrypted_data)
+            bytes_to_send.extend(signature)
+        else:
+            bytes_to_send = bytearray(self.__create_header(self.TSHP_PROTOCOL_VERSION, 12 + len(data) , self.ID))
+            bytes_to_send.extend(data)
+        return bytes_to_send
 
     def __get_relevant_information(self, data: bytearray) -> bytearray:
         """ Returns None if shouldnt process the data"""

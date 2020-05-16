@@ -10,3 +10,6 @@ class CryptographyHandler:
 
     def create_signature(data_to_sign, id: int) -> bytearray:
         pass
+
+    def encrypt_data(data) -> bytearray:
+        pass

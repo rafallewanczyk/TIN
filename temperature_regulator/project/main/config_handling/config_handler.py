@@ -40,6 +40,13 @@ class ConfigHandler(ABC):
         return int(self._data['TSHP protocol version'])
 
     @property
-    def byte_order(self):
-        return 'big'
+    def id(self):
+        return int(self._data['regulator id'])
+
+    @property
+    def secure(self):
+        if self._data['secure'] == 'true':
+            return True
+        print("Warning : Security not enabled.")
+        return False
 
