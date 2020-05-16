@@ -37,7 +37,7 @@ class ServerProcesser(Processer):
         else:
             queue = Queue()
             queue.devices_count = 0
-            self._delegate_to_device(message_type, data, queue)
+            self._delegate_to_device_thread(message_type, data, queue)
             self._process_queue(message_type, queue)
         self._print_closing_message()
 
@@ -81,7 +81,7 @@ class ServerProcesser(Processer):
             return
         self._send_data(data_to_send_to_server)
 
-    def _delegate_to_device(self, message_type: MessageType, data: bytearray, queue: Queue):
+    def _delegate_to_device_thread(self, message_type: MessageType, data: bytearray, queue: Queue):
         if message_type == self.MessageType.CHANGE_CONFIG:
             self._change_devices_config(data, queue)
         elif message_type == self.MessageType.CHANGE_PARAMS:
@@ -94,9 +94,9 @@ class ServerProcesser(Processer):
         while len(data) > 0:
             id, data = data[:4], data[4:]
             id, = unpack("!i", id)
-            public_key = None  # public_key, data = data[:512], data[512:]
-            # address, data = data[:4], data[4:]
-            address = "127.0.0.1"  # socket.  address, self._TEXT_ENCODING)
+            public_key, data = data[:512], data[512:]
+            packed_address, data = data[:4], data[4:]
+            address = socket.inet_ntoa(packed_address)
             port, data = data[:4], data[4:]
             port, = unpack("!i", port)
             parameters, data = self._get_parameters_from_data(data)
@@ -132,7 +132,7 @@ class ServerProcesser(Processer):
 
     def _connect_to_device(self, address: Tuple[str, int]) -> socket.socket:
         device_socket = socket.create_connection(address)
-        print(f"Connected to device. Address: {2000} Port: {2000}") # TODO CHANGE TO GOOD
+        print(f"Connected to device. Address: {address[0]} Port: {address[1]}") # TODO CHANGE TO GOOD
         return device_socket
 
     def _get_devices_current_data(self, address: Tuple[str, int], queue: Queue):

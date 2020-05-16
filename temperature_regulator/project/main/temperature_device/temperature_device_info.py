@@ -1,8 +1,8 @@
-
+from typing import Tuple
 
 class TemperatureDeviceInfo:
 
-    def __init__(self, id: int, public_key: str, address: str, temperature: float):
+    def __init__(self, id: int, public_key: str, address: Tuple[str, int], temperature: float):
         self._id = id
         self._public_key = public_key
         self._address = address
@@ -17,7 +17,7 @@ class TemperatureDeviceInfo:
         return self._public_key
 
     @property
-    def address(self) -> str:
+    def address(self) -> Tuple[str, int]:
         return self._address
     
     @property
@@ -29,7 +29,7 @@ class TemperatureDeviceInfo:
         self._temperature = temperature
     
     @address.setter
-    def address(self, address: str):
+    def address(self, address: Tuple[str, int]):
         self._address = address
 
     @public_key.setter

@@ -8,7 +8,7 @@ class TemperatureDeviceInfoList:
         self._devices = dict()
         self._lock = rwlock.RWLockWrite()
 
-    def add_device_or_overwrite(self, id: int, public_key: str, address: str, temperature: float):
+    def add_device_or_overwrite(self, id: int, public_key: str, address: Tuple[str, int], temperature: float):
         device = TemperatureDeviceInfo(id, public_key, address, temperature)
         with self._lock.gen_wlock():
             self._devices[id] = device
