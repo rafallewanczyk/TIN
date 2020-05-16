@@ -21,24 +21,16 @@ class DeviceProcesser(Processer):
 
     def run(self, sender_message_type: SenderMessageType, data_to_send: Tuple):
         self._threaded_print(f"Device thread started running. Device address: {self._address} Device port: {self._port}")
-        try:
-            self._send_request(sender_message_type, data_to_send)
-        except socket.timeout:
-            self._threaded_print(f"Couldnt send data to device. Device address: {self._address} Device port: {self._port}")
-            self._queue.put((self._id, None))
-            return
-        except OSError:
-            self._threaded_print(f"Couldnt send data to device. Device address: {self._address} Device port: {self._port}")
-            self._queue.put((self._id, None))
+        sent = self._send_request(sender_message_type, data_to_send)
+        if not sent:
+            queue.put((self._id, None))
             return
         data = self._receive_data()
+        if data is None:
+            self._queue.put((self._id, None))
+            return
         if len(data) == 0:
             self._queue.put((self._id, 0))
-            self._print_closing_message()
-            return
-        if data is None:  # Timed out
-            self._threaded_print(f"Device didnt send any data. Device address: {self._address} Device port: {self._port}")
-            self._queue.put((self._id, None))
             return
         message_type, data = self._get_message_type_and_stripped_data(data)
         if message_type is None:
@@ -47,31 +39,31 @@ class DeviceProcesser(Processer):
             return
         else:
             self._process_data(message_type, data)
-        self._print_closing_message()
 
     def _send_request(self, sender_message_type: SenderMessageType, data_to_send: Tuple):
         if(sender_message_type == self.SenderMessageType.GET_TEMP):
-            self._request_temperature_from_device()
+            return self._request_temperature_from_device()
         elif(sender_message_type == self.SenderMessageType.CHANGE_TEMP):
             temperature, = data_to_send
-            self._request_change_device_temperature(temperature)
+            return self._request_change_device_temperature(temperature)
+        else:
+            self._threaded_print(f"Message type for device unrecognizable! Device address: {self._address} Device port: {self._port}")
+            return False
 
     def _request_change_device_temperature(self, temperature: float):
         data = bytearray(self.SenderMessageType.CHANGE_TEMP.value, encoding=self.TEXT_ENCODING)
         temperature = pack("!d", temperature)
         data.extend(bytearray(temperature))
-        self._send_data(data)
+        return self._send_data(data)
 
     def _request_temperature_from_device(self):
         data_to_send = bytearray(self.SenderMessageType.GET_TEMP.value)
-        self._send_data(data_to_send)
+        return self._send_data(data_to_send)
 
     def _get_message_type_and_stripped_data(self, data: bytearray) -> Tuple[SenderMessageType, bytearray]:
-        message_type = None
+        message_type = self._check_message_type(self.MessageType.CURR_TEMP, data)
         if message_type is None:
-            message_type = self._check_message_type(self.MessageType.CURR_TEMP, data)
-            if message_type is None:
-                return None, None
+            return None, None
         return message_type, data[len(message_type):]
 
 
@@ -84,10 +76,7 @@ class DeviceProcesser(Processer):
     def _process_data(self, message_type: SenderMessageType, data: bytearray):
         if message_type == self.MessageType.CURR_TEMP:
             self._process_current_temperature_from_device(data)
-        else:
-            pass  # There should be more message types
 
     def _process_current_temperature_from_device(self, data: bytearray):
         temperature, = unpack("!d", bytes(data))
-        tuple_to_send = (self._id, temperature)
-        self._queue.put(tuple_to_send)
+        self._queue.put((self._id, temperature))

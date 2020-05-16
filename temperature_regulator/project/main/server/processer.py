@@ -22,7 +22,7 @@ class Processer(ABC):
         if loader.secure == True:
             Processer.__cryptography_handler = cryptography_handler
         else
-            Processer__cryptography_handler = None
+            Processer.__cryptography_handler = None
         Processer.configured = True
 
     def __init__(self, connection_socket: socket.socket, address_pair: Tuple[str, str]):
@@ -30,7 +30,7 @@ class Processer(ABC):
             raise RuntimeError("Processer not configured!")
         Thread.__init__(self)
         if not connection_socket:
-            raise RuntimeError("No socket specified")
+            raise RuntimeError("No socket specified!")
         self._connection_socket = connection_socket
         self._connection_socket.settimeout(Processer.SEND_AND_RECEIVE_TIMEOUT)
         self._address, self._port = address_pair
@@ -52,22 +52,27 @@ class Processer(ABC):
                 break
         return data
 
-    def __send_to_host(self, data: bytearray) -> bool:
-        print(data)
-        self._connection_socket.sendall(data)
-        print("sent")
-
     def _send_data(self, relevant_data: bytearray) -> bool:
         data = self.__encapsulate_data(relevant_data)
-        return self.__send_to_host(data)
+        try:
+            self._connection_socket.sendall(data)
+        except socket.timeout:
+            self._threaded_print(f"Couldnt send data, timed out. Address: {self._address} Port: {self._port}")
+            return False
+        except OSError:
+            self._threaded_print(f"Couldnt send data. Address: {self._address} Port: {self._port}")
+            return False
+        else:  # Everything's fine
+            return True
 
     def _receive_data(self) -> bytearray:
         try:
             data = self.__receive_from_host()
         except socket.timeout:
-            return None  # Sender stopped responding
+            self._threaded_print(f"Timed out. Address: {self._address} Port: {self._port}")
+            return None
         if len(data) == 0:
-            return data
+            return bytearray()
         return self.__get_relevant_information(data)
 
     def __encapsulate_data(self, data: bytearray) -> bytearray:
@@ -83,15 +88,16 @@ class Processer(ABC):
         return bytes_to_send
 
     def __get_relevant_information(self, data: bytearray) -> bytearray:
-        """ Returns None if shouldnt process the data"""
         protocol_version, amount_of_bytes, sender_id = self.__process_header(data)
         if protocol_version != Processer.TSHP_PROTOCOL_VERSION:
-            pass  # TODO: send info that protocol version doesnt match
+            self._threaded_print(f"Warning : Protocol version doesnt match. Address: {self._address} Port: {self._port}")
         relevant_information = self.__get_data(data)
-        # relevant_information = self.__cryptography_handler.decrypt_data(relevant_information)
-        # signature = self.__get_signature(data)
-        # if not self._cryptography_handler.check_signature(signature, relevant_information, sender_id):
-        #    pass  # TODO: send info that signature doesnt match
+        if self.__cryptography_handler:
+            relevant_information = self.__cryptography_handler.decrypt_data(relevant_information)
+            signature = self.__get_signature(data)
+            if not self._cryptography_handler.check_signature(signature, relevant_information, sender_id):
+                self._threaded_print(f"Signature error. Address: {self._address} Port: {self._port}")
+                return None
         return relevant_information
 
     def __create_header(self, protocol_version: int, amount_of_bytes: int, id: int) -> bytearray:
@@ -114,7 +120,8 @@ class Processer(ABC):
         return unpack("!i", data[8:12])[0]
 
     def __get_data(self, data: bytearray) -> bytearray:
-        # return data[12:-128]
+        if self.__cryptography_handler:
+            return data[12:-128]
         return data[12:]
 
     def __get_signature(self, data: bytearray) -> bytearray:
@@ -124,7 +131,3 @@ class Processer(ABC):
         Processer._print_lock.acquire()
         print(text)
         Processer._print_lock.release()
-
-    def _print_closing_message(self):
-        print("Thread stopped running. Client address: {2999} Client port: {2999}")
-        # Processer._threaded_print(f"Thread stopped running. Client address: {2999} Client port: {2999}") # TODO CHANGE TO ADDRESS NIE DZIAŁA
