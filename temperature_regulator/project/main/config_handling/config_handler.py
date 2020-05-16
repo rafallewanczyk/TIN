@@ -49,4 +49,12 @@ class ConfigHandler(ABC):
             return True
         print("Warning : Security not enabled.")
         return False
+    
+    @property
+    def private_key_path(self):
+        return self._data['private key path']
+
+    @property
+    def public_key_path(self):
+        return self._data['public key path']
 

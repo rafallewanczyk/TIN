@@ -2,8 +2,9 @@ from threading import Thread, Lock
 import socket
 from typing import Tuple
 from config_handling.config_handler import ConfigHandler
-from abc import ABC, abstractclassmethod
+from abc import ABC
 from struct import pack, unpack
+from cryptography_handler import CryptographyHandler
 
 
 class Processer(ABC):
@@ -19,9 +20,9 @@ class Processer(ABC):
         Processer.TSHP_PROTOCOL_VERSION = loader.tshp_protocol_version
         Processer.BYTE_ORDER = loader.byte_order
         Processer.ID = loader.id
-        if loader.secure == True:
-            Processer.__cryptography_handler = cryptography_handler
-        else
+        if loader.secure is True:
+            Processer.__cryptography_handler = CryptographyHandler(loader.private_key_path, loader.public_key_path)
+        else:
             Processer.__cryptography_handler = None
         Processer.configured = True
 

@@ -1,6 +1,7 @@
 from typing import Tuple
 
-class TemperatureDeviceInfo:
+
+class DeviceInfo:
 
     def __init__(self, id: int, public_key: str, address: Tuple[str, int], temperature: float):
         self._id = id

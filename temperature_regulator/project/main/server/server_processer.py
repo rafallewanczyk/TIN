@@ -2,7 +2,7 @@ from server.processer import Processer
 import socket
 from typing import Tuple, List, Union
 from enum import Enum
-from temperature_device.temperature_device_info_list import TemperatureDeviceInfoList
+from device.device_info_list import DeviceInfoList
 from struct import pack, unpack
 from server.device_processer import DeviceProcesser
 from queue import Queue
@@ -19,7 +19,7 @@ class ServerProcesser(Processer):
         OK = "OK"
 
     def __init__(self, client_connection_socket: socket.socket, client_address_pair: Tuple[str, str],
-                 devices_list: TemperatureDeviceInfoList):
+                 devices_list: DeviceInfoList):
         super().__init__(client_connection_socket, client_address_pair)
         self._devices_list = devices_list
 
@@ -122,8 +122,8 @@ class ServerProcesser(Processer):
         device_socket = self._connect_to_device(address)
         device_thread = DeviceProcesser(id, device_socket, address, queue)
         thread = threading.Thread(target=DeviceProcesser.run,
-                                  args=(device_thread, 
-                                        DeviceProcesser.SenderMessageType.CHANGE_TEMP, 
+                                  args=(device_thread,
+                                        DeviceProcesser.SenderMessageType.CHANGE_TEMP,
                                         parameters))
         thread.start()
         queue.devices_count += 1

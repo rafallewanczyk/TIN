@@ -1,15 +1,15 @@
-from temperature_device.temperature_device_info import TemperatureDeviceInfo
+from device.device_info import DeviceInfo
 from readerwriterlock import rwlock
 from typing import Tuple, Dict
 
 
-class TemperatureDeviceInfoList:
+class DeviceInfoList:
     def __init__(self):
         self._devices = dict()
         self._lock = rwlock.RWLockWrite()
 
     def add_device_or_overwrite(self, id: int, public_key: str, address: Tuple[str, int], temperature: float):
-        device = TemperatureDeviceInfo(id, public_key, address, temperature)
+        device = DeviceInfo(id, public_key, address, temperature)
         with self._lock.gen_wlock():
             self._devices[id] = device
 
@@ -46,6 +46,6 @@ class TemperatureDeviceInfoList:
             address = device.address
         return address
 
-    def get_all_devices_info(self) -> Dict[int, TemperatureDeviceInfo]:
+    def get_all_devices_info(self) -> Dict[int, DeviceInfo]:
         with self._lock.gen_rlock():
             return self._devices.copy()
