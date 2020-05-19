@@ -44,7 +44,13 @@ export const FormTitle: React.FC<FormTitleProps> = ({
   }, [status]);
 
   const renderDeleteButton = () => (
-    <Button disabled={deleteButtonDisabled} key="1" type="danger" onClick={handleDelete}>
+    <Button
+      className="data-cy-del-btn"
+      disabled={deleteButtonDisabled}
+      key="1"
+      type="danger"
+      onClick={handleDelete}
+    >
       Delete
     </Button>
   );

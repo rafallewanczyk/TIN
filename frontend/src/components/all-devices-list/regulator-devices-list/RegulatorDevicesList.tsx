@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { Table } from 'antd';
 import { useNavigate } from '@reach/router';
 import produce from 'immer';
+import clsx from 'clsx';
 import style from './RegulatorDevicesList.module.css';
 import { RegulatorModel } from '../../models/regulator-device-model/RegulatorDeviceModel';
 import { deviceTableColumns } from '../utils/deviceTableColumns';
@@ -22,7 +23,7 @@ export const RegulatorDevicesList: React.FC = () => {
   return (
     <div ref={ref}>
       <Table<RegulatorModel>
-        className={style.wrapper}
+        className={clsx(style.wrapper, 'data-cy-regulators-table')}
         columns={deviceTableColumns}
         dataSource={regulatorsWithKeys}
         loading={loading}
