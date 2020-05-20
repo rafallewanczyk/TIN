@@ -112,7 +112,7 @@ app.use(bodyParser.json());
 app.use(morgan('combined'));
 app.use(cors());
 
-const timeoutDelay = 2000;
+const timeoutDelay = 1500;
 
 // app.use((req, res, next) => res.status(400).send({error: "Service unavailable"}));
 

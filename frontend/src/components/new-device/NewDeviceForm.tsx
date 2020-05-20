@@ -94,6 +94,7 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
         )}
         <Form.Item className={style.submitButton}>
           <Button
+            className="data-cy-submit-btn"
             disabled={fetchingInProgress}
             icon={<EditOutlined />}
             type="primary"

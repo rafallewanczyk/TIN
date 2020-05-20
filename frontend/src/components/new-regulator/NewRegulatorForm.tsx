@@ -98,6 +98,7 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
         )}
         <Form.Item className={style.submitButton}>
           <Button
+            className="data-cy-submit-btn"
             disabled={fetchingInProgress}
             icon={<EditOutlined />}
             type="primary"
