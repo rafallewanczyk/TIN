@@ -44,11 +44,11 @@ let devices = [
     regulatorId: '14',
     id: '14',
     status: 'CONNECTING',
-    type: 'LIGHT',
+    type: 'TEMPERATURE',
     address: 'localhost',
     port: 8080,
-    data: false,
-    targetData: false,
+    data: null,
+    targetData: null,
   },
 ];
 

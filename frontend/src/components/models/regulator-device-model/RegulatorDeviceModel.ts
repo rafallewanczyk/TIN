@@ -41,8 +41,8 @@ export class TemperatureDeviceModel extends DeviceModel {
     status: Status,
     address: string,
     port: number,
-    public data: number,
-    public targetData: number,
+    public data: number | null,
+    public targetData: number | null,
   ) {
     super(id, regulatorId, name, status, DeviceType.TEMPERATURE, address, port);
   }
@@ -56,8 +56,8 @@ export class LightDeviceModel extends DeviceModel {
     status: Status,
     address: string,
     port: number,
-    public data: boolean,
-    public targetData: boolean,
+    public data: boolean | null,
+    public targetData: boolean | null,
   ) {
     super(id, regulatorId, name, status, DeviceType.LIGHT, address, port);
   }

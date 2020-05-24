@@ -24,6 +24,8 @@ export const ChangeLightAction: React.FC<ChangeLightActionProps> = ({ device }) 
     }
   }, [device.targetData]);
 
+  if (isLightOn === null) return null;
+
   return (
     <div className={style.switchWrapper} onClick={stopPropagation}>
       <Typography.Text strong className={style.numberInputLabel}>

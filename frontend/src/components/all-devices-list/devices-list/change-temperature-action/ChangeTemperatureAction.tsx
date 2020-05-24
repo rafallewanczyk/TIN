@@ -13,7 +13,7 @@ interface ChangeTemperatureActionProps {
 const DEBOUNCE_TIME = 1000;
 
 export const ChangeTemperatureAction: React.FC<ChangeTemperatureActionProps> = ({ device }) => {
-  const [targetValue, setTargetValue] = useState<number | undefined>(device.targetData);
+  const [targetValue, setTargetValue] = useState<number | null>(device.targetData);
   const [changeDeviceTemperature, loading] = useChangeTargetDataMutation(device);
   const [sendDelayedChangeRequest, isDebouncing] = useDebounce(
     changeDeviceTemperature,
@@ -21,7 +21,7 @@ export const ChangeTemperatureAction: React.FC<ChangeTemperatureActionProps> = (
   );
 
   const handleInputChange = (value: number | undefined): void => {
-    setTargetValue(value);
+    setTargetValue(value || null);
     sendDelayedChangeRequest(value);
   };
 
@@ -30,6 +30,8 @@ export const ChangeTemperatureAction: React.FC<ChangeTemperatureActionProps> = (
       setTargetValue(device.targetData);
     }
   }, [device.targetData]);
+
+  if (targetValue === null) return null;
 
   return (
     <div onClick={stopPropagation}>
