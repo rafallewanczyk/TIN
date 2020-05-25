@@ -22,6 +22,7 @@ export const LightData: React.FC<{ data: boolean }> = ({ data }) => {
 
 export const TemperatureData: React.FC<{ data: number }> = ({ data }) => {
   const animatedData = useSpring({ number: data, from: { number: 0 } });
+  console.log('Data', data);
 
   return (
     <>
@@ -35,7 +36,8 @@ export const TemperatureData: React.FC<{ data: number }> = ({ data }) => {
 };
 
 export const renderDeviceData = (data: boolean | number | null): ReactNode => {
-  if (data === null) return <p className={style.noAvailableData}>No available data</p>;
+  if (!data && data !== 0 && data !== false)
+    return <p className={style.noAvailableData}>No available data</p>;
 
   return typeof data === 'boolean' ? <LightData data={data} /> : <TemperatureData data={data} />;
 };

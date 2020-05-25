@@ -1,6 +1,6 @@
 [
   {
-    "name": "Cy device name",
+    "name": "Cy temperature device",
     "regulatorId": "14",
     "id": "114",
     "status": "ACTIVE",
@@ -10,9 +10,19 @@
     "data": 13.12,
     "targetData": 13.12
   },
-
   {
-    "name": "Cy device name1",
+    "name": "Cy temperature device 0 degrees",
+    "regulatorId": "14",
+    "id": "154",
+    "status": "ACTIVE",
+    "type": "TEMPERATURE",
+    "address": "localhost",
+    "port": 8080,
+    "data": 0,
+    "targetData": 0
+  },
+  {
+    "name": "Cy light device false",
     "regulatorId": "115",
     "id": "15",
     "status": "INVALID",
@@ -23,14 +33,36 @@
     "targetData": false
   },
   {
-    "name": "Cy device name",
+    "name": "Cy light device true",
+    "regulatorId": "115",
+    "id": "16",
+    "status": "INVALID",
+    "type": "LIGHT",
+    "address": "localhost",
+    "port": 8080,
+    "data": true,
+    "targetData": true
+  },
+  {
+    "name": "Cy temperature device null",
     "regulatorId": "111",
     "id": "11",
-    "status": "CONNECTING",
+    "status": "INVALID",
     "type": "TEMPERATURE",
     "address": "localhost",
     "port": 8080,
-    "data": 15.12,
-    "targetData": 13.12
+    "data": null,
+    "targetData": null
+  },
+  {
+    "name": "Cy light device null",
+    "regulatorId": "111",
+    "id": "9",
+    "status": "INVALID",
+    "type": "LIGHT",
+    "address": "localhost",
+    "port": 8080,
+    "data": null,
+    "targetData": null
   }
 ]

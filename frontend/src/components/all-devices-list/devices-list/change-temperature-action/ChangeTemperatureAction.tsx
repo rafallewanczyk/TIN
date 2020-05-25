@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import React, { useEffect, useState } from 'react';
 import { InputNumber, Spin, Typography } from 'antd';
 import { useDebounce } from '../../../utils/useDebounce';
@@ -21,7 +22,7 @@ export const ChangeTemperatureAction: React.FC<ChangeTemperatureActionProps> = (
   );
 
   const handleInputChange = (value: number | undefined): void => {
-    setTargetValue(value || null);
+    setTargetValue(value || 0);
     sendDelayedChangeRequest(value);
   };
 
@@ -39,6 +40,7 @@ export const ChangeTemperatureAction: React.FC<ChangeTemperatureActionProps> = (
         Target °C:
       </Typography.Text>
       <InputNumber
+        className="cy-data-change-temperature-input"
         defaultValue={targetValue}
         disabled={loading}
         max={100}
@@ -47,7 +49,7 @@ export const ChangeTemperatureAction: React.FC<ChangeTemperatureActionProps> = (
         value={targetValue}
         onChange={handleInputChange}
       />
-      {loading && <Spin className={style.inputSpin} size="small" />}
+      {loading && <Spin className={clsx(style.inputSpin, 'data-cy-spinner')} size="small" />}
     </div>
   );
 };

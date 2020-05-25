@@ -7,7 +7,10 @@ describe('Devices lists test', () => {
 
   it('should display tables of devices', () => {
     cy.get('.data-cy-regulators-table tbody').children().should('have.length', 3);
-    cy.get('.data-cy-devices-table tbody').children().should('have.length', 3);
+    cy.get('.data-cy-devices-table tbody').children().should('have.length', 6);
+    cy.get('.data-cy-devices-table [data-row-key=11]')
+      .should('contain', 'No available data')
+      .and('contain', 'Cy temperature device null');
   });
 
   it('should display no data in table when there are no devices', () => {
@@ -28,7 +31,7 @@ describe('Devices lists test', () => {
       response: [],
     });
 
-    cy.get('.data-cy-devices-table tbody').children().should('have.length', 3);
+    cy.get('.data-cy-devices-table tbody').children().should('have.length', 6);
     cy.get('.data-cy-regulators-table').contains('No Data');
   });
 });

@@ -1,6 +1,5 @@
 import '../support/index';
 
-const getMethods = (obj: any) => Object.getOwnPropertyNames(obj);
 describe('No mock happy patch', () => {
   const newDeviceName = 'Cypress device name';
   const newRegulatorName = 'Cypress regulator name';
