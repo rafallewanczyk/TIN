@@ -9,7 +9,7 @@ import { fetchRegulators } from '../../rest-client/devices/RegulatorsRestClient'
 
 export const ALL_DEVICES_QUERY = 'devicesList';
 export const ALL_REGULATORS_QUERY = 'regulatorsList';
-export const REFETCH_INTERVAL = 7000;
+export const REFETCH_INTERVAL = 3000;
 
 export const useDevicesQuery = (): [DeviceModel[] | undefined, boolean] => {
   const { data, status } = useQuery(ALL_DEVICES_QUERY, fetchDevices, {
