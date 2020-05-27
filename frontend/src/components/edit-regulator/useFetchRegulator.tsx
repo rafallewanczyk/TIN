@@ -7,15 +7,14 @@ import { sendServerError } from '../utils/error/errors';
 
 const getRegulatorById = (
   devices: RegulatorModel[],
-  id: string | undefined,
+  id: number | undefined,
 ): RegulatorModel | undefined => devices?.find((d) => d.id === id);
 
 const getCachedRegulators = (): RegulatorModel[] | undefined =>
   queryCache.getQueryData(ALL_REGULATORS_QUERY) as RegulatorModel[] | undefined;
 
-export const useFetchRegulator = (id: string | undefined): RegulatorModel | undefined => {
+export const useFetchRegulator = (id: number | undefined): RegulatorModel | undefined => {
   const navigate = useNavigate();
-  console.log('GetCachedRegulators()', getCachedRegulators());
 
   const { data } = useQuery(!getCachedRegulators() && ALL_REGULATORS_QUERY, fetchRegulators, {
     suspense: true,

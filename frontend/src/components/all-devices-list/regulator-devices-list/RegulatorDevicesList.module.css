@@ -9,3 +9,6 @@
 .row {
   cursor: pointer;
 }
+.noAvailableData {
+  margin: auto 0;
+}

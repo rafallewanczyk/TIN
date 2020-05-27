@@ -6,13 +6,13 @@ import {
 } from '../../all-devices-list/devices-list/useDevicesQuery';
 
 interface UseDeviceMutationProps<AddRequest> {
-  deviceId: string | null;
+  deviceId: number | null;
   queryToReset: typeof ALL_DEVICES_QUERY | typeof ALL_REGULATORS_QUERY;
   addMutation: MutationFunction<void, AddRequest>;
-  editMutation(id: string): MutationFunction<void, AddRequest>;
+  editMutation(id: number): MutationFunction<void, AddRequest>;
 }
 
-export const useDeviceMutation = <AddRequest, >({
+export const useDeviceMutation = <AddRequest,>({
   deviceId,
   editMutation,
   addMutation,

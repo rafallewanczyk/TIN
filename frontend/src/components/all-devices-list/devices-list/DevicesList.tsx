@@ -16,6 +16,7 @@ import { useTableScroll } from '../utils/useTableScroll';
 import { useDevicesQuery } from './useDevicesQuery';
 import { ChangeTemperatureAction } from './change-temperature-action/ChangeTemperatureAction';
 import { ChangeLightAction } from './change-light-action/ChangeLightAction';
+import clsx from 'clsx';
 
 const renderAction = (device: DeviceModel): ReactNode =>
   device.type === DeviceType.TEMPERATURE ? (
@@ -47,14 +48,15 @@ export const DevicesList: React.FC = () => {
   const [devices, loading] = useDevicesQuery();
   const devicesWithKeys = devices?.map((it) =>
     produce(it, (deviceWithKey) => {
-      (deviceWithKey as DeviceModel & { key: string }).key = it.id;
+      (deviceWithKey as DeviceModel & { key: number }).key = it.id;
     }),
   );
 
   return (
     <Table
-      className={style.wrapper}
+      className={clsx(style.wrapper, 'data-cy-devices-table')}
       columns={columns}
+      data-cy="devices-table"
       dataSource={devicesWithKeys}
       loading={loading}
       pagination={false}

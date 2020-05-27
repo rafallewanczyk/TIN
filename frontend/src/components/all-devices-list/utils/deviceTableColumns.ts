@@ -1,6 +1,6 @@
 import { ColumnsType } from 'antd/es/table';
 import { renderStatusTag } from './StatusTag';
-import { capitalize } from '../../utils/string/stringUtils';
+import { renderDeviceType } from '../../enum-renderers/deviceTypeRenderer';
 
 export const deviceTableColumns: ColumnsType<any> = [
   {
@@ -26,6 +26,6 @@ export const deviceTableColumns: ColumnsType<any> = [
     title: 'Type',
     dataIndex: 'type',
     key: 'type',
-    render: capitalize,
+    render: renderDeviceType,
   },
 ];

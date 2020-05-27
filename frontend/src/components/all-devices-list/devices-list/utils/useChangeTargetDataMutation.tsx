@@ -14,8 +14,6 @@ export const useChangeTargetDataMutation: (
   const changeDeviceTargetValue = (value: number | boolean | undefined) => {
     if (value === undefined) return;
 
-    console.log(value);
-
     return mutateTemperature(
       { id: device.id, targetData: value },
       {

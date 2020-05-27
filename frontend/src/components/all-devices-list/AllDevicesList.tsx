@@ -20,7 +20,12 @@ export const AllDevicesList: React.FC<DevicesListProps> = (props) => {
     <div className={style.wrapper}>
       <PageHeader
         extra={[
-          <Button key="1" type="primary" onClick={refreshDevicesAndRegulators}>
+          <Button
+            className="data-cy-refresh-all-btn"
+            key="1"
+            type="primary"
+            onClick={refreshDevicesAndRegulators}
+          >
             Refresh all
           </Button>,
         ]}

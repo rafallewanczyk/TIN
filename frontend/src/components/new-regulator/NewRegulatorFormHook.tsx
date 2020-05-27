@@ -11,6 +11,7 @@ import {
 import { useDeviceMutation } from '../utils/form/useDeviceMutation';
 
 export enum NewRegulatorFieldNames {
+  id = 'id',
   name = 'name',
   type = 'type',
   publicKey = 'publicKey',
@@ -20,6 +21,7 @@ export enum NewRegulatorFieldNames {
 
 function createInitialValues(regulator?: RegulatorModel): Record<NewRegulatorFieldNames, any> {
   return {
+    id: regulator?.id ?? Math.floor(Math.random() * 10000),
     name: regulator?.name,
     type: regulator?.type,
     address: regulator?.address || 'localhost',
@@ -53,9 +55,10 @@ export const useNewRegulatorForm: (
       return;
     }
 
-    const { name, type, publicKey, address, port } = values;
+    const { id, name, type, publicKey, address, port } = values;
 
     await sendRegulator({
+      id,
       name,
       type,
       address,

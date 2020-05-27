@@ -4,6 +4,7 @@ import { LightDeviceModel } from '../../../models/regulator-device-model/Regulat
 import style from '../DevicesList.module.css';
 import { stopPropagation } from '../../../utils/callback/callbacks';
 import { useChangeTargetDataMutation } from '../utils/useChangeTargetDataMutation';
+import clsx from 'clsx';
 
 export interface ChangeLightActionProps {
   device: LightDeviceModel;
@@ -24,13 +25,20 @@ export const ChangeLightAction: React.FC<ChangeLightActionProps> = ({ device }) 
     }
   }, [device.targetData]);
 
+  if (isLightOn === null) return null;
+
   return (
     <div className={style.switchWrapper} onClick={stopPropagation}>
       <Typography.Text strong className={style.numberInputLabel}>
         Turn {isLightOn ? 'OFF' : 'ON'}
       </Typography.Text>
-      <Switch checked={isLightOn} disabled={loading} onChange={handleSwitchChange} />
-      {loading && <Spin className={style.inputSpin} size="small" />}
+      <Switch
+        checked={isLightOn}
+        className="cy-data-light-switch"
+        disabled={loading}
+        onChange={handleSwitchChange}
+      />
+      {loading && <Spin className={clsx(style.inputSpin, 'data-cy-spinner')} size="small" />}
     </div>
   );
 };

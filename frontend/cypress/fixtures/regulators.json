@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Cy regulator name 16",
+    "id": 14,
+    "status": "ACTIVE",
+    "type": 0,
+    "address": "localhost",
+    "port": 8080
+  },
+  {
+    "name": "Cy regulator name 15",
+    "id": 15,
+    "status": "INACTIVE",
+    "type": 1,
+    "address": "localhost",
+    "port": 8080
+  },
+  {
+    "name": "Cy regulator name 11",
+    "id": 11,
+    "status": "INVALID",
+    "type": 1,
+    "address": "localhost",
+    "port": 8080
+  }
+]
