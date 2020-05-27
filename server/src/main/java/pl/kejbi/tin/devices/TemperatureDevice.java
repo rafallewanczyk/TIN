@@ -4,16 +4,19 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.security.PublicKey;
 
 @Getter
 @Setter
+@Document
 public class TemperatureDevice extends Device{
-    private double temperature;
+    private Double temperature;
+    private Double currentData;
 
-    public TemperatureDevice(int id, int port, double temperature) {
-        super(id, port);
+    public TemperatureDevice(int id, int port, String name, String host, PublicKey key, double temperature, int regulatorId, StatusType status) {
+        super(id, port, name, host, key, regulatorId, status);
         this.temperature = temperature;
     }
 }

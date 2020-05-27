@@ -1,6 +1,7 @@
 package pl.kejbi.tin.socket;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.kejbi.tin.security.Cryptography;
@@ -19,45 +20,29 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 @Getter
+@RequiredArgsConstructor
 public class Client implements Protocol {
     private final Socket clientSocket;
-    private final Logger logger = LoggerFactory.getLogger(Client.class);
-    private final Cryptography cryptography;
-//    private final PrivateKey clientKey;
-//    private final PublicKey receiverKey;
-//    private final SignatureManager signatureManager;
-    private final ResponseHandler responseHandler;
 
-    public Client(Socket socket, Cryptography crypto, PrivateKey privateKey, PublicKey publicKey, SignatureManager signManager, ResponseHandler handler) throws SocketException {
-        clientSocket = socket;
-        clientSocket.setSoTimeout(5000);
-        cryptography = crypto;
-//        clientKey = privateKey;
-//        receiverKey = publicKey;
-//        signatureManager = signManager;
-        responseHandler = handler;
-    }
 
-    public Client(Socket socket, Cryptography crypto, ResponseHandler handler) throws SocketException {
-        clientSocket = socket;
-        clientSocket.setSoTimeout(5000);
-        cryptography = crypto;
-        responseHandler = handler;
-    }
+    public DataWithSignature sendDataAndReceiveResponse(byte[] data) throws IOException {
+        DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
+        DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
+        outputStream.write(data);
+        DataWithSignature dataWithSignature = receiveMessage(inputStream);
+        clientSocket.close();
 
-    public void sendMessage(byte[] data) {
-        DataOutputStream outputStream;
-        DataInputStream inputStream;
-        try {
-            outputStream = new DataOutputStream(clientSocket.getOutputStream());
-            inputStream = new DataInputStream(clientSocket.getInputStream());
-            outputStream.write(data);
-            byte[] decryptedData = receiveMessage(inputStream);
-            responseHandler.handleResponse(decryptedData);
-            clientSocket.close();
-        } catch (Exception e) {
-            logger.error(e.getMessage());
-        }
+        return dataWithSignature;
+//        try {
+//            outputStream = new DataOutputStream(clientSocket.getOutputStream());
+//            inputStream = new DataInputStream(clientSocket.getInputStream());
+//            outputStream.write(data);
+//            byte[] decryptedData = receiveMessage(inputStream);
+//            responseHandler.handleResponse(decryptedData);
+//            clientSocket.close();
+//        } catch (Exception e) {
+//            logger.error(e.getMessage());
+//        }
     }
 
     private ByteBuffer readHeader(DataInputStream inputStream) throws IOException {
@@ -82,15 +67,11 @@ public class Client implements Protocol {
         return dataByteArray;
     }
 
-    private byte[] receiveMessage(DataInputStream inputStream) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException {
+    private DataWithSignature receiveMessage(DataInputStream inputStream) throws IOException {
         ByteBuffer byteBuffer = readHeader(inputStream);
         byte[] data = readData(byteBuffer.capacity() - HEADER_SIZE, byteBuffer, inputStream);
+        byte[] signature = inputStream.readAllBytes();
 
-//        if(!signatureManager.verifySignature(byteBuffer.array(), receiverKey, inputStream.readAllBytes())) {
-//            throw new IncorrectSignatureException();
-//        }
-
-//        return cryptography.decryptData(data, clientKey);
-        return data;
+        return new DataWithSignature(data, signature);
     }
 }

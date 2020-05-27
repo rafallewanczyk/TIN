@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import pl.kejbi.tin.service.LightDeviceService;
-import pl.kejbi.tin.service.TemperatureDeviceService;
+import pl.kejbi.tin.service.DeviceService;
+import pl.kejbi.tin.socket.exceptions.IncorrectMessageTypeException;
+import pl.kejbi.tin.socket.exceptions.NoConnectionException;
+import pl.kejbi.tin.socket.exceptions.NoSuchDeviceException;
 import pl.kejbi.tin.socket.parser.MessageParser;
 
 import java.nio.ByteBuffer;
@@ -14,39 +16,44 @@ import java.nio.ByteBuffer;
 @RequiredArgsConstructor
 public class ResponseHandler {
 
-    private final TemperatureDeviceService temperatureDeviceService;
-    private final LightDeviceService lightDeviceService;
+    private final DeviceService deviceService;
     private Logger logger = LoggerFactory.getLogger(ResponseHandler.class);
 
     public void handleResponse(byte[] response) {
         switch (MessageParser.parseMessage(response)) {
-            case OK:
-                logger.info("Response OK");
-                break;
-            case CURR_DATA_RE:
-                switch (ByteBuffer.wrap(response).getInt(12)) {
+            case CURRENT_DATA_RES:
+                switch (ByteBuffer.wrap(response).getShort(12)) {
                     case 1:
-                        var logs = temperatureDeviceService.saveLog(response);
+                        deviceService.updateTemperatureCurrData(response);
                         logger.info("Successfully converted temperature data");
-                        logger.info(logs.toString());
                         break;
                     case 2:
-                        var lightDeviceLogs = lightDeviceService.saveLog(response);
+                        deviceService.updateLightCurrData(response);
                         logger.info("Successfully converted light data");
-                        logger.info(lightDeviceLogs.toString());
                         break;
                     default:
                         logger.error("Bad device type");
                 }
                 break;
-            case ERROR_CONFIG:
-                logger.error("Error Config");
+            case CHANGE_PARAMS_RE:
+                switch (ByteBuffer.wrap(response).getShort(12)) {
+                    case 0:
+                        logger.info("CHANGE PARAMS succeed");
+                        break;
+                    case 1:
+                        logger.error("No device found");
+                        throw new NoSuchDeviceException();
+                    default:
+                        logger.error("No connection established with device");
+                        throw new NoConnectionException();
+                }
                 break;
-            case ERROR_PARAMS:
-                logger.error("Error Params");
+            case CHANGE_CONFIG_RE:
+                logger.info("CONFIG sent successfully");
                 break;
             default:
                 logger.error("No message type matching");
+                throw new IncorrectMessageTypeException();
         }
     }
 }

@@ -10,13 +10,13 @@ import java.net.Socket;
 @Getter
 public class SocketBuilder {
     private int port;
+    private int socketTimeout;
     private String hostname;
-    private Logger logger = LoggerFactory.getLogger(ServerSocketBuilder.class);
 
     public SocketBuilder createSocket() {
         port = 45999;
         hostname = "127.0.0.1";
-
+        socketTimeout = 10000;
         return this;
     }
 
@@ -32,13 +32,16 @@ public class SocketBuilder {
         return this;
     }
 
-    public Socket build() {
-        try {
-            return new Socket(hostname, port);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+    public SocketBuilder withTimeout(int timeout) {
+        socketTimeout = timeout;
 
-        return null;
+        return this;
+    }
+
+    public Socket build() throws IOException {
+        Socket socket = new Socket(hostname, port);
+        socket.setSoTimeout(socketTimeout);
+
+        return socket;
     }
 }

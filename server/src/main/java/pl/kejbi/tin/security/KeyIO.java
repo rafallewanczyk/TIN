@@ -21,8 +21,8 @@ public class KeyIO {
     }
 
     public static void writeKeyPairToFiles(String directoryPath, KeyPair keyPair) throws IOException {
-        writeKeyToFile(directoryPath + "/publicKey", keyPair.getPublic());
-        writeKeyToFile(directoryPath + "/publicKey", keyPair.getPrivate());
+        writeKeyToFile(directoryPath + "/publicKey.rsa", keyPair.getPublic());
+        writeKeyToFile(directoryPath + "/privateKey.rsa", keyPair.getPrivate());
     }
 
     public static PrivateKey loadPrivateKey(String path) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {

@@ -1,4 +1,4 @@
-package pl.kejbi.tin.device_logs.converter.exceptions;
+package pl.kejbi.tin.socket.exceptions;
 
 public class InvalidDataException extends RuntimeException {
     public InvalidDataException() {
