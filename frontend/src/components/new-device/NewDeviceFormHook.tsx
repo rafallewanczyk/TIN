@@ -18,6 +18,7 @@ import {
 } from '../rest-client/devices/DevicesRestClient';
 
 export enum NewDeviceFieldNames {
+  id = 'id',
   name = 'name',
   regulatorId = 'regulatorId',
   publicKey = 'publicKey',
@@ -30,6 +31,7 @@ function createInitialValues(
   regulators: RegulatorModel[] = [],
 ): Record<NewDeviceFieldNames, any> {
   return {
+    id: device?.id ?? Math.floor(Math.random() * 10000),
     name: device?.name,
     regulatorId: regulators.some((it) => it.id === device?.regulatorId)
       ? device?.regulatorId
@@ -69,11 +71,12 @@ export const useNewDeviceForm: (
       return;
     }
 
-    const { name, regulatorId, address, port, publicKey } = values;
+    const { id, name, regulatorId, address, port, publicKey } = values;
     const deviceType =
       regulators?.find((it) => it.id === regulatorId)?.type ?? DeviceType.TEMPERATURE;
 
     await sendDevice({
+      id,
       name,
       regulatorId,
       address,

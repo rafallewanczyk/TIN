@@ -20,6 +20,11 @@ export interface NewDeviceProps extends RouteComponentProps {
 const { Option } = Select;
 
 const fields: Record<NewDeviceFieldNames, Omit<FormItemProps, 'children'>> = {
+  [NewDeviceFieldNames.id]: {
+    rules: [{ required: true, message: 'Please give device id' }],
+    name: NewDeviceFieldNames.id,
+    label: 'Device id: ',
+  },
   [NewDeviceFieldNames.name]: {
     rules: [{ required: true, message: 'Please give device name' }],
     name: NewDeviceFieldNames.name,
@@ -76,6 +81,13 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
         size="middle"
       >
         {fetchingInProgress && <FormSpinner />}
+        <Form.Item {...fields.id}>
+          <InputNumber
+            disabled={editMode}
+            parser={(value) => value?.replace('.', '') ?? ''}
+            step={1}
+          />
+        </Form.Item>
         <Form.Item {...fields.name}>
           <Input autoComplete="off" />
         </Form.Item>

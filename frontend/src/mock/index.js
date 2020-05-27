@@ -128,16 +128,16 @@ app.get('/devices', delayMiddleware(timeoutDelay), (req, res) => {
 });
 
 app.post('/devices', delayMiddleware(timeoutDelay), (req, res) => {
-  const { name, regulatorId, address, port } = req.body;
+  const { id, name, regulatorId, address, port } = req.body;
   const type = faker.random.arrayElement([0, 1]);
   devices = [
     ...devices,
     {
+      id,
       name,
       regulatorId,
       address,
       port,
-      id: faker.random.number(10000),
       status: randomStatus(),
       type,
       data: randomData(type),
@@ -175,14 +175,14 @@ app.get('/regulators', delayMiddleware(timeoutDelay), (req, res) => {
   res.status(200).send(response);
 });
 app.post('/regulators', delayMiddleware(timeoutDelay), (req, res) => {
-  const { name, type, port, address } = req.body;
+  const { id, name, type, port, address } = req.body;
   regulators = [
     ...regulators,
     {
+      id,
       name,
       port,
       address,
-      id: faker.random.number(10000),
       status: randomStatus(),
       type,
     },

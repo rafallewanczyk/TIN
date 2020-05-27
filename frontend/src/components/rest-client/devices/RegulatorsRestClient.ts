@@ -21,6 +21,7 @@ export const deleteRegulator: MutationFunction<void, { id: number }> = async ({
 };
 
 export interface NewRegulatorRequestDTO {
+  id: number;
   name: string;
   type: DeviceType;
   publicKey: string;

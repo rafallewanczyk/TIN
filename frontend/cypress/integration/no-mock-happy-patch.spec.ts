@@ -15,6 +15,7 @@ describe('No mock happy patch', () => {
   });
 
   function fillDeviceTheForm() {
+    cy.get('#id').clear().type('12000');
     cy.get('#name').type(newDeviceName);
 
     cy.get('#regulatorId').click();
@@ -28,7 +29,7 @@ describe('No mock happy patch', () => {
   }
 
   function editDeviceForm() {
-    cy.get('#name').type(`-edited`);
+    cy.get('#name').clear().type(`${newDeviceName}-edited`);
 
     cy.get('#regulatorId').click();
     cy.wait(300);
@@ -39,16 +40,11 @@ describe('No mock happy patch', () => {
   }
 
   function checkEditedDevice() {
-    cy.get('#name').then((input) => {
-      expect(input.val()).to.equal(`${newDeviceName}-edited`);
-    });
+    cy.get('#id').should('have.value', `12000`);
+    cy.get('#name').should('have.value', `${newDeviceName}-edited`);
     cy.get('.ant-select-selection-item').contains('Regulator Regulator [type: Temperature]');
-    cy.get('#address').then((input) => {
-      expect(input.val()).to.equal(`localhost`);
-    });
-    cy.get('#port').then((input) => {
-      expect(input.val()).to.equal(`12000`);
-    });
+    cy.get('#address').should('have.value', 'localhost');
+    cy.get('#port').should('have.value', '12000');
   }
 
   it('devices should work', () => {
@@ -81,6 +77,7 @@ describe('No mock happy patch', () => {
   });
 
   function fillOutRegulatorTheForm() {
+    cy.get('#id').clear().type('11000');
     cy.get('#name').type(newRegulatorName);
 
     cy.get('#type').click();
@@ -94,7 +91,7 @@ describe('No mock happy patch', () => {
   }
 
   function editRegulatorForm() {
-    cy.get('#name').type(`-edited`);
+    cy.get('#name').clear().type(`${newRegulatorName}-edited`);
 
     cy.get('#type').click();
     cy.wait(300);
@@ -105,16 +102,11 @@ describe('No mock happy patch', () => {
   }
 
   function checkEditedRegulator() {
-    cy.get('#name').then((input) => {
-      expect(input.val()).to.equal(`${newRegulatorName}-edited`);
-    });
+    cy.get('#id').should('have.value', '11000');
+    cy.get('#name').should('have.value', `${newRegulatorName}-edited`);
     cy.get('.ant-select-selection-item').contains('Temperature');
-    cy.get('#address').then((input) => {
-      expect(input.val()).to.equal(`localhost`);
-    });
-    cy.get('#port').then((input) => {
-      expect(input.val()).to.equal(`12000`);
-    });
+    cy.get('#address').should('have.value', 'localhost');
+    cy.get('#port').should('have.value', '12000');
   }
 
   it('regulators should work', () => {

@@ -35,6 +35,7 @@ export const deleteDevice: MutationFunction<void, { id: number }> = async ({
 };
 
 export interface NewDeviceRequestDTO {
+  id: number;
   name: string;
   regulatorId: number;
   type: DeviceType;
