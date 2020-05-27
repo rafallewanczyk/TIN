@@ -18,12 +18,11 @@ class Processer(ABC):
         Processer.TEXT_ENCODING = loader.text_encoding
         Processer.SEND_AND_RECEIVE_TIMEOUT = loader.client_timeout
         Processer.TSHP_PROTOCOL_VERSION = loader.tshp_protocol_version
-        Processer.BYTE_ORDER = loader.byte_order
         Processer.ID = loader.id
         if loader.secure is True:
-            Processer.__cryptography_handler = CryptographyHandler(loader.private_key_path, loader.public_key_path)
+            Processer._cryptography_handler = CryptographyHandler(loader.private_key_path, loader.public_key_path)
         else:
-            Processer.__cryptography_handler = None
+            Processer._cryptography_handler = None
         Processer.configured = True
 
     def __init__(self, connection_socket: socket.socket, address_pair: Tuple[str, str]):
@@ -77,9 +76,9 @@ class Processer(ABC):
         return self.__get_relevant_information(data)
 
     def __encapsulate_data(self, data: bytearray) -> bytearray:
-        if self.__cryptography_handler:
-            signature = self.__cryptography_handler.create_signature(data)
-            encrypted_data = self.__cryptography_handler.encrypt_data(data)
+        if self._cryptography_handler:
+            signature = self._cryptography_handler.create_signature(data)
+            encrypted_data = self._cryptography_handler.encrypt_data(data)
             bytes_to_send = bytearray(self.__create_header(self.TSHP_PROTOCOL_VERSION, 12 + len(encrypted_data) + len(signature) , self.ID))
             bytes_to_send.extend(encrypted_data)
             bytes_to_send.extend(signature)
@@ -93,7 +92,7 @@ class Processer(ABC):
         if protocol_version != Processer.TSHP_PROTOCOL_VERSION:
             self._threaded_print(f"Warning : Protocol version doesnt match. Address: {self._address} Port: {self._port}")
         relevant_information = self.__get_data(data)
-        if self.__cryptography_handler:
+        if self._cryptography_handler:
             relevant_information = self.__cryptography_handler.decrypt_data(relevant_information)
             signature = self.__get_signature(data)
             if not self._cryptography_handler.check_signature(signature, relevant_information, sender_id):
@@ -121,7 +120,7 @@ class Processer(ABC):
         return unpack("!i", data[8:12])[0]
 
     def __get_data(self, data: bytearray) -> bytearray:
-        if self.__cryptography_handler:
+        if self._cryptography_handler:
             return data[12:-128]
         return data[12:]
 

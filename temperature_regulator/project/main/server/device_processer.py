@@ -57,24 +57,23 @@ class DeviceProcesser(Processer):
         return self._send_data(data)
 
     def _request_temperature_from_device(self):
-        data_to_send = bytearray(self.MessageType.GET_TEMP.value)
+        data_to_send = bytearray(self.MessageType.GET_TEMP.value, encoding=self.TEXT_ENCODING)
         return self._send_data(data_to_send)
 
     def _get_message_type_and_stripped_data(self, data: bytearray) -> Tuple[MessageType, bytearray]:
         message_type = self._check_message_type(self.ReceivedMessageType.CURR_TEMP, data)
         if message_type is None:
             return None, None
-        return message_type, data[len(message_type):]
-
+        return message_type, data[len(message_type.value):]
 
     def _check_message_type(self, potential_message_type: ReceivedMessageType, data: bytearray) -> MessageType:
-        message_type = data[:len(potential_message_type)]
-        if message_type.decode(self.TEXT_ENCODING) == potential_message_type:
+        message_type = data[:len(potential_message_type.value)]
+        if message_type.decode(self.TEXT_ENCODING) == potential_message_type.value:
             return potential_message_type
         return None
 
     def _process_data(self, message_type: MessageType, data: bytearray):
-        if message_type == self.MessageType.CURR_TEMP:
+        if message_type == self.ReceivedMessageType.CURR_TEMP:
             self._process_current_temperature_from_device(data)
 
     def _process_current_temperature_from_device(self, data: bytearray):

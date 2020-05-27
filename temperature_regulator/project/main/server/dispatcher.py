@@ -22,8 +22,7 @@ class ServerDispatcher:
         self._listener_socket.bind((config_handler.listener_socket_address, config_handler.listener_socket_port))
         self._listener_socket.listen(config_handler.listener_socket_max_connections)
         self._listener_socket.settimeout(config_handler.listener_socket_timeout)
-        print(
-            f"Server created. Interface: {config_handler.listener_socket_address} Port: {config_handler.listener_socket_port}")
+        print(f"Server created. Interface: {config_handler.listener_socket_address} Port: {config_handler.listener_socket_port}")
 
     def run(self):
         try:

@@ -1,6 +1,6 @@
 from server.processer import Processer
 import socket
-from typing import Tuple, List, Union
+from typing import Tuple, List
 from enum import Enum
 from device.device_info_list import DeviceInfoList
 from struct import pack, unpack
@@ -69,6 +69,8 @@ class ServerProcesser(Processer):
                     data = bytearray(pack("!i", data))
                 elif (type(data) is str):
                     data = bytearray(data)
+                elif (type(data) is float):
+                    data = bytearray(pack("!d", data))
                 data_to_send_to_server.extend(data)
             processed_messages_count += 1
         if message_type == self.MessageType.CHANGE_CONFIG or message_type == self.MessageType.CHANGE_PARAMS:
@@ -91,7 +93,10 @@ class ServerProcesser(Processer):
         while len(data) > 0:
             id, data = data[:4], data[4:]
             id, = unpack("!i", id)
-            public_key, data = data[:512], data[512:]
+            if self._cryptography_handler is not None:
+                public_key, data = data[:512], data[512:]
+            else:
+                public_key = ""
             packed_address, data = data[:4], data[4:]
             address = socket.inet_ntoa(packed_address)
             port, data = data[:4], data[4:]
@@ -114,6 +119,7 @@ class ServerProcesser(Processer):
     def _change_devices_parameters(self, data: bytearray, queue: Queue):
         while len(data) > 0:
             id, data = data[:4], data[4:]
+            id, = unpack("!i", id)
             parameters, data = self._get_parameters_from_data(data)
             address = self._devices_list.get_devices_address(id)
             self._send_parameters_to_device(id, address, parameters, queue)
@@ -123,7 +129,7 @@ class ServerProcesser(Processer):
         device_thread = DeviceProcesser(id, device_socket, address, queue)
         thread = threading.Thread(target=DeviceProcesser.run,
                                   args=(device_thread,
-                                        DeviceProcesser.SenderMessageType.CHANGE_TEMP,
+                                        DeviceProcesser.MessageType.CHANGE_TEMP,
                                         parameters))
         thread.start()
         queue.devices_count += 1
@@ -133,9 +139,9 @@ class ServerProcesser(Processer):
         print(f"Connected to device. Address: {address[0]} Port: {address[1]}")
         return device_socket
 
-    def _get_devices_current_data(self, address: Tuple[str, int], queue: Queue):
+    def _get_devices_current_data(self, queue: Queue):
         devices = self._devices_list.get_all_devices_info()
-        for id, devices_infos in devices:
+        for id, devices_infos in devices.items():
             try:
                 device_socket = self._connect_to_device(devices_infos.address)
             except OSError:
@@ -148,6 +154,6 @@ class ServerProcesser(Processer):
                 pass
             device_thread = DeviceProcesser(id, device_socket, devices_infos.address, queue)
             thread = threading.Thread(target=DeviceProcesser.run,
-                                      args=(device_thread, DeviceProcesser.SenderMessageType.GET_TEMP, None))
+                                      args=(device_thread, DeviceProcesser.MessageType.GET_TEMP, None))
             thread.start()
             queue.devices_count += 1
