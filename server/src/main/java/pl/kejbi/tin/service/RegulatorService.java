@@ -47,7 +47,7 @@ public class RegulatorService {
             regulator.setName(regulatorDTO.getName());
         }
         if(regulatorDTO.getPublicKey() != null) {
-            regulator.setPublicKey(KeyEncoder.getPublicKey(regulatorDTO.getPublicKey()));
+            regulator.setPublicKey(regulatorDTO.getPublicKey());
         }
         if(regulatorDTO.getAddress() != null) {
             regulator.setHostname(regulatorDTO.getAddress());
@@ -59,29 +59,29 @@ public class RegulatorService {
         regulatorRepository.save(regulator);
     }
 
-    public void sendCurrData() throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException {
+    public void sendCurrData() throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
         var regulators = regulatorRepository.findAll();
         for(Regulator regulator: regulators) {
             regulatorCommunicator.sendCurrData(regulator);
         }
     }
 
-    public void sendLightConfig(int regulatorId, List<LightDevice> devices) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException {
+    public void sendLightConfig(int regulatorId, List<LightDevice> devices) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
         Regulator regulator = regulatorRepository.findById(regulatorId).orElseThrow(RuntimeException::new);
         regulatorCommunicator.sendLightChangeConfig(regulator, devices);
     }
 
-    public void sendTemperatureConfig(int regulatorId, List<TemperatureDevice> devices) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException {
+    public void sendTemperatureConfig(int regulatorId, List<TemperatureDevice> devices) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
         Regulator regulator = regulatorRepository.findById(regulatorId).orElseThrow(RuntimeException::new);
         regulatorCommunicator.sendTemperatureChangeConfig(regulator, devices);
     }
 
-    public void sendLightChangeParams(int regulatorId, LightDevice device) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException {
+    public void sendLightChangeParams(int regulatorId, LightDevice device) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
         Regulator regulator = regulatorRepository.findById(regulatorId).orElseThrow(RuntimeException::new);
         regulatorCommunicator.sendLightChangeParams(regulator, device);
     }
 
-    public void sendTemperatureChangeParams(int regulatorId, TemperatureDevice device) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException {
+    public void sendTemperatureChangeParams(int regulatorId, TemperatureDevice device) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
         Regulator regulator = regulatorRepository.findById(regulatorId).orElseThrow(RuntimeException::new);
         regulatorCommunicator.sendTemperatureChangeParams(regulator, device);
     }

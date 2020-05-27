@@ -34,7 +34,7 @@ public class DeviceDTO {
         this.id = device.getId();
         this.regulatorId = device.getRegulatorId();
         this.name = device.getName();
-        this.publicKey = KeyEncoder.getStringKey(device.getPublicKey());
+        this.publicKey = device.getPublicKey();
         this.address = device.getHostname();
         this.port = device.getPort();
         this.type = device instanceof LightDevice ? RegulatorType.LIGHT : RegulatorType.TEMPERATURE;
@@ -43,10 +43,10 @@ public class DeviceDTO {
 
     public Device convertToDevice() throws InvalidKeySpecException, NoSuchAlgorithmException {
         if(type == RegulatorType.TEMPERATURE) {
-            return new TemperatureDevice(id, port, name, address, KeyEncoder.getPublicKey(publicKey), 20.5, regulatorId, status);
+            return new TemperatureDevice(id, port, name, address, publicKey, 20.5, regulatorId, status);
         }
         else {
-            return new LightDevice(id, port, name, address, KeyEncoder.getPublicKey(publicKey), false, regulatorId, status);
+            return new LightDevice(id, port, name, address, publicKey, false, regulatorId, status);
         }
     }
 }

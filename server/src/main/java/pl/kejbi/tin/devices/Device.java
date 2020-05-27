@@ -15,7 +15,7 @@ public abstract class Device {
     private int port;
     private String name;
     private String hostname;
-    private PublicKey publicKey;
+    private String publicKey;
     private int regulatorId;
     private StatusType status;
 }

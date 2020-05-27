@@ -33,7 +33,7 @@ public class RegulatorDTO {
     public RegulatorDTO(Regulator regulator) {
         this.id = regulator.getId();
         this.name = regulator.getName();
-        this.publicKey = KeyEncoder.getStringKey(regulator.getPublicKey());
+        this.publicKey = regulator.getPublicKey();
         this.address = regulator.getHostname();
         this.port = regulator.getPort();
         this.type = regulator.getType();
@@ -41,6 +41,6 @@ public class RegulatorDTO {
     }
 
     public Regulator convertToRegulator() throws InvalidKeySpecException, NoSuchAlgorithmException {
-        return new Regulator(id, name, address, port, KeyEncoder.getPublicKey(publicKey), type, status);
+        return new Regulator(id, name, address, port, publicKey, type, StatusType.INACTIVE);
     }
 }

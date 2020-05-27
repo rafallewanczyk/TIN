@@ -16,7 +16,7 @@ public class Regulator {
     private String name;
     private String hostname;
     private int port;
-    private PublicKey publicKey;
+    private String publicKey;
     private RegulatorType type;
     private StatusType status;
 }

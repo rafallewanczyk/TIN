@@ -38,7 +38,7 @@ public class DeviceController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteDevice(@PathVariable Integer id) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException {
+    public void deleteDevice(@PathVariable Integer id) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
         Device device = deviceService.deleteDevice(id);
         int regulatorId = device.getRegulatorId();
         if(device instanceof LightDevice) {
@@ -62,19 +62,19 @@ public class DeviceController {
     }
 
     @PostMapping("/light/setTargetData")
-    public void setLightTargetData(@RequestBody LightTargetDTO lightTargetData) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException {
+    public void setLightTargetData(@RequestBody LightTargetDTO lightTargetData) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
         LightDevice device = deviceService.setLightTarget(lightTargetData.getId(), lightTargetData.getTarget());
         regulatorService.sendLightChangeParams(device.getRegulatorId(), device);
     }
 
     @PostMapping("/temperature/setTargetData")
-    public void setTemperatureTargetData(@RequestBody TemperatureTargetDto temperatureTargetData) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException {
+    public void setTemperatureTargetData(@RequestBody TemperatureTargetDto temperatureTargetData) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
         TemperatureDevice device = deviceService.setTemperatureTarget(temperatureTargetData.getId(), temperatureTargetData.getTarget());
         regulatorService.sendTemperatureChangeParams(device.getRegulatorId(), device);
     }
 
     @GetMapping
-    public List<DeviceWithDataDTO> getAllDevices() throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException {
+    public List<DeviceWithDataDTO> getAllDevices() throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
         regulatorService.sendCurrData();
 
         return deviceService.getDevicesCurrentData();

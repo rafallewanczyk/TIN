@@ -75,7 +75,7 @@ public class DeviceService {
             device.setRegulatorId(deviceUpdateDTO.getRegulatorId());
         }
         if(deviceUpdateDTO.getPublicKey() != null) {
-            device.setPublicKey(KeyEncoder.getPublicKey(deviceUpdateDTO.getPublicKey()));
+            device.setPublicKey(deviceUpdateDTO.getPublicKey());
         }
         if(deviceUpdateDTO.getAddress() != null) {
             device.setHostname(deviceUpdateDTO.getAddress());
