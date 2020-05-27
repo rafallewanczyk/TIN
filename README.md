@@ -77,18 +77,20 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
 #### Serwer -> Regulator:
 
 - Zmień konfigurację urządzenia
-  (domyślne nagłówki) (typ wiadomości = CHANGE_CONFIG) (typ urzadzenia) [24B] (nowa konfiguracja cała) List< (id urzadzenia) [int - 4B] (klucz publiczny) [4KB] parametr [X B] >
+  (domyślne nagłówki) (typ wiadomości = CHANGE_CONFIG)(nowa konfiguracja cała) List< (id urzadzenia) [int - 4B] (port) [int - 4B] (długość nazwy hosta) [int - 4B] (nazwa hosta) [ciąg bajtów] (długość klucza publicznego) [int - 4b] (klucz publiczny) [ciąg bajtów] parametr [double - 8B lub short 2B] >
 - Zmień parametry urządzenia
-  (domyślne nagłówki) (typ wiadomości = CHANGE_PARAMS) (typ urzadzenia) [24B](parametr) [X B]
-- Ping
-  (domyślne nagłówki = PING) (typ wiadomości)
+  (domyślne nagłówki) (typ wiadomości = CHANGE_PARAMS) (id urządzenia) [int 4B] (parametr) [double 8B/ short 2B]
+- Pobierz aktualne dane
+  (domyślne nagłówki) (typ wiadomości = CURR_DATA)
 
 #### Regulator -> Serwer:
 
-- Wyślij dane z urządzeń
-  (domyślne nagłówki) (typ wiadomości = CURR_DATA) (typ urzadzenia) [24B] (aktualne stany wszystkich urządzeń) List< (id [4 B], parametr [X B] } >
-- Ping return
-  (domyślne nagłówki) (typ wiadomości = PING)
+- Odpowiedź na CURR_DATA
+  (domyślne nagłówki) (typ wiadomości = CURRENT_DATA_RES) (typ urzadzenia 0 - temperatura, 1 - światło) [short 2B] (aktualne stany wszystkich urządzeń) List< (id urządzenia) [int 4 B], (parametr: -300 jeżeli nie ma odpowiedzi od urządzenia termicznego, 2 jeżeli nie ma odpowiedzi od urządzenia świetlnego) [double 8B/ short 2B] } >
+- Odpowiedź na CHANGE_PARAMS
+  (domyślne nagłówki) (typ wiadomości = CHANGE_PARAMS_RE) (status 0-pomyślnie, 1-nie ma urządzenia o takim id, 2-błąd połączenia z urządzeniem) [short 2B]
+- Odpowiedź na CHANGE_CONFIG
+  (domyślne nagłówki) (typ wiadomości = CHANGE_CONFIG_RE) //bez żadnych dodatkowych danych
 
 ### Urządzenie oświetlenia - regulator oświetlenia:
 
