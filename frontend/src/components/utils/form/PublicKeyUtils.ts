@@ -35,13 +35,7 @@ export const publicKeyValidator = async (
   }
 };
 
-export const normFile: (e: UploadChangeParam<UploadFile<any>>) => UploadFile<any>[] | undefined = (
-  e,
-) => {
-  console.log('E', e);
-
-  return e?.fileList;
-};
+export const normFile: (e: UploadChangeParam) => UploadFile[] | undefined = (e) => e?.fileList;
 
 function arrayBufferToBase64(buffer: ArrayBuffer) {
   let binary = '';
@@ -58,7 +52,6 @@ function arrayBufferToBase64(buffer: ArrayBuffer) {
 export async function encodeInBase64(publicKeyArray: UploadFile[]) {
   const publicKey = publicKeyArray[0];
   const arrayBuffer = await publicKey.originFileObj?.arrayBuffer();
-  console.log(arrayBuffer?.byteLength);
 
   if (!arrayBuffer) return '';
 

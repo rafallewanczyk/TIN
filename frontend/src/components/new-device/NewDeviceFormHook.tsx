@@ -1,6 +1,10 @@
 import { Form } from 'antd';
 import { FormInstance } from 'antd/es/form';
-import { DeviceModel, RegulatorModel } from '../models/regulator-device-model/RegulatorDeviceModel';
+import {
+  DeviceModel,
+  DeviceType,
+  RegulatorModel,
+} from '../models/regulator-device-model/RegulatorDeviceModel';
 import {
   ALL_DEVICES_QUERY,
   useAllRegulatorsQuery,
@@ -14,6 +18,7 @@ import {
 } from '../rest-client/devices/DevicesRestClient';
 
 export enum NewDeviceFieldNames {
+  id = 'id',
   name = 'name',
   regulatorId = 'regulatorId',
   publicKey = 'publicKey',
@@ -26,6 +31,7 @@ function createInitialValues(
   regulators: RegulatorModel[] = [],
 ): Record<NewDeviceFieldNames, any> {
   return {
+    id: device?.id ?? Math.floor(Math.random() * 10000),
     name: device?.name,
     regulatorId: regulators.some((it) => it.id === device?.regulatorId)
       ? device?.regulatorId
@@ -65,12 +71,18 @@ export const useNewDeviceForm: (
       return;
     }
 
+    const { id, name, regulatorId, address, port, publicKey } = values;
+    const deviceType =
+      regulators?.find((it) => it.id === regulatorId)?.type ?? DeviceType.TEMPERATURE;
+
     await sendDevice({
-      name: values.name,
-      regulatorId: values.regulatorId,
-      address: values.address,
-      port: values.port,
-      publicKey: values.publicKey && (await encodeInBase64(values.publicKey)),
+      id,
+      name,
+      regulatorId,
+      address,
+      port,
+      type: deviceType,
+      publicKey: publicKey && (await encodeInBase64(publicKey)),
     });
   };
 

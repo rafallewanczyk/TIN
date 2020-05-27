@@ -1,0 +1,68 @@
+[
+  {
+    "name": "Cy temperature device",
+    "regulatorId": 14,
+    "id": 114,
+    "status": "ACTIVE",
+    "type": 0,
+    "address": "localhost",
+    "port": 8080,
+    "data": 13.12,
+    "targetData": 13.12
+  },
+  {
+    "name": "Cy temperature device 0 degrees",
+    "regulatorId": 14,
+    "id": 154,
+    "status": "ACTIVE",
+    "type": 0,
+    "address": "localhost",
+    "port": 8080,
+    "data": 0,
+    "targetData": 0
+  },
+  {
+    "name": "Cy light device false",
+    "regulatorId": 115,
+    "id": 15,
+    "status": "INVALID",
+    "type": 1,
+    "address": "localhost",
+    "port": 8080,
+    "data": true,
+    "targetData": false
+  },
+  {
+    "name": "Cy light device true",
+    "regulatorId": 115,
+    "id": 16,
+    "status": "INVALID",
+    "type": 1,
+    "address": "localhost",
+    "port": 8080,
+    "data": true,
+    "targetData": true
+  },
+  {
+    "name": "Cy temperature device null",
+    "regulatorId": 111,
+    "id": 11,
+    "status": "INVALID",
+    "type": 0,
+    "address": "localhost",
+    "port": 8080,
+    "data": null,
+    "targetData": null
+  },
+  {
+    "name": "Cy light device null",
+    "regulatorId": 111,
+    "id": 9,
+    "status": "INVALID",
+    "type": 1,
+    "address": "localhost",
+    "port": 8080,
+    "data": null,
+    "targetData": null
+  }
+]

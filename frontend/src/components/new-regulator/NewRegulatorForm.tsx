@@ -11,6 +11,7 @@ import { capitalize } from '../utils/string/stringUtils';
 import { FormTitle } from '../utils/form/FormTitle';
 import { OptionalKeyUploader } from '../utils/form/OptionalKeyUploader';
 import { FormSpinner } from './FormSpinner';
+import { renderDeviceType } from '../enum-renderers/deviceTypeRenderer';
 
 export interface NewRegulatorProps extends RouteComponentProps {
   regulator?: RegulatorModel;
@@ -19,6 +20,11 @@ export interface NewRegulatorProps extends RouteComponentProps {
 const { Option } = Select;
 
 const fields: Record<NewRegulatorFieldNames, Omit<FormItemProps, 'children'>> = {
+  [NewRegulatorFieldNames.id]: {
+    rules: [{ required: true, message: 'Please give regulator id' }],
+    name: NewRegulatorFieldNames.id,
+    label: 'Regulator id: ',
+  },
   [NewRegulatorFieldNames.name]: {
     rules: [{ required: true, message: 'Please give regulator name' }],
     name: NewRegulatorFieldNames.name,
@@ -55,7 +61,7 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
 
   const renderDeviceTypeOption = (type: DeviceType): ReactNode => (
     <Option key={type} value={type}>
-      {capitalize(type)}
+      {capitalize(renderDeviceType(type))}
     </Option>
   );
 
@@ -76,6 +82,13 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
         size="middle"
       >
         {fetchingInProgress && <FormSpinner />}
+        <Form.Item {...fields.id}>
+          <InputNumber
+            disabled={editMode}
+            parser={(value) => value?.replace('.', '') ?? ''}
+            step={1}
+          />
+        </Form.Item>
         <Form.Item {...fields.name}>
           <Input autoComplete="off" />
         </Form.Item>
@@ -98,6 +111,7 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
         )}
         <Form.Item className={style.submitButton}>
           <Button
+            className="data-cy-submit-btn"
             disabled={fetchingInProgress}
             icon={<EditOutlined />}
             type="primary"

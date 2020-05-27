@@ -34,5 +34,9 @@ export const TemperatureData: React.FC<{ data: number }> = ({ data }) => {
   );
 };
 
-export const renderDeviceData = (data: boolean | number): ReactNode =>
-  typeof data === 'boolean' ? <LightData data={data} /> : <TemperatureData data={data} />;
+export const renderDeviceData = (data: boolean | number | null): ReactNode => {
+  if (!data && data !== 0 && data !== false)
+    return <p className={style.noAvailableData}>No available data</p>;
+
+  return typeof data === 'boolean' ? <LightData data={data} /> : <TemperatureData data={data} />;
+};

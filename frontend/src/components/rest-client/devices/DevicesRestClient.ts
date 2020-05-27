@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { MutationFunction } from 'react-query';
-import { DeviceModel } from '../../models/regulator-device-model/RegulatorDeviceModel';
+import { DeviceModel, DeviceType } from '../../models/regulator-device-model/RegulatorDeviceModel';
 import { BASE_URL } from '../constants';
 
 export const fetchDevices = async (): Promise<DeviceModel[]> => {
@@ -11,9 +11,14 @@ export const fetchDevices = async (): Promise<DeviceModel[]> => {
 
 export const changeTargetData: MutationFunction<
   void,
-  { id: string; targetData: number | boolean }
+  { id: number; targetData: number | boolean }
 > = async ({ id, targetData }): Promise<void> => {
-  const { data } = await axios.post<void>(`${BASE_URL}/devices/setTargetData`, {
+  const url =
+    typeof targetData === 'number'
+      ? `${BASE_URL}/devices/temperature/setTargetData`
+      : `${BASE_URL}/devices/light/setTargetData`;
+
+  const { data } = await axios.post<void>(url, {
     id,
     targetData,
   });
@@ -21,7 +26,7 @@ export const changeTargetData: MutationFunction<
   return data;
 };
 
-export const deleteDevice: MutationFunction<void, { id: string }> = async ({
+export const deleteDevice: MutationFunction<void, { id: number }> = async ({
   id,
 }): Promise<void> => {
   const { data } = await axios.delete<void>(`${BASE_URL}/devices/${id}`);
@@ -30,8 +35,10 @@ export const deleteDevice: MutationFunction<void, { id: string }> = async ({
 };
 
 export interface NewDeviceRequestDTO {
+  id: number;
   name: string;
-  regulatorId: string;
+  regulatorId: number;
+  type: DeviceType;
   publicKey: string;
   port: number;
   address: string;
@@ -47,7 +54,7 @@ export const addNewDevice: MutationFunction<void, NewDeviceRequestDTO> = async (
 
 export type EditDeviceRequestDTO = Partial<NewDeviceRequestDTO>;
 
-export const editDeviceWithId = (id: string) => async (request: EditDeviceRequestDTO) => {
+export const editDeviceWithId = (id: number) => async (request: EditDeviceRequestDTO) => {
   const { data } = await axios.patch<void>(`${BASE_URL}/devices/${id}`, request);
 
   return data;
