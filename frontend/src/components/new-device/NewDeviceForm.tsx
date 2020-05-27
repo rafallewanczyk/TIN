@@ -10,6 +10,7 @@ import { DeviceModel, RegulatorModel } from '../models/regulator-device-model/Re
 import { FormTitle } from '../utils/form/FormTitle';
 import { OptionalKeyUploader } from '../utils/form/OptionalKeyUploader';
 import { FormSpinner } from '../new-regulator/FormSpinner';
+import { renderDeviceType } from '../enum-renderers/deviceTypeRenderer';
 
 export interface NewDeviceProps extends RouteComponentProps {
   device?: DeviceModel;
@@ -54,7 +55,7 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
 
   const renderRegulatorOption = (regulator: RegulatorModel): ReactNode => (
     <Option key={regulator.id} value={regulator.id}>
-      {regulator.name} [type: {regulator.type}]
+      {regulator.name} [type: {renderDeviceType(regulator.type)}]
     </Option>
   );
 

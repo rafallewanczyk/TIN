@@ -11,6 +11,7 @@ import { capitalize } from '../utils/string/stringUtils';
 import { FormTitle } from '../utils/form/FormTitle';
 import { OptionalKeyUploader } from '../utils/form/OptionalKeyUploader';
 import { FormSpinner } from './FormSpinner';
+import { renderDeviceType } from '../enum-renderers/deviceTypeRenderer';
 
 export interface NewRegulatorProps extends RouteComponentProps {
   regulator?: RegulatorModel;
@@ -55,7 +56,7 @@ export const NewRegulatorForm: React.FC<NewRegulatorProps> = ({ regulator }) => 
 
   const renderDeviceTypeOption = (type: DeviceType): ReactNode => (
     <Option key={type} value={type}>
-      {capitalize(type)}
+      {capitalize(renderDeviceType(type))}
     </Option>
   );
 

@@ -12,7 +12,7 @@ export const fetchRegulators = async (): Promise<RegulatorModel[]> => {
   return data;
 };
 
-export const deleteRegulator: MutationFunction<void, { id: string }> = async ({
+export const deleteRegulator: MutationFunction<void, { id: number }> = async ({
   id,
 }): Promise<void> => {
   const { data } = await axios.delete<void>(`${BASE_URL}/regulators/${id}`);
@@ -38,7 +38,7 @@ export const addNewRegulator: MutationFunction<void, NewRegulatorRequestDTO> = a
 
 export type EditRegulatorRequestDTO = Partial<NewRegulatorRequestDTO>;
 
-export const editRegulatorWithId = (id: string) => async (request: EditRegulatorRequestDTO) => {
+export const editRegulatorWithId = (id: number) => async (request: EditRegulatorRequestDTO) => {
   const { data } = await axios.patch<void>(`${BASE_URL}/regulators/${id}`, request);
 
   return data;

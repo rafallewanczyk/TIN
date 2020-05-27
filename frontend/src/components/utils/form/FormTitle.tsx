@@ -12,7 +12,7 @@ import { deleteRegulator } from '../../rest-client/devices/RegulatorsRestClient'
 
 export interface FormTitleProps {
   deleteButtonVisible: boolean;
-  id: string | undefined;
+  id: number | undefined;
   subject: 'device' | 'regulator';
   deleteButtonDisabled: boolean;
 

@@ -48,7 +48,7 @@ export const DevicesList: React.FC = () => {
   const [devices, loading] = useDevicesQuery();
   const devicesWithKeys = devices?.map((it) =>
     produce(it, (deviceWithKey) => {
-      (deviceWithKey as DeviceModel & { key: string }).key = it.id;
+      (deviceWithKey as DeviceModel & { key: number }).key = it.id;
     }),
   );
 

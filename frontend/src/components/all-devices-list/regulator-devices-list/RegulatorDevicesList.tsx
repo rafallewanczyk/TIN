@@ -16,7 +16,7 @@ export const RegulatorDevicesList: React.FC = () => {
   const [regulators, loading] = useRegulatorsQuery();
   const regulatorsWithKeys = regulators?.map((it) =>
     produce(it, (regulatorWithKey) => {
-      (regulatorWithKey as RegulatorModel & { key: string }).key = it.id;
+      (regulatorWithKey as RegulatorModel & { key: number }).key = it.id;
     }),
   );
 

@@ -18,7 +18,7 @@ describe('No mock happy patch', () => {
     cy.get('#name').type(newDeviceName);
 
     cy.get('#regulatorId').click();
-    cy.wait(50);
+    cy.wait(300);
     cy.get('.ant-select-dropdown .ant-select-item').eq(0).click();
 
     cy.get('#address').clear().type('127.0.0.1');
@@ -31,7 +31,7 @@ describe('No mock happy patch', () => {
     cy.get('#name').type(`-edited`);
 
     cy.get('#regulatorId').click();
-    cy.wait(50);
+    cy.wait(300);
     cy.get('.ant-select-dropdown .ant-select-item').eq(1).click();
 
     cy.get('#address').clear().type('localhost');
@@ -42,7 +42,7 @@ describe('No mock happy patch', () => {
     cy.get('#name').then((input) => {
       expect(input.val()).to.equal(`${newDeviceName}-edited`);
     });
-    cy.get('.ant-select-selection-item').contains('Regulator Regulator [type: TEMPERATURE]');
+    cy.get('.ant-select-selection-item').contains('Regulator Regulator [type: Temperature]');
     cy.get('#address').then((input) => {
       expect(input.val()).to.equal(`localhost`);
     });
@@ -84,7 +84,7 @@ describe('No mock happy patch', () => {
     cy.get('#name').type(newRegulatorName);
 
     cy.get('#type').click();
-    cy.wait(50);
+    cy.wait(300);
     cy.get('.ant-select-dropdown .ant-select-item').eq(0).click();
 
     cy.get('#address').clear().type('127.0.0.1');
@@ -97,7 +97,7 @@ describe('No mock happy patch', () => {
     cy.get('#name').type(`-edited`);
 
     cy.get('#type').click();
-    cy.wait(50);
+    cy.wait(300);
     cy.get('.ant-select-dropdown .ant-select-item').eq(1).click();
 
     cy.get('#address').clear().type('localhost');

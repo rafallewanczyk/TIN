@@ -1,6 +1,10 @@
 import { Form } from 'antd';
 import { FormInstance } from 'antd/es/form';
-import { DeviceModel, RegulatorModel } from '../models/regulator-device-model/RegulatorDeviceModel';
+import {
+  DeviceModel,
+  DeviceType,
+  RegulatorModel,
+} from '../models/regulator-device-model/RegulatorDeviceModel';
 import {
   ALL_DEVICES_QUERY,
   useAllRegulatorsQuery,
@@ -65,12 +69,17 @@ export const useNewDeviceForm: (
       return;
     }
 
+    const { name, regulatorId, address, port, publicKey } = values;
+    const deviceType =
+      regulators?.find((it) => it.id === regulatorId)?.type ?? DeviceType.TEMPERATURE;
+
     await sendDevice({
-      name: values.name,
-      regulatorId: values.regulatorId,
-      address: values.address,
-      port: values.port,
-      publicKey: values.publicKey && (await encodeInBase64(values.publicKey)),
+      name,
+      regulatorId,
+      address,
+      port,
+      type: deviceType,
+      publicKey: publicKey && (await encodeInBase64(publicKey)),
     });
   };
 

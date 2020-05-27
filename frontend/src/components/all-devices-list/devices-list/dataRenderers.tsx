@@ -22,7 +22,6 @@ export const LightData: React.FC<{ data: boolean }> = ({ data }) => {
 
 export const TemperatureData: React.FC<{ data: number }> = ({ data }) => {
   const animatedData = useSpring({ number: data, from: { number: 0 } });
-  console.log('Data', data);
 
   return (
     <>

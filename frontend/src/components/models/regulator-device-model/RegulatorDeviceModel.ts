@@ -6,14 +6,14 @@ export enum Status {
 }
 
 export enum DeviceType {
-  TEMPERATURE = 'TEMPERATURE',
-  LIGHT = 'LIGHT',
+  TEMPERATURE = 0,
+  LIGHT = 1,
 }
 
 export class RegulatorModel {
   public constructor(
     public name: string,
-    public id: string,
+    public id: number,
     public status: Status,
     public type: DeviceType,
     public address: string,
@@ -23,8 +23,8 @@ export class RegulatorModel {
 
 export class DeviceModel {
   public constructor(
-    public id: string,
-    public regulatorId: string,
+    public id: number,
+    public regulatorId: number,
     public name: string,
     public status: Status,
     public type: DeviceType,
@@ -35,8 +35,8 @@ export class DeviceModel {
 
 export class TemperatureDeviceModel extends DeviceModel {
   public constructor(
-    id: string,
-    regulatorId: string,
+    id: number,
+    regulatorId: number,
     name: string,
     status: Status,
     address: string,
@@ -50,8 +50,8 @@ export class TemperatureDeviceModel extends DeviceModel {
 
 export class LightDeviceModel extends DeviceModel {
   public constructor(
-    id: string,
-    regulatorId: string,
+    id: number,
+    regulatorId: number,
     name: string,
     status: Status,
     address: string,

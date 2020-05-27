@@ -52,7 +52,6 @@ function arrayBufferToBase64(buffer: ArrayBuffer) {
 export async function encodeInBase64(publicKeyArray: UploadFile[]) {
   const publicKey = publicKeyArray[0];
   const arrayBuffer = await publicKey.originFileObj?.arrayBuffer();
-  console.log(arrayBuffer?.byteLength);
 
   if (!arrayBuffer) return '';
 
