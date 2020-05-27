@@ -3,7 +3,6 @@ import threading
 from server.server_processer import ServerProcesser
 from server.processer import Processer
 from config_handling.config_handler import ConfigHandler
-from cryptography_handler import CryptographyHandler
 from device.device_info_list import DeviceInfoList
 
 

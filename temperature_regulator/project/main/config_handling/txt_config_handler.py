@@ -19,6 +19,12 @@ class TxtConfigHandler(ConfigHandler):
             if(line.find(':') != -1):
                 key, value = tuple(line.split('#', 1)[0].split(':', 1))
                 key = key.strip()
-                value = value.strip()
+                if value.find(',') != -1:
+                    values = value.split(',')
+                    for id, value in enumerate(values):
+                        values[id] = value.strip()
+                    value = values
+                else:
+                    value = value.strip()
                 data[key] = value
         return data

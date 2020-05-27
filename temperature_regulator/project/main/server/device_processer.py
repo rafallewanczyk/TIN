@@ -4,6 +4,7 @@ from typing import Tuple
 from enum import Enum
 from struct import pack, unpack
 from queue import Queue
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 class DeviceProcesser(Processer):
@@ -14,8 +15,8 @@ class DeviceProcesser(Processer):
     class ReceivedMessageType(Enum):
         CURR_TEMP = "CURR_TEMP"
 
-    def __init__(self, id: int, device_connection_socket: socket.socket, device_address_pair: Tuple[str, str], queue: Queue):
-        super().__init__(device_connection_socket, device_address_pair)
+    def __init__(self, id: int, device_connection_socket: socket.socket, device_address_pair: Tuple[str, str], public_key: rsa.RSAPublicKey, queue: Queue):
+        super().__init__(device_connection_socket, device_address_pair, public_key)
         self._id = id
         self._queue = queue
 
@@ -25,6 +26,9 @@ class DeviceProcesser(Processer):
         if not sent:
             self._queue.put((self._id, None))
             return
+        # else:
+        #    if sender_message_type == self.MessageType.CHANGE_TEMP:
+        #        self._queue.put((id, 0))
         data = self._receive_data()
         if data is None:
             self._queue.put((self._id, None))

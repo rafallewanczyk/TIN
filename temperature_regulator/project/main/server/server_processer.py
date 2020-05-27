@@ -7,6 +7,9 @@ from struct import pack, unpack
 from server.device_processer import DeviceProcesser
 from queue import Queue
 import threading
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.serialization import load_pem_public_key
+from cryptography.hazmat.backends import default_backend
 
 
 class ServerProcesser(Processer):
@@ -16,7 +19,9 @@ class ServerProcesser(Processer):
         CURR_DATA = "CURR_DATA"
 
     class ReturnMessageType(Enum):
-        OK = "OK"
+        CURRENT_DATA_RES = "CURRENT_DATA_RES"
+        CHANGE_PARAMS_RE = "CHANGE_PARAMS_RE"
+        CHANGE_CONFIG_RE = "CHANGE_CONFIG_RE"
 
     def __init__(self, client_connection_socket: socket.socket, client_address_pair: Tuple[str, str],
                  devices_list: DeviceInfoList):
@@ -64,7 +69,7 @@ class ServerProcesser(Processer):
             id, data = message
             id = bytearray(pack("!i", id))
             data_to_send_to_server.extend(id)
-            if (data is not None):
+            if data is not None:
                 if (type(data) is int):
                     data = bytearray(pack("!i", data))
                 elif (type(data) is str):
@@ -72,11 +77,24 @@ class ServerProcesser(Processer):
                 elif (type(data) is float):
                     data = bytearray(pack("!d", data))
                 data_to_send_to_server.extend(data)
+            else:
+                if message_type == CURR_DATA:
+                    data_to_send_to_server.append(pack("!i", -300))
+                elif message_type == CHANGE_PARAMS:
+                    data_to_send_to_server.append(pack("!i", 2))
             processed_messages_count += 1
-        if message_type == self.MessageType.CHANGE_CONFIG or message_type == self.MessageType.CHANGE_PARAMS:
-            sent = self._send_data(bytearray(self.ReturnMessageType.OK.value, encoding=self.TEXT_ENCODING))  # !!!!
-        else:
-            sent = self._send_data(data_to_send_to_server)
+        self._send_answer(data_to_send_to_server)
+
+    def _send_answer(self, message_type: MessageType, data_to_send: bytearray):
+        if message_type == CHANGE_CONFIG:
+            beginning = bytearray(self.ReturnMessageType.CHANGE_CONFIG_RE.value, "utf-8")
+            sent = self._send_data(beginning)
+        elif message_type == CHANGE_PARAMS:
+            beginning = bytearray(self.ReturnMessageType.CHANGE_PARAMS_RE.value, "utf-8")
+            sent = self._send_data(beginning + data_to_send)
+        elif message_type == CURR_DATA:
+            beginning = bytearray(self.ReturnMessageType.CURRENT_DATA_RES.value, "utf-8") + pack("!h", 0)
+            sent = self._send_data(beginning + data_to_send)
         if not sent:
             self._threaded_print(f"Could not send devices' data to client. Client address: {self._address} Client port: {self._port}")
 
@@ -88,19 +106,23 @@ class ServerProcesser(Processer):
         elif message_type == self.MessageType.CURR_DATA:
             self._get_devices_current_data(queue)
 
-    def _get_devices_info_from_data(self, data: bytearray) -> List[Tuple[int, bytearray, Tuple[str, int], float]]:
+    def _get_devices_info_from_data(self, data: bytearray) -> List[Tuple[int, rsa.RSAPublicKey, Tuple[str, int], float]]:
         devices_info_list = list()
         while len(data) > 0:
             id, data = data[:4], data[4:]
             id, = unpack("!i", id)
-            if self._cryptography_handler is not None:
-                public_key, data = data[:512], data[512:]
-            else:
-                public_key = ""
-            packed_address, data = data[:4], data[4:]
-            address = socket.inet_ntoa(packed_address)
             port, data = data[:4], data[4:]
             port, = unpack("!i", port)
+            address_size, data = data[:4], data[4:]
+            address_size = unpack("!i", address_size)
+            address = data[:address_size].decode("utf-8"), data[address_size:]
+            public_key_size, data = data[:4], data[4:]
+            public_key_size, = unpack("!i", id)
+            if self._cryptography_handler is not None:
+                public_key_bytes, data = data[:public_key_size], data[public_key_size:]
+                public_key = load_pem_public_key(public_key_bytes, default_backend())
+            else:
+                public_key = None
             parameters, data = self._get_parameters_from_data(data)
             devices_info_list.append((id, public_key, (address, port), parameters))
         return devices_info_list
@@ -114,7 +136,7 @@ class ServerProcesser(Processer):
         devices_info_list = self._get_devices_info_from_data(data)
         for id, public_key, address, parameters in devices_info_list:
             self._devices_list.add_device_or_overwrite(id, public_key, address, parameters)
-            self._send_parameters_to_device(id, address, parameters, queue)
+            self._send_parameters_to_device(id, address, public_key, parameters, queue)
 
     def _change_devices_parameters(self, data: bytearray, queue: Queue):
         while len(data) > 0:
@@ -122,11 +144,25 @@ class ServerProcesser(Processer):
             id, = unpack("!i", id)
             parameters, data = self._get_parameters_from_data(data)
             address = self._devices_list.get_devices_address(id)
-            self._send_parameters_to_device(id, address, parameters, queue)
+            if address is None:
+                queue.put((id, 1))
+            else:
+                self._send_parameters_to_device(id, address, parameters, queue)
 
-    def _send_parameters_to_device(self, id: int, address: Tuple[str, int], parameters: Tuple, queue: Queue):
-        device_socket = self._connect_to_device(address)
-        device_thread = DeviceProcesser(id, device_socket, address, queue)
+    def _send_parameters_to_device(self, id: int, address: Tuple[str, int], public_key: rsa.RSAPublicKey, parameters: Tuple, queue: Queue):
+        try:
+            device_socket = self._connect_to_device(address)
+        except OSError:
+            ip, port = address
+            queue.put((id, None))
+            self._threaded_print(f"Couldnt create socket for device! Device address: {ip} Device port: {port}")
+            return
+        except socket.timeout:
+            ip, port = address
+            queue.put((id, None))
+            self._threaded_print(f"Couldnt connect to device! Device address: {ip} Device port: {port} ")
+            return
+        device_thread = DeviceProcesser(id, device_socket, address, public_key, queue)
         thread = threading.Thread(target=DeviceProcesser.run,
                                   args=(device_thread,
                                         DeviceProcesser.MessageType.CHANGE_TEMP,
@@ -146,13 +182,15 @@ class ServerProcesser(Processer):
                 device_socket = self._connect_to_device(devices_infos.address)
             except OSError:
                 ip, port = devices_infos.address
+                queue.put((id, None))
                 self._threaded_print(f"Couldnt create socket for device! Device address: {ip} Device port: {port}")
-                pass
+                continue
             except socket.timeout:
                 ip, port = devices_infos.address
+                queue.put((id, None))
                 self._threaded_print(f"Couldnt connect to device! Device address: {ip} Device port: {port} ")
-                pass
-            device_thread = DeviceProcesser(id, device_socket, devices_infos.address, queue)
+                continue
+            device_thread = DeviceProcesser(id, device_socket, devices_infos.address, devices_infos.public_key, queue)
             thread = threading.Thread(target=DeviceProcesser.run,
                                       args=(device_thread, DeviceProcesser.MessageType.GET_TEMP, None))
             thread.start()

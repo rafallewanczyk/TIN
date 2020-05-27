@@ -1,10 +1,11 @@
 import socket
 import sys
 from struct import pack, unpack
+import cryptography_handler
 
 
 LISTENER_SOCKET_ADDRESS = "127.0.0.1"
-LISTENER_SOCKET_PORT = 8083
+LISTENER_SOCKET_PORT = 8081
 TEMPERATURE = 36.6
 
 

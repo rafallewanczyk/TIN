@@ -55,6 +55,12 @@ class ConfigHandler(ABC):
         return self._data['private key path']
 
     @property
-    def public_key_path(self):
-        return self._data['public key path']
+    def server_key_paths(self):
+        value = self._data['server key paths']
+        if value is list:
+            return value
+        else:
+            values = list()
+            values.append(value)
+            return values
 

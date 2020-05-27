@@ -2,9 +2,10 @@ from threading import Thread, Lock
 import socket
 from typing import Tuple
 from config_handling.config_handler import ConfigHandler
-from abc import ABC
+from abc import ABC, abstractmethod
 from struct import pack, unpack
 from cryptography_handler import CryptographyHandler
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 
 class Processer(ABC):
@@ -20,12 +21,12 @@ class Processer(ABC):
         Processer.TSHP_PROTOCOL_VERSION = loader.tshp_protocol_version
         Processer.ID = loader.id
         if loader.secure is True:
-            Processer._cryptography_handler = CryptographyHandler(loader.private_key_path, loader.public_key_path)
+            Processer._cryptography_handler = CryptographyHandler(loader.private_key_path, loader.server_key_paths)
         else:
             Processer._cryptography_handler = None
         Processer.configured = True
 
-    def __init__(self, connection_socket: socket.socket, address_pair: Tuple[str, str]):
+    def __init__(self, connection_socket: socket.socket, address_pair: Tuple[str, str], public_key: rsa.RSAPublicKey = None):
         if (not self.configured):
             raise RuntimeError("Processer not configured!")
         Thread.__init__(self)
@@ -35,6 +36,7 @@ class Processer(ABC):
         self._connection_socket.settimeout(Processer.SEND_AND_RECEIVE_TIMEOUT)
         self._address, self._port = address_pair
         self._port = int(self._port)  # Change str to int
+        self._public_key = public_key
 
     def __receive_from_host(self) -> bytearray:
         data = bytearray()
@@ -78,12 +80,12 @@ class Processer(ABC):
     def __encapsulate_data(self, data: bytearray) -> bytearray:
         if self._cryptography_handler:
             signature = self._cryptography_handler.create_signature(data)
-            encrypted_data = self._cryptography_handler.encrypt_data(data)
-            bytes_to_send = bytearray(self.__create_header(self.TSHP_PROTOCOL_VERSION, 12 + len(encrypted_data) + len(signature) , self.ID))
+            encrypted_data = self._cryptography_handler.encrypt_data(data, self._public_key)
+            bytes_to_send = bytearray(self.__create_header(self.TSHP_PROTOCOL_VERSION, 12 + 256 + len(encrypted_data) + len(signature) , self.ID))
             bytes_to_send.extend(encrypted_data)
             bytes_to_send.extend(signature)
         else:
-            bytes_to_send = bytearray(self.__create_header(self.TSHP_PROTOCOL_VERSION, 12 + len(data) , self.ID))
+            bytes_to_send = bytearray(self.__create_header(self.TSHP_PROTOCOL_VERSION, 12 + len(data), self.ID))
             bytes_to_send.extend(data)
         return bytes_to_send
 
@@ -93,9 +95,11 @@ class Processer(ABC):
             self._threaded_print(f"Warning : Protocol version doesnt match. Address: {self._address} Port: {self._port}")
         relevant_information = self.__get_data(data)
         if self._cryptography_handler:
-            relevant_information = self.__cryptography_handler.decrypt_data(relevant_information)
+            if self._public_key is None:
+                self._public_key = self._cryptography_handler.get_servers_public_key(sender_id)
+            relevant_information = self._cryptography_handler.decrypt_data(relevant_information)
             signature = self.__get_signature(data)
-            if not self._cryptography_handler.check_signature(signature, relevant_information, sender_id):
+            if not self._cryptography_handler.check_signature(signature, relevant_information, self._public_key):
                 self._threaded_print(f"Signature error. Address: {self._address} Port: {self._port}")
                 return None
         return relevant_information
@@ -121,11 +125,11 @@ class Processer(ABC):
 
     def __get_data(self, data: bytearray) -> bytearray:
         if self._cryptography_handler:
-            return data[12:-128]
+            return data[12:-256]
         return data[12:]
 
     def __get_signature(self, data: bytearray) -> bytearray:
-        return data[-128:]
+        return data[-256:]
 
     def _threaded_print(self, text: str):
         Processer._print_lock.acquire()

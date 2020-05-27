@@ -2,7 +2,9 @@ import socket
 import sys
 from struct import pack, unpack
 from sys import argv
+import cryptography_handler
 
+SECURE = True
 
 def create_header(protocol_version, amount_of_bytes, id):
     return pack("!iii", protocol_version, amount_of_bytes, id)
@@ -32,7 +34,14 @@ def receive_from_host(connection_socket) -> bytearray:
 
 
 def get_change_config_body():
-    return bytes(bytearray("CHANGE_CONFIG", 'utf-8')) + pack("!iiid", 0, 2130706433, 8081, 50.0) + pack("!iiid", 1, 2130706433, 8082, 30.0) + pack("!iiid", 2, 2130706433, 8083, 55.3)
+    return bytes(bytearray("CHANGE_CONFIG", 'utf-8')) + pack("!iiid", 0, 2130706433, 8081, 50.0)
+
+
+def get_change_config_body_with_public_key():
+    pem_key = None
+    with open("Jarek_server_key.public", 'rb') as pem_file:
+        pem_key = pem_file.read()
+    return bytes(bytearray("CHANGE_CONFIG", 'utf-8')) + pack("!i", 0) + pem_key + pack("!iid", 2130706433, 8081, 50.0)
 
 
 def get_current_temperature_body():
@@ -69,13 +78,17 @@ if __name__ == "__main__":
         sys.exit(2)
     with client_socket:
         if int(argv[1]) == 0:
-            data = get_change_config_body()
+            data = get_change_config_body_with_public_key()
         elif int(argv[1]) == 1:
             data = get_current_temperature_body()
         elif int(argv[1]) == 2:
             data = get_change_params_body()
-        header = create_header(1, len(data)+12, 0)
-        client_socket.sendall(header+data)
+        cryptography_handler = cryptography_handler.CryptographyHandler("Kacper_client_key.private", "../test_only_key.public")
+        signature = cryptography_handler.create_signature(data)
+        # data = cryptography_handler.encrypt_data(data)
+        header = create_header(1, 12 + 256 + len(data) + len(signature), 0)
+        data_to_send = header+data+signature
+        client_socket.sendall(data_to_send)
         print("Data sent")
         client_socket.settimeout(3)
         data = receive_from_host(client_socket)
