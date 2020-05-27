@@ -22,10 +22,10 @@ export enum NewRegulatorFieldNames {
 function createInitialValues(regulator?: RegulatorModel): Record<NewRegulatorFieldNames, any> {
   return {
     id: regulator?.id ?? Math.floor(Math.random() * 10000),
-    name: regulator?.name,
-    type: regulator?.type,
+    name: regulator?.name ?? 'Test name 1',
+    type: regulator?.type ?? 0,
     address: regulator?.address || 'localhost',
-    port: regulator?.port,
+    port: regulator?.port ?? 11000,
     publicKey: undefined,
   };
 }

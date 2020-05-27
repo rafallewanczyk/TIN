@@ -18,7 +18,7 @@ class SecurityTest extends Specification {
         KeyPair keyPair = keyGenerator.generateKeyPair(2048)
 
         when:
-        KeyIO.writeKeyToFile("keys/publicKey", keyPair.getPublic())
+        KeyIO.writeKeyToFile("keys/privateKey.rsa", keyPair.getPrivate())
 
         then:
         "Created file with encoded public key"

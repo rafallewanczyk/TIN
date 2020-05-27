@@ -1,11 +1,13 @@
 package pl.kejbi.tin.controller.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import pl.kejbi.tin.devices.RegulatorType;
 import pl.kejbi.tin.devices.StatusType;
 import pl.kejbi.tin.devices.TemperatureDevice;
 
 @Data
+@NoArgsConstructor
 public class TemperatureDeviceWithDataDTO implements DeviceWithDataDTO {
     private int id;
     private int regulatorId;

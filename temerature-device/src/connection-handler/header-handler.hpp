@@ -50,9 +50,6 @@ class HeaderHandler {
 
 
     void validate(const Header &header) {
-        if (header.protocolVersion != PROTOCOL_VERSION)
-            throw InvalidMessageHeaderException("Wrong protocol version");
-
         if (header.contentSize < 0)
             throw InvalidMessageHeaderException("Content size is negative.");
     }

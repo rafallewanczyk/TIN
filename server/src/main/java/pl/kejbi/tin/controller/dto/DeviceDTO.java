@@ -2,6 +2,7 @@ package pl.kejbi.tin.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import pl.kejbi.tin.devices.*;
 import pl.kejbi.tin.security.KeyEncoder;
 
@@ -11,6 +12,7 @@ import java.security.spec.InvalidKeySpecException;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class DeviceDTO {
     @NotNull
     private int id;

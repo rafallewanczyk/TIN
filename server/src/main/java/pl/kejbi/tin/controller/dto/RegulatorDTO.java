@@ -2,6 +2,7 @@ package pl.kejbi.tin.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import pl.kejbi.tin.devices.Regulator;
 import pl.kejbi.tin.devices.RegulatorType;
 import pl.kejbi.tin.devices.StatusType;
@@ -11,11 +12,12 @@ import javax.validation.constraints.NotNull;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
+@NoArgsConstructor
 @AllArgsConstructor
 @Data
 public class RegulatorDTO {
     @NotNull
-    private int regulatorId;
+    private int id;
     @NotNull
     private String name;
     @NotNull
@@ -29,7 +31,7 @@ public class RegulatorDTO {
     private StatusType status;
 
     public RegulatorDTO(Regulator regulator) {
-        this.regulatorId = regulator.getId();
+        this.id = regulator.getId();
         this.name = regulator.getName();
         this.publicKey = KeyEncoder.getStringKey(regulator.getPublicKey());
         this.address = regulator.getHostname();
@@ -39,6 +41,6 @@ public class RegulatorDTO {
     }
 
     public Regulator convertToRegulator() throws InvalidKeySpecException, NoSuchAlgorithmException {
-        return new Regulator(regulatorId, name, address, port, KeyEncoder.getPublicKey(publicKey), type, status);
+        return new Regulator(id, name, address, port, KeyEncoder.getPublicKey(publicKey), type, status);
     }
 }

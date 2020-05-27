@@ -32,7 +32,7 @@
     "source-map-explorer": "^2.4.2",
     "typescript": "3.8.3"
   },
-  "proxy": "http://localhost:3001",
+  "proxy": "http://localhost:8080",
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
