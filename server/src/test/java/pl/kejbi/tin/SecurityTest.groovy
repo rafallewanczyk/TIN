@@ -43,8 +43,8 @@ class SecurityTest extends Specification {
         KeyPair keyPair = keyGenerator.generateKeyPair(2048)
 
         when:
-        KeyIO.writeKeyToFile("keys/privateKey", keyPair.getPrivate())
-        PrivateKey key = KeyIO.loadPrivateKey("keys/privateKey")
+        KeyIO.writeKeyToFile("keys/privateKey.rsa", keyPair.getPrivate())
+        PrivateKey key = KeyIO.loadPrivateKey("keys/privateKey.rsa")
 
         then:
         key.equals(keyPair.getPrivate())

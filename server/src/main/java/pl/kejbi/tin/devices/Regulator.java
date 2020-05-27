@@ -1,21 +1,22 @@
 package pl.kejbi.tin.devices;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.security.PublicKey;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
+@Document
 @AllArgsConstructor
-public abstract class Device {
+public class Regulator {
     @Id
     private int id;
-    private int port;
     private String name;
     private String hostname;
+    private int port;
     private PublicKey publicKey;
-    private int regulatorId;
+    private RegulatorType type;
     private StatusType status;
 }
