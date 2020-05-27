@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using TSHP;
@@ -9,7 +7,7 @@ namespace light_device
     class LampDevice
     {
         private Socket socket;
-        private Socket listener; 
+        private Socket listener;
         private int port;
         private bool status = false;
         private int backlog = 1;
@@ -67,26 +65,26 @@ namespace light_device
                 byte[] data = new byte[receive];
                 Array.Copy(receivedBytes, data, receive);
 
-                Messege msg = new Messege(data);
+                RegulatorDevice msg = new RegulatorDevice(data);
                 Console.WriteLine("received :" + msg);
 
                 if (msg.Data.Equals("PING"))
                 {
-                    msg = new Messege(1, 1, "REPING", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+                    msg = new RegulatorDevice(1, port, "REPING", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
                 }
                 else if (msg.Data.Equals("GETSTATUS"))
                 {
-                    msg = new Messege(1, 1, "STATUS" + status, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+                    msg = new RegulatorDevice(1, port, status.ToString(), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
                 }
                 else if (msg.Data.Equals("SET1"))
                 {
                     status = true;
-                    msg = new Messege(1, 1, "SET" + status, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+                    msg = new RegulatorDevice(1, port, status.ToString(), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
                 }
                 else if (msg.Data.Equals("SET0"))
                 {
                     status = false;
-                    msg = new Messege(1, 1, "SET" + status, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+                    msg = new RegulatorDevice(1, port, status.ToString(), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
                 }
 
 
@@ -107,22 +105,6 @@ namespace light_device
 
             listener = socket.Accept();
             Console.WriteLine("connected to regulator");
-            //int attempts = 0;
-            //while (!socket.Connected)
-            //{
-            //    try
-            //    {
-            //        attempts++;
-            //        socket.Connect(IPAddress.Loopback, port);
-            //    }
-            //    catch (SocketException)
-            //    {
-            //        Console.WriteLine("conneciton attmpts :" + attempts);
-            //    }
-            //}
-
-            //Console.Clear();
-            //Console.WriteLine("connected");
         }
 
     }
