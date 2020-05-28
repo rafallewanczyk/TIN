@@ -6,7 +6,7 @@ namespace light_regulator
     {
         static void Main(string[] args)
         {
-            LampRegulator regulator = new LampRegulator(5000, 5, 1);
+            LampRegulator regulator = new LampRegulator(4000, 5, 1);
             regulator.StartRegulator();
             regulator.CloseRegulator();
         }

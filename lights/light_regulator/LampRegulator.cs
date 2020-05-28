@@ -11,14 +11,11 @@ namespace light_regulator
 {
     class LampRegulator
     {
-        private byte[] _buffer = new byte[1024];
         private List<SocketMemory> clientSockets = new List<SocketMemory>();
         private Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        private Socket listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private int backlog;
         private int port;
         private int id;
-        private int connected_clients = 0;
         private String randomSignature = "414140de5dae2223b00361a396177a9cb410ff61f20015ad"; //only for testing purpose 
 
 
@@ -27,6 +24,11 @@ namespace light_regulator
             this.backlog = backlog;
             this.port = port;
             this.id = id;
+
+            serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
+            serverSocket.Listen(this.backlog); 
+
+           
         }
 
         private SocketMemory FindById(int id)
@@ -56,50 +58,28 @@ namespace light_regulator
         public void StartRegulator()
         {
 
-            SearchForServer(4000);
+            Console.WriteLine("Searchnig for server");
+            serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null); 
             Console.Read();
-
-
-            //TryToConnect(60000);
-            //TryToConnect(port + 1);
-
-            //CustomMessege();
         }
 
-        //private void AcceptCallback(IAsyncResult AR)
-        //{
-        //    Socket socket;
-        //    try
-        //    {
-        //        socket = _serverSocket.EndAccept(AR);
-        //    }
-        //    catch (ObjectDisposedException)
-        //    {
-        //        return;
-        //    }
-
-        //    Console.WriteLine("client connected");
-
-
-        //    SocketMemory memory = new SocketMemory(socket, new byte[1024], ++connected_clients);
-        //    clientSockets.Add(memory);
-
-
-        //    StartPinging(memory);
-        //    _serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
-        //}
-
-        private void SearchForServer(int port)
+        private void AcceptCallback(IAsyncResult AR)
         {
-            Console.WriteLine("searching for server");
-            serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
-            serverSocket.Listen(1); //todo put backlog in variable
-            listener = serverSocket.Accept();
+            Console.WriteLine("new server message");
+            Socket socket;
+            try
+            {
+                socket = serverSocket.EndAccept(AR);
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
 
-            Console.WriteLine("found server");
+            SocketMemory memory = new SocketMemory(socket, new byte[1024], port);
+            memory.socket.BeginReceive(memory.messageBuffer, 0, memory.messageBuffer.Length, SocketFlags.None, new AsyncCallback(StartReceivingFromServer), memory); 
 
-            SocketMemory memory = new SocketMemory(listener, new byte[1024], port);
-            memory.socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, new AsyncCallback(StartReceivingFromServer), memory);
+            serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
         }
 
         private void StartReceivingFromServer(IAsyncResult AR)
@@ -123,14 +103,13 @@ namespace light_regulator
                 return;
             }
 
-            ServerRegulator msg = new ServerRegulator(memory.pingBuffer);
+            ServerRegulator msg = new ServerRegulator(memory.messageBuffer);
 
             string text = msg.ToString();
             Console.WriteLine("received: " + text);
             Console.WriteLine("received settigns");
             msg.Settings.ForEach(Console.WriteLine);
 
-            socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, new AsyncCallback(StartReceivingFromServer), memory);
 
             if (msg.Data.Equals("CHANGE_CONFIG"))
             {
@@ -146,8 +125,7 @@ namespace light_regulator
             {
                 //Task.Run(() => ChangeParameter(parameter));
             }
-            //SearchForServer(4000);
-            //socket.BeginReceive(memory.buffer, 0, memory.buffer.Length, SocketFlags.None, new AsyncCallback(StartReceivingFromServer), memory);
+            //socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, new AsyncCallback(ReceivePing), memory);
             //StartCustom(memory, "OK");
             //todo catch client disconnected exception 
             //todo forward messege to device
@@ -303,9 +281,17 @@ namespace light_regulator
             }
 
         }
+        private void SendPing(IAsyncResult AR)
+        {
+            SocketMemory memory = (SocketMemory)AR.AsyncState;
+            Socket socket = memory.socket;
+            socket.EndSend(AR);
+            socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, ReceivePing, memory);
+        }
 
         private void ReceivePing(IAsyncResult AR)
         {
+            Console.WriteLine("started ping rec");
             SocketMemory memory = (SocketMemory)AR.AsyncState;
             Socket socket = memory.socket;
 
@@ -333,78 +319,70 @@ namespace light_regulator
             StartPinging(memory);
         }
 
-        private void SendPing(IAsyncResult AR)
-        {
-            SocketMemory memory = (SocketMemory)AR.AsyncState;
-            Socket socket = memory.socket;
-            socket.EndSend(AR);
-            socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, ReceivePing, memory);
-        }
+        //private void CustomMessege()
+        //{
+        //    int lampId = 1;
+        //    string operation;
 
-        private void CustomMessege()
-        {
-            int lampId = 1;
-            string operation;
+        //    while (lampId != 0)
+        //    {
+        //        lampId = Int32.Parse(Console.ReadLine()); //todo handle exception
+        //        operation = Console.ReadLine();
+        //        SocketMemory selected = null;
+        //        foreach (SocketMemory memory in clientSockets)
+        //        {
+        //            if (memory.port == lampId)
+        //            {
+        //                selected = memory;
+        //                break;
+        //            }
+        //        }
 
-            while (lampId != 0)
-            {
-                lampId = Int32.Parse(Console.ReadLine()); //todo handle exception
-                operation = Console.ReadLine();
-                SocketMemory selected = null;
-                foreach (SocketMemory memory in clientSockets)
-                {
-                    if (memory.port == lampId)
-                    {
-                        selected = memory;
-                        break;
-                    }
-                }
+        //        StartCustom(selected, operation);
+        //    }
+        //}
 
-                StartCustom(selected, operation);
-            }
-        }
+        //private void StartCustom(SocketMemory memory, string operation)
+        //{
+        //    RegulatorDevice msg = new RegulatorDevice(1, id, operation, randomSignature);
+        //    Array.Copy(msg.ToBytes(), memory.pingBuffer, msg.Size); //todo delete parralel access to memory
+        //    memory.socket.BeginSend(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, new AsyncCallback(SendCustom), memory);//todo merge with startping
 
-        private void StartCustom(SocketMemory memory, string operation)
-        {
-            RegulatorDevice msg = new RegulatorDevice(1, id, operation, randomSignature);
-            Array.Copy(msg.ToBytes(), memory.pingBuffer, msg.Size); //todo delete parralel access to memory
-            memory.socket.BeginSend(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, new AsyncCallback(SendCustom), memory);//todo merge with startping
+        //}
 
-        }
+        //private void SendCustom(IAsyncResult AR)
+        //{
+        //    SocketMemory memory = (SocketMemory)AR.AsyncState;
+        //    Socket socket = memory.socket;
+        //    socket.EndSend(AR);
+        //    socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, ReceiveCustom, memory);
+        //}
 
-        private void SendCustom(IAsyncResult AR)
-        {
-            SocketMemory memory = (SocketMemory)AR.AsyncState;
-            Socket socket = memory.socket;
-            socket.EndSend(AR);
-            socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, ReceiveCustom, memory);
-        }
+        //private void ReceiveCustom(IAsyncResult AR)
+        //{
+        //    SocketMemory memory = (SocketMemory)AR.AsyncState;
+        //    Socket socket = memory.socket;
 
-        private void ReceiveCustom(IAsyncResult AR)
-        {
-            SocketMemory memory = (SocketMemory)AR.AsyncState;
-            Socket socket = memory.socket;
+        //    int received;
 
-            int received;
-
-            try
-            {
-                received = socket.EndReceive(AR);
-            }
-            catch (SocketException)
-            {
-                Console.WriteLine("client forcefully disconnected");
-                socket.Close();
-                clientSockets.Remove(memory);
-                return;
-            }
+        //    try
+        //    {
+        //        received = socket.EndReceive(AR);
+        //    }
+        //    catch (SocketException)
+        //    {
+        //        Console.WriteLine("client forcefully disconnected");
+        //        socket.Close();
+        //        clientSockets.Remove(memory);
+        //        return;
+        //    }
 
 
-            RegulatorDevice msg = new RegulatorDevice(memory.pingBuffer);
+        //    RegulatorDevice msg = new RegulatorDevice(memory.pingBuffer);
 
-            string text = msg.ToString();
-            Console.WriteLine("received: " + text);
-        }
+        //    string text = msg.ToString();
+        //    Console.WriteLine("received: " + text);
+        //}
 
         private class SocketMemory
         {
