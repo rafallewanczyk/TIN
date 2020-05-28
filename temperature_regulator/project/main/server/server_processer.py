@@ -121,12 +121,8 @@ class ServerProcesser(Processer):
             public_key_size, = unpack("!i", public_key_size)
             if self._cryptography_handler is not None:
                 public_key_bytes, data = data[:public_key_size], data[public_key_size:]
-<<<<<<< HEAD
-                public_key = load_pem_public_key(bytes(public_key_bytes), default_backend())
-=======
                 base64_key = base64.decodebytes(public_key_bytes)
                 public_key = load_pem_public_key(base64_key, default_backend())
->>>>>>> 376750b... Bugfixes
             else:
                 public_key = None
             parameters, data = self._get_parameters_from_data(data)
