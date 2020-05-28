@@ -6,8 +6,8 @@ export enum Status {
 }
 
 export enum DeviceType {
-  TEMPERATURE = 0,
-  LIGHT = 1,
+  TEMPERATURE = 'TEMPERATURE',
+  LIGHT = 'LIGHT',
 }
 
 export class RegulatorModel {
