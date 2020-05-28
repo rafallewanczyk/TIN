@@ -97,11 +97,11 @@ class Processer(ABC):
         if self._cryptography_handler:
             if self._public_key is None:
                 self._public_key = self._cryptography_handler.get_servers_public_key(sender_id)
-            relevant_information = self._cryptography_handler.decrypt_data(relevant_information)
             signature = self.__get_signature(data)
             if not self._cryptography_handler.check_signature(signature, relevant_information, self._public_key):
                 self._threaded_print(f"Signature error. Address: {self._address} Port: {self._port}")
                 return None
+            relevant_information = self._cryptography_handler.decrypt_data(relevant_information)
         return relevant_information
 
     def __create_header(self, protocol_version: int, amount_of_bytes: int, id: int) -> bytearray:
