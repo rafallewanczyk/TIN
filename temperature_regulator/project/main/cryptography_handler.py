@@ -5,12 +5,22 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import hashes
 from cryptography.exceptions import InvalidSignature
 from typing import List
+from cryptography.hazmat.primitives import serialization
 
 
 class CryptographyHandler:
     def __init__(self, private_key_path: str, servers_public_keys_paths: List[str]):
-        private_key_data = self._get_der_from_file(private_key_path)
-        self._regulator_private_key = load_der_private_key(data=private_key_data, password=None, backend=default_backend())
+        try:
+            private_key_data = self._get_der_from_file(private_key_path)
+        except IOError:
+            self._regulator_private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=default_backend())
+            public_key = self._regulator_private_key.public_key()
+            key = self._regulator_private_key.private_bytes(encoding=serialization.Encoding.DER, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption())
+            self._save_key(key, private_key_path)
+            key = public_key.public_bytes(encoding=serialization.Encoding.DER, format=serialization.PublicFormat.PKCS1)
+            self._save_key(key, "Wygenerowany_klucz_publiczny.public")
+        else:
+            self._regulator_private_key = load_der_private_key(private_key_data, None, default_backend())
         self._server_public_keys = list()
         for path in servers_public_keys_paths:
             server_public_key_der = self._get_der_from_file(path)
@@ -23,6 +33,10 @@ class CryptographyHandler:
     def _get_der_from_file(self, path: str) -> bytes:
         with open(path, 'rb') as file:
             return file.read()
+    
+    def _save_key(self, key, file_name):
+        with open(file_name, "wb+") as file:
+            file.write(key)
 
     def check_signature(self, signature: bytearray, signed_data: bytearray, sender_public_key: rsa.RSAPublicKey) -> bool:
         try:
