@@ -79,8 +79,8 @@ class Processer(ABC):
 
     def __encapsulate_data(self, data: bytearray) -> bytearray:
         if self._cryptography_handler:
-            signature = self._cryptography_handler.create_signature(data)
             encrypted_data = self._cryptography_handler.encrypt_data(data, self._public_key)
+            signature = self._cryptography_handler.create_signature(encrypted_data)
             bytes_to_send = bytearray(self.__create_header(self.TSHP_PROTOCOL_VERSION, 12 + 256 + len(encrypted_data) + len(signature) , self.ID))
             bytes_to_send.extend(encrypted_data)
             bytes_to_send.extend(signature)
