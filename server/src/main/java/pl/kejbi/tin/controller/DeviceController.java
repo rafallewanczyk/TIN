@@ -12,8 +12,10 @@ import pl.kejbi.tin.service.RegulatorService;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
@@ -25,7 +27,7 @@ public class DeviceController {
     private final RegulatorService regulatorService;
 
     @PostMapping
-    public void addDevice(@RequestBody DeviceDTO deviceDTO) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException {
+    public void addDevice(@RequestBody DeviceDTO deviceDTO) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidAlgorithmParameterException, SignatureException {
         Device device = deviceDTO.convertToDevice();
         deviceService.addDevice(device);
         int regulatorId = device.getRegulatorId();
@@ -38,7 +40,7 @@ public class DeviceController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteDevice(@PathVariable Integer id) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+    public void deleteDevice(@PathVariable Integer id) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         Device device = deviceService.deleteDevice(id);
         int regulatorId = device.getRegulatorId();
         if(device instanceof LightDevice) {
@@ -50,7 +52,7 @@ public class DeviceController {
     }
 
     @PatchMapping("/{id}")
-    public void updateDevice(@PathVariable Integer id, @RequestBody DeviceUpdateDTO deviceUpdateDTO) throws BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, IOException, InvalidKeyException, InvalidKeySpecException {
+    public void updateDevice(@PathVariable Integer id, @RequestBody DeviceUpdateDTO deviceUpdateDTO) throws BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, IOException, InvalidKeyException, InvalidKeySpecException, InvalidAlgorithmParameterException, SignatureException {
         Device device = deviceService.updateDevice(id, deviceUpdateDTO);
         int regulatorId = device.getRegulatorId();
         if(device instanceof LightDevice) {
@@ -62,19 +64,19 @@ public class DeviceController {
     }
 
     @PostMapping("/light/setTargetData")
-    public void setLightTargetData(@RequestBody LightTargetDTO lightTargetData) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+    public void setLightTargetData(@RequestBody LightTargetDTO lightTargetData) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         LightDevice device = deviceService.setLightTarget(lightTargetData.getId(), lightTargetData.getTarget());
         regulatorService.sendLightChangeParams(device.getRegulatorId(), device);
     }
 
     @PostMapping("/temperature/setTargetData")
-    public void setTemperatureTargetData(@RequestBody TemperatureTargetDto temperatureTargetData) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+    public void setTemperatureTargetData(@RequestBody TemperatureTargetDto temperatureTargetData) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         TemperatureDevice device = deviceService.setTemperatureTarget(temperatureTargetData.getId(), temperatureTargetData.getTarget());
         regulatorService.sendTemperatureChangeParams(device.getRegulatorId(), device);
     }
 
     @GetMapping
-    public List<DeviceWithDataDTO> getAllDevices() throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+    public List<DeviceWithDataDTO> getAllDevices() throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         regulatorService.sendCurrData();
 
         return deviceService.getDevicesCurrentData();

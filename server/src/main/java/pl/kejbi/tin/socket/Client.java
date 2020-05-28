@@ -69,7 +69,7 @@ public class Client implements Protocol {
 
     private DataWithSignature receiveMessage(DataInputStream inputStream) throws IOException {
         ByteBuffer byteBuffer = readHeader(inputStream);
-        byte[] data = readData(byteBuffer.capacity() - HEADER_SIZE, byteBuffer, inputStream);
+        byte[] data = readData(byteBuffer.capacity() - HEADER_SIZE - SIGN_SIZE, byteBuffer, inputStream);
         byte[] signature = inputStream.readAllBytes();
 
         return new DataWithSignature(data, signature);

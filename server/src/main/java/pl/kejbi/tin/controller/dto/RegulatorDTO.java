@@ -40,7 +40,7 @@ public class RegulatorDTO {
         this.status = regulator.getStatus();
     }
 
-    public Regulator convertToRegulator() throws InvalidKeySpecException, NoSuchAlgorithmException {
+    public Regulator convertToRegulator() {
         return new Regulator(id, name, address, port, publicKey, type, StatusType.INACTIVE);
     }
 }

@@ -15,8 +15,10 @@ import javax.crypto.IllegalBlockSizeException;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
@@ -27,7 +29,7 @@ public class RegulatorCommunicator {
     private final KeyHolder keyHolder;
     private static final int TIMEOUT = 5000;
 
-    public void sendTemperatureChangeConfig(Regulator regulator, List<TemperatureDevice> devices) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, InvalidKeySpecException, NoSuchAlgorithmException {
+    public void sendTemperatureChangeConfig(Regulator regulator, List<TemperatureDevice> devices) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         DataWithSignature response = communicator.sendData(
                 temperatureDevicesToByteArray(devices),
                 regulator.getHostname(),
@@ -39,7 +41,7 @@ public class RegulatorCommunicator {
         communicator.processResponse(response, KeyEncoder.getPublicKey(regulator.getPublicKey()), keyHolder.getMyPrivateKey());
     }
 
-    public void sendLightChangeConfig(Regulator regulator, List<LightDevice> devices) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, InvalidKeySpecException, NoSuchAlgorithmException {
+    public void sendLightChangeConfig(Regulator regulator, List<LightDevice> devices) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         DataWithSignature response = communicator.sendData(
                 lightDevicesToByteArray(devices),
                 regulator.getHostname(),
@@ -51,7 +53,7 @@ public class RegulatorCommunicator {
         communicator.processResponse(response, KeyEncoder.getPublicKey(regulator.getPublicKey()), keyHolder.getMyPrivateKey());
     }
 
-    public void sendCurrData(Regulator regulator) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, InvalidKeySpecException, NoSuchAlgorithmException {
+    public void sendCurrData(Regulator regulator) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         DataWithSignature response = communicator.sendData(
                 "CURR_DATA".getBytes(),
                 regulator.getHostname(),
@@ -63,7 +65,7 @@ public class RegulatorCommunicator {
         communicator.processResponse(response, KeyEncoder.getPublicKey(regulator.getPublicKey()), keyHolder.getMyPrivateKey());
     }
 
-    public void sendLightChangeParams(Regulator regulator, LightDevice device) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, InvalidKeySpecException, NoSuchAlgorithmException {
+    public void sendLightChangeParams(Regulator regulator, LightDevice device) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         DataWithSignature response = communicator.sendData(
                 lightDeviceChangeParamsToByteArray(device),
                 regulator.getHostname(),
@@ -75,7 +77,7 @@ public class RegulatorCommunicator {
         communicator.processResponse(response, KeyEncoder.getPublicKey(regulator.getPublicKey()), keyHolder.getMyPrivateKey());
     }
 
-    public void sendTemperatureChangeParams(Regulator regulator, TemperatureDevice device) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, InvalidKeySpecException, NoSuchAlgorithmException {
+    public void sendTemperatureChangeParams(Regulator regulator, TemperatureDevice device) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         DataWithSignature response = communicator.sendData(
                 temperatureDeviceChangeParamsToByteArray(device),
                 regulator.getHostname(),

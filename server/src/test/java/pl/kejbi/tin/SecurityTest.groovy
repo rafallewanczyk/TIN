@@ -55,7 +55,10 @@ class SecurityTest extends Specification {
         KeyGenerator keyGenerator = new KeyGenerator()
         KeyPair keyPair = keyGenerator.generateKeyPair(2048)
         Cryptography cryptography = new Cryptography()
-        String message = "TOP SECRET"
+        String message = "TOP SECRETAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa"
 
         when:
         byte[] encryptedMessage = cryptography.encryptData(message.getBytes(), keyPair.getPublic())
@@ -69,7 +72,7 @@ class SecurityTest extends Specification {
         given:
         KeyGenerator keyGenerator = new KeyGenerator()
         Cryptography cryptography = new Cryptography()
-        SignatureManager signatureManager = new SignatureManager(cryptography)
+        SignatureManager signatureManager = new SignatureManager()
         KeyPair keyPair = keyGenerator.generateKeyPair(2048)
         byte[] message = "TOP SECRET".getBytes()
 
