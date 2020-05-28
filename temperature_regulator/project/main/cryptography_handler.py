@@ -5,6 +5,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import hashes
 from cryptography.exceptions import InvalidSignature
 from typing import List
+import base64
 
 
 class CryptographyHandler:
@@ -14,7 +15,8 @@ class CryptographyHandler:
         self._server_public_keys = list()
         for path in servers_public_keys_paths:
             server_public_key_pem = self._get_pem_from_file(path)
-            server_public_key = load_pem_public_key(data=server_public_key_pem, backend=default_backend())
+            base64_key_data = base64.decodebytes(server_public_key_pem)
+            server_public_key = load_pem_public_key(data=base64_key_data, backend=default_backend())
             self._server_public_keys.append(server_public_key)
 
     def get_servers_public_key(self, id: int):
