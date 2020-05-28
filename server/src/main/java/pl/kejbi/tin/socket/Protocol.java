@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public interface Protocol {
-    int DEVICE_ID = 10001;
+    int DEVICE_ID = 0;
     int PROTOCOL_VERSION = 1;
     int HEADER_SIZE = 12;
     int SIGN_SIZE = 256;
