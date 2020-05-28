@@ -98,17 +98,19 @@ int main(int argc, char *argv[]) {
         cout << ("ERROR writing to socket") << endl;
         exit(0);
     }
-    std::vector<char> buffer(1256);
-    n = read(sockfd, buffer.data(), 1255);
+    std::vector<char> buffer(524);
+    n = read(sockfd, buffer.data(), 524);
     if (n < 0) {
         cout << ("ERROR reading from socket") << endl;
         exit(0);
     }
 
     if (strcmp(argv[1], "get") == 0) {
-        std::string response(buffer.begin(), buffer.end());
-        double val = parseDouble(response.substr(12 + 9, 8));
-        std::cout << "Whole data: " << response.substr(12, 9) << std::endl;
+        auto doubleData = std::string(buffer.begin() + 12, buffer.end() - 256);
+        std::string response = security->decrypt(doubleData);
+        std::reverse(response.begin() + 9, response.end());
+        double val = parseDouble(response.substr(9, 8));
+        std::cout << "Verified: " <<security->verifySignature(std::string(buffer.begin() + 12, buffer.end())) << std::endl;
         std::cout << "Current temp: " << val << std::endl;
 
     } else if (strcmp(argv[1], "set") == 0) {

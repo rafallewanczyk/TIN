@@ -28,9 +28,15 @@ class ConnectionHandler {
     DataReader reader;
     DataParser dataParser;
 
+    void verifySignature(const std::string &body) {
+        if (!security->verifySignature(body)) {
+            throw SignatureNotVerified();
+        }
+    }
+
     void handleData() {
         auto body = reader.readAllData();
-        security->verifySignature(body);
+        verifySignature(body);
         auto parsedData = dataParser.parse(body);
 
         switch (parsedData.messageType) {
@@ -54,6 +60,7 @@ class ConnectionHandler {
         } catch (const InvalidMessageHeaderException &e) {
             std::cout << e.what() << std::endl;
         } catch (const InvalidDataException &e) {
+            std::cout << e.what() << std::endl;
             sender.sendError(e.what());
         } catch (const std::exception &e) {
             std::cout << e.what() << std::endl;

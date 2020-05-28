@@ -87,8 +87,8 @@ public:
         auto messageType = messageTypeToString(ERROR);
         std::vector<char> message;
 
-        message.insert(messageType.end(), messageType.begin(), messageType.end());
-        message.insert(messageType.end(), error.begin(), error.end());
+        message.insert(message.end(), messageType.begin(), messageType.end());
+        message.insert(message.end(), error.begin(), error.end());
 
         sendMessage(message);
     }
