@@ -14,6 +14,10 @@ namespace light_device
             lamp.StartConnection();
             lamp.StartSending();
             lamp.Close();
+
+
+
+
         }
 
        

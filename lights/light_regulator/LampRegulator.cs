@@ -7,6 +7,7 @@ using System.Threading;
 using TSHP;
 using Microsoft.VisualBasic;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace light_regulator
 {
@@ -18,6 +19,13 @@ namespace light_regulator
         private int port;
         private int id;
         private String randomSignature = "414140de5dae2223b00361a396177a9cb410ff61f20015ad"; //only for testing purpose 
+        private int privateKeyLength = 0;
+        private int publicKeyLength = 0;
+
+        RSACryptoServiceProvider myKeys = new RSACryptoServiceProvider(2048);
+        //todo delte
+        RSACryptoServiceProvider key60000 = new RSACryptoServiceProvider(2048);
+        int length60000; 
 
 
         public LampRegulator(int port, int backlog, int id)
@@ -28,6 +36,49 @@ namespace light_regulator
 
             serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
             serverSocket.Listen(this.backlog);
+
+            try
+            {
+                using FileStream fs = File.OpenRead(port.ToString() + "Private.rsa");
+                byte[] buff = new byte[2048];
+                int c = fs.Read(buff, 0, buff.Length);
+                myKeys.ImportPkcs8PrivateKey(buff, out privateKeyLength);
+
+                using FileStream fs1 = File.OpenRead(port.ToString() + "Public.rsa");
+                c = fs1.Read(buff, 0, buff.Length);
+                //myKeys.ImportSubjectPublicKeyInfo(buff, out publicKeyLength);
+
+            }
+            catch (FileNotFoundException)
+            {
+                using FileStream fs = File.OpenWrite(port.ToString() + "Private.rsa");
+                byte[] data = myKeys.ExportPkcs8PrivateKey();
+                fs.Write(data, 0, data.Length);
+
+                using FileStream fs1 = File.OpenWrite(port.ToString() + "Public.rsa");
+                byte [] data1 = myKeys.ExportSubjectPublicKeyInfo();
+                fs1.Write(data1, 0, data1.Length);
+            }
+
+            try
+            {
+                using FileStream fs = File.OpenRead("C:\\Users\\rafal\\source\\repos\\TIN\\lights\\light_device\\bin\\Debug\\netcoreapp3.1\\60000Public.rsa");
+                byte[] buff = new byte[2048];
+                int c = fs.Read(buff, 0, buff.Length);
+                key60000.ImportSubjectPublicKeyInfo(buff, out length60000); 
+            }
+            catch (FileNotFoundException)
+            {
+                Console.WriteLine("cant access regulator key"); 
+            }
+
+
+           
+
+
+            //Console.WriteLine(privateKeyLength + " " + publicKeyLength);
+            //Console.WriteLine("--------------------------------"); 
+            //Console.WriteLine(length60000); 
 
 
         }
@@ -78,7 +129,6 @@ namespace light_regulator
             }
 
             SocketMemory memory = new SocketMemory(socket, new byte[1024], port);
-            //memory.socket.BeginReceive(memory.messageBuffer, 0, memory.messageBuffer.Length, SocketFlags.None, new AsyncCallback(StartReceivingFromServer), memory); 
             Task.Run(() => StartReceivingFromServer(memory));
 
             serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
@@ -128,15 +178,15 @@ namespace light_regulator
                 Task.Run(() => SearchForDevices(msg.Settings));
             }
 
-            if (msg.Data.Equals("CURR_DATA"))
-            {
-                Task.Run(() => GetAllStats());
-            }
+            //if (msg.Data.Equals("CURR_DATA"))
+            //{
+            //    Task.Run(() => GetAllStats());
+            //}
 
-            if (msg.Data.Equals("CHANGE_PARAM"))
-            {
-                //Task.Run(() => ChangeParameter(parameter));
-            }
+            //if (msg.Data.Equals("CHANGE_PARAM"))
+            //{
+            //    //Task.Run(() => ChangeParameter(parameter));
+            //}
 
 
         }
@@ -180,7 +230,7 @@ namespace light_regulator
 
                     Console.WriteLine("found device " + port + ", starting pings");
 
-                    SocketMemory memory = new SocketMemory(socket, new byte[1024], port);
+                    SocketMemory memory = new SocketMemory(socket, new byte[256], port);
                     clientSockets.Add(memory);
                     StartPinging(memory);
                     return port;
@@ -203,85 +253,85 @@ namespace light_regulator
             }
         }
 
-        public void GetAllStats()
-        {
-            var ts = new CancellationTokenSource();
-            CancellationToken ct = ts.Token;
+        //public void GetAllStats()
+        //{
+        //    var ts = new CancellationTokenSource();
+        //    CancellationToken ct = ts.Token;
 
-            Task<int>[] tasks = new Task<int>[clientSockets.Count];
-            for (int i = 0; i < clientSockets.Count; i++)
-            {
-                SocketMemory memory = clientSockets[i];
-                tasks[i] = Task.Factory.StartNew(() =>
-                {
-                    RegulatorDevice msg = new RegulatorDevice(1, 1, "STATUS", randomSignature);
-                    memory.socket.Send(msg.ToBytes());
+        //    Task<int>[] tasks = new Task<int>[clientSockets.Count];
+        //    for (int i = 0; i < clientSockets.Count; i++)
+        //    {
+        //        SocketMemory memory = clientSockets[i];
+        //        tasks[i] = Task.Factory.StartNew(() =>
+        //        {
+        //            RegulatorDevice msg = new RegulatorDevice(1, 1, "STATUS", randomSignature);
+        //            memory.socket.Send(msg.ToBytes());
 
-                    memory.socket.Receive(memory.messageBuffer);
-                    msg = new RegulatorDevice(memory.messageBuffer);
-
-
-
-                    if (ct.IsCancellationRequested)
-                    {
-                        //Console.WriteLine("task canceled");
-                        return 0;
-                    }
-                    return int.Parse(msg.Data);
-                }, ct);
-
-            }
-
-            Thread.Sleep(5000);
-
-            ts.Cancel();
-        }
-
-        private int ChangeParameter(int id, int parameter)
-        {
-            var ts = new CancellationTokenSource();
-            CancellationToken ct = ts.Token;
-
-            String newParameter = parameter == 1 ? "SET1" : "SET0";
-
-            SocketMemory memory = FindById(id);
-            if (memory == null)
-            {
-                return 1;
-            }
-
-            Task<int> task = Task.Factory.StartNew(() =>
-            {
-                RegulatorDevice msg = new RegulatorDevice(1, 1, newParameter, randomSignature);
-                memory.socket.Send(msg.ToBytes());
-
-                memory.socket.Receive(memory.messageBuffer);
-                msg = new RegulatorDevice(memory.messageBuffer);
-
-                if (ct.IsCancellationRequested)
-                {
-                    //Console.WriteLine("task canceled");
-                    return 2;
-                }
-
-                return 0;
-            }, ct);
-
-            Thread.Sleep(1000);
-            ts.Cancel();
-
-            return task.Result;
+        //            memory.socket.Receive(memory.messageBuffer);
+        //            msg = new RegulatorDevice(memory.messageBuffer);
 
 
-        }
+
+        //            if (ct.IsCancellationRequested)
+        //            {
+        //                //Console.WriteLine("task canceled");
+        //                return 0;
+        //            }
+        //            return int.Parse(msg.Data);
+        //        }, ct);
+
+        //    }
+
+        //    Thread.Sleep(5000);
+
+        //    ts.Cancel();
+        //}
+
+        //private int ChangeParameter(int id, int parameter)
+        //{
+        //    var ts = new CancellationTokenSource();
+        //    CancellationToken ct = ts.Token;
+
+        //    String newParameter = parameter == 1 ? "SET1" : "SET0";
+
+        //    SocketMemory memory = FindById(id);
+        //    if (memory == null)
+        //    {
+        //        return 1;
+        //    }
+
+        //    Task<int> task = Task.Factory.StartNew(() =>
+        //    {
+        //        RegulatorDevice msg = new RegulatorDevice(1, 1, newParameter, randomSignature);
+        //        memory.socket.Send(msg.ToBytes());
+
+        //        memory.socket.Receive(memory.messageBuffer);
+        //        msg = new RegulatorDevice(memory.messageBuffer);
+
+        //        if (ct.IsCancellationRequested)
+        //        {
+        //            //Console.WriteLine("task canceled");
+        //            return 2;
+        //        }
+
+        //        return 0;
+        //    }, ct);
+
+        //    Thread.Sleep(1000);
+        //    ts.Cancel();
+
+        //    return task.Result;
+
+
+        //}
 
         private void StartPinging(SocketMemory memory)
         {
-            RegulatorDevice msg = new RegulatorDevice(1, id, "PING", randomSignature);
-            Array.Copy(msg.ToBytes(), memory.pingBuffer, msg.Size);
+            RegulatorDevice msg = new RegulatorDevice(1, id, "PING", randomSignature, key60000, myKeys);
+            //RegulatorDevice.Encrypt()
+            Array.Copy(msg.encryptedData, memory.pingBuffer, msg.encryptedData.Length);
             try
             {
-
                 memory.socket.BeginSend(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, new AsyncCallback(SendPing), memory);
             }
             catch (SocketException)
@@ -318,7 +368,7 @@ namespace light_regulator
                 return;
             }
 
-            RegulatorDevice msg = new RegulatorDevice(memory.pingBuffer);
+            RegulatorDevice msg = new RegulatorDevice(memory.pingBuffer, key60000, myKeys);
             string text = msg.ToString();
             Console.WriteLine("received: " + text);
 
@@ -398,13 +448,13 @@ namespace light_regulator
             public Socket socket;
             public byte[] pingBuffer;
             public byte[] messageBuffer;
+            public RSACryptoServiceProvider publicKey;
             public int port;
             public SocketMemory(Socket socket, byte[] pingBuffer, int port)
             {
                 this.socket = socket;
                 this.pingBuffer = pingBuffer;
                 this.port = port;
-                this.messageBuffer = new byte[2000];
             }
         }
 
