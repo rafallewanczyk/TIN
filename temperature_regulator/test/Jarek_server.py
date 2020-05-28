@@ -1,5 +1,4 @@
 import socket
-import sys
 from struct import pack, unpack
 import cryptography_handler
 
@@ -36,7 +35,6 @@ def receive_from_host(connection_socket) -> bytearray:
     if not portion:
         return data
     protocol_version, amount_of_bytes, sender_id = process_header(portion)
-    print(f"Header: {protocol_version} {amount_of_bytes} {sender_id}")
     while True:
         if amount_of_bytes - 500 > 0:
             data.extend(portion)
@@ -45,7 +43,6 @@ def receive_from_host(connection_socket) -> bytearray:
         else:
             data.extend(portion[:amount_of_bytes])
             break
-    print(f"Data: {data[12:].decode(encoding='unicode_escape')}")
     return data[12:]
 
 
@@ -56,6 +53,10 @@ def check_message_type(tested_msg_type, data):
 
 def process_data_from(connection_socket, client_address):
     data = receive_from_host(connection_socket)
+    handler = cryptography_handler.CryptographyHandler("Jarek_server_key.private", "../test_only_key.public")
+    data, signature = data[:-256], data[-256:]
+    data = handler.decrypt_data(data[:256])
+    handler.check_signature(data, signature)
     global TEMPERATURE
     if check_message_type("CHANGE_TEMP", data):
         temp, = unpack("!d", data[len("CHANGE_TEMP"):])
@@ -64,8 +65,11 @@ def process_data_from(connection_socket, client_address):
     if check_message_type("GET_TEMP", data):
         print(f"Temperature sent: {TEMPERATURE}")
         data = get_curr_temp_body()
-        header = create_header(1, 12 + len(data), 0)
-        connection_socket.sendall(header+data)
+        signature = handler.create_signature(data)
+        data = handler.encrypt_data(data)
+        header = create_header(1, 12 + len(data) + len(signature), 0)
+        data_to_send = header+data+signature
+        connection_socket.sendall(data_to_send)
         print("Data sent")
     connection_socket.close()
 

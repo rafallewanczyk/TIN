@@ -45,21 +45,25 @@ class CryptographyHandler:
     def encrypt_data(self, data: bytearray, receiver_public_key: rsa.RSAPublicKey) -> bytearray:
         encrypted_data = bytearray()
         while True:
-            if len(data) - 100 > 0:
-                bytes_data = receiver_public_key.encrypt(bytes(data[:100]), padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None))
-                data = data[100:]
+            if len(data) - 150 > 0:
+                bytes_data = receiver_public_key.encrypt(bytes(data[:150]), padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None))
+                encrypted_data.extend(bytes_data)
+                data = data[150:]
             else:
                 bytes_data = receiver_public_key.encrypt(bytes(data), padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None))
-            encrypted_data.extend(bytes_data)
+                encrypted_data.extend(bytes_data)
+                break
         return encrypted_data
 
     def decrypt_data(self, data: bytearray) -> bytearray:
         decrypted_data = bytearray()
         while True:
-            if len(data) - 100 > 0:
-                bytes_data = self._regulator_private_key.decrypt(bytes(data[:100]), padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None))
-                data = data[100:]
+            if len(data) - 256 > 0:
+                bytes_data = self._regulator_private_key.decrypt(bytes(data[:256]), padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None))
+                decrypted_data.extend(bytes_data)
+                data = data[256:]
             else:
                 bytes_data = self._regulator_private_key.decrypt(bytes(data), padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None))
-            decrypted_data.extend(bytes_data)
+                decrypted_data.extend(bytes_data)
+                break
         return decrypted_data

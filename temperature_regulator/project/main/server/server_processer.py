@@ -32,6 +32,7 @@ class ServerProcesser(Processer):
         self._threaded_print(f"Server thread started running. Client address: {self._address} Client port: {self._port}")
         data = self._receive_data()
         if data is None:
+            self._threaded_print(f"Server thread stopped running. Client address: {self._address} Client port: {self._port}")
             return  # No data to process, so stop thread
         message_type, data = self._get_message_type_and_stripped_data(data)
         if message_type is None:
@@ -79,20 +80,20 @@ class ServerProcesser(Processer):
                 data_to_send_to_server.extend(data)
             else:
                 if message_type == CURR_DATA:
-                    data_to_send_to_server.append(pack("!i", -300))
+                    data_to_send_to_server.append(pack("!d", -300))
                 elif message_type == CHANGE_PARAMS:
                     data_to_send_to_server.append(pack("!i", 2))
             processed_messages_count += 1
-        self._send_answer(data_to_send_to_server)
+        self._send_answer(message_type, data_to_send_to_server)
 
     def _send_answer(self, message_type: MessageType, data_to_send: bytearray):
-        if message_type == CHANGE_CONFIG:
+        if message_type == self.MessageType.CHANGE_CONFIG:
             beginning = bytearray(self.ReturnMessageType.CHANGE_CONFIG_RE.value, "utf-8")
             sent = self._send_data(beginning)
-        elif message_type == CHANGE_PARAMS:
+        elif message_type == self.MessageType.CHANGE_PARAMS:
             beginning = bytearray(self.ReturnMessageType.CHANGE_PARAMS_RE.value, "utf-8")
             sent = self._send_data(beginning + data_to_send)
-        elif message_type == CURR_DATA:
+        elif message_type == self.MessageType.CURR_DATA:
             beginning = bytearray(self.ReturnMessageType.CURRENT_DATA_RES.value, "utf-8") + pack("!h", 0)
             sent = self._send_data(beginning + data_to_send)
         if not sent:
@@ -114,10 +115,10 @@ class ServerProcesser(Processer):
             port, data = data[:4], data[4:]
             port, = unpack("!i", port)
             address_size, data = data[:4], data[4:]
-            address_size = unpack("!i", address_size)
-            address = data[:address_size].decode("utf-8"), data[address_size:]
+            address_size, = unpack("!i", address_size)
+            address, data = data[:address_size].decode("utf-8"), data[address_size:]
             public_key_size, data = data[:4], data[4:]
-            public_key_size, = unpack("!i", id)
+            public_key_size, = unpack("!i", public_key_size)
             if self._cryptography_handler is not None:
                 public_key_bytes, data = data[:public_key_size], data[public_key_size:]
                 public_key = load_pem_public_key(public_key_bytes, default_backend())
@@ -125,6 +126,7 @@ class ServerProcesser(Processer):
                 public_key = None
             parameters, data = self._get_parameters_from_data(data)
             devices_info_list.append((id, public_key, (address, port), parameters))
+            print(f"{id} {port} {address} {public_key_size} {parameters}")
         return devices_info_list
 
     def _get_parameters_from_data(self, data: bytearray) -> Tuple[float]:
@@ -144,10 +146,11 @@ class ServerProcesser(Processer):
             id, = unpack("!i", id)
             parameters, data = self._get_parameters_from_data(data)
             address = self._devices_list.get_devices_address(id)
+            public_key = self._devices_list.get_devices_public_key(id)
             if address is None:
                 queue.put((id, 1))
             else:
-                self._send_parameters_to_device(id, address, parameters, queue)
+                self._send_parameters_to_device(id, address, public_key, parameters, queue)
 
     def _send_parameters_to_device(self, id: int, address: Tuple[str, int], public_key: rsa.RSAPublicKey, parameters: Tuple, queue: Queue):
         try:

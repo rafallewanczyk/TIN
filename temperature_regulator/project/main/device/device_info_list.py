@@ -47,6 +47,15 @@ class DeviceInfoList:
             address = device.address
         return address
 
+    def get_devices_public_key(self, id: int) -> rsa.RSAPublicKey:
+        with self._lock.gen_rlock():
+            try:
+                device = self._devices[id]
+            except KeyError:
+                return None
+            public_key = device.public_key
+        return public_key
+
     def get_all_devices_info(self) -> Dict[int, DeviceInfo]:
         with self._lock.gen_rlock():
             return self._devices.copy()
