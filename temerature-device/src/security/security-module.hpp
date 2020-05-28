@@ -9,6 +9,7 @@
 #include <files.h>
 #include <string>
 #include <hex.h>
+#include <pssr.h>
 #include "rsa.h"
 #include "key-generator.hpp"
 #include "regulator-keys-not-found.hpp"
@@ -23,8 +24,8 @@ class SecurityModule {
     CryptoPP::AutoSeededRandomPool rng;
 
 public:
-    const inline static bool ENCRYPTION_MODE_OFF = true;
-    const inline static int SIGNATURE_SIZE = ENCRYPTION_MODE_OFF ? 0 : 32;
+    const inline static bool ENCRYPTION_MODE_OFF = false;
+    const inline static int SIGNATURE_SIZE = ENCRYPTION_MODE_OFF ? 0 : 256;
 
     SecurityModule(const std::string &regulatorPublicKeyFilename) {
         KeyGenerator generator;
@@ -42,7 +43,7 @@ public:
         }
     }
 
-    std::string decrypt(std::string messageToDecrypt) {
+    std::string decrypt(const std::string &messageToDecrypt) {
         std::lock_guard lock(mutex);
 
         if (ENCRYPTION_MODE_OFF) { // Only for debugging purpose
@@ -75,31 +76,42 @@ public:
         return encryptedMessage;
     }
 
-    std::string makeSignature(const std::vector<char> &messageToSign) {
+    std::string makeSignature(const std::string &messageToSign) {
         std::lock_guard lock(mutex);
         if (ENCRYPTION_MODE_OFF) { // Only for debugging purpose
             return "";
         }
-        SHA256 hash;
+
+        RSASS<PSS, SHA256>::Signer signer(serverKeyPair.privateKey);
         std::string signature;
-        StringSource(std::string(messageToSign.begin(), messageToSign.end()), true,
-                     new HashFilter(hash, new StringSink(signature)));
+        StringSource(messageToSign, true, new SignerFilter(rng, signer, new StringSink(signature)));
 
         return signature;
     }
 
-    bool verifySignature(const std::string &message, const std::string &signature) {
+    bool verifySignature(const std::string &message) {
         std::lock_guard lock(mutex);
-        if(ENCRYPTION_MODE_OFF) {
+        if (ENCRYPTION_MODE_OFF) {
             return true;
         }
-        SHA256 hash;
-        bool result;
-        StringSource(signature + message, true, new HashVerificationFilter(hash,
-                                                                           new ArraySink((byte *) &result,
-                                                                                         sizeof(result))));
 
-        return result;
+        try {
+            std::string recovered;
+            RSASS<PSS, SHA256>::Verifier verifier(regulatorPublicKey);
+            StringSource ss2(message, true,
+                 new SignatureVerificationFilter(
+                         verifier,
+                         new StringSink(recovered),
+                         SignatureVerificationFilter::THROW_EXCEPTION |
+                         SignatureVerificationFilter::PUT_MESSAGE
+                 )
+            );
+        }
+        catch (...) {
+            return false;
+        }
+
+        return true;
     }
 
 };
