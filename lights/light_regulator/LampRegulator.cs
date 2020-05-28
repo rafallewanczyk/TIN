@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using TSHP;
 using Microsoft.VisualBasic;
+using System.IO;
 
 namespace light_regulator
 {
@@ -26,9 +27,9 @@ namespace light_regulator
             this.id = id;
 
             serverSocket.Bind(new IPEndPoint(IPAddress.Any, port));
-            serverSocket.Listen(this.backlog); 
+            serverSocket.Listen(this.backlog);
 
-           
+
         }
 
         private SocketMemory FindById(int id)
@@ -59,7 +60,7 @@ namespace light_regulator
         {
 
             Console.WriteLine("Searchnig for server");
-            serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null); 
+            serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
             Console.Read();
         }
 
@@ -77,27 +78,38 @@ namespace light_regulator
             }
 
             SocketMemory memory = new SocketMemory(socket, new byte[1024], port);
-            memory.socket.BeginReceive(memory.messageBuffer, 0, memory.messageBuffer.Length, SocketFlags.None, new AsyncCallback(StartReceivingFromServer), memory); 
+            //memory.socket.BeginReceive(memory.messageBuffer, 0, memory.messageBuffer.Length, SocketFlags.None, new AsyncCallback(StartReceivingFromServer), memory); 
+            Task.Run(() => StartReceivingFromServer(memory));
 
             serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
         }
 
-        private void StartReceivingFromServer(IAsyncResult AR)
+        private void StartReceivingFromServer(SocketMemory memory)
         {
 
-            Console.WriteLine("Waiting for server data");
-            SocketMemory memory = (SocketMemory)AR.AsyncState;
             Socket socket = memory.socket;
-
-            int received;
+            socket.ReceiveTimeout = 100;
 
             try
             {
-                received = socket.EndReceive(AR);
+                using (var resultStream = new MemoryStream())
+                {
+                    const int CHUNK_SIZE = 1024;
+                    byte[] buffer = new byte[CHUNK_SIZE];
+                    int bytesReceived;
+                    while (socket.Available > 0)
+                    {
+                        bytesReceived = socket.Receive(buffer, buffer.Length, SocketFlags.None);
+                        byte[] actual = new byte[bytesReceived];
+                        Buffer.BlockCopy(buffer, 0, actual, 0, bytesReceived);
+                        resultStream.Write(actual, 0, actual.Length);
+                    }
+                    memory.messageBuffer = resultStream.ToArray();
+                }
             }
             catch (SocketException)
             {
-                Console.WriteLine("client forcefully disconnected");
+                Console.WriteLine("Lost connection to server");
                 socket.Close();
                 clientSockets.Remove(memory);
                 return;
@@ -125,10 +137,8 @@ namespace light_regulator
             {
                 //Task.Run(() => ChangeParameter(parameter));
             }
-            //socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, new AsyncCallback(ReceivePing), memory);
-            //StartCustom(memory, "OK");
-            //todo catch client disconnected exception 
-            //todo forward messege to device
+
+
         }
 
 
@@ -288,7 +298,6 @@ namespace light_regulator
             socket.EndSend(AR);
             socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, ReceivePing, memory);
         }
-
         private void ReceivePing(IAsyncResult AR)
         {
             Console.WriteLine("started ping rec");
@@ -395,7 +404,7 @@ namespace light_regulator
                 this.socket = socket;
                 this.pingBuffer = pingBuffer;
                 this.port = port;
-                this.messageBuffer = new byte[1024];
+                this.messageBuffer = new byte[2000];
             }
         }
 

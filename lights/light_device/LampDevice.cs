@@ -21,29 +21,17 @@ namespace light_device
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
         }
 
+
         public void StartConnection()
         {
-            ConnectLoop();
-        }
+            Console.WriteLine("waiting for regulator to respone");
+            socket.Bind(new IPEndPoint(IPAddress.Any, port));
+            socket.Listen(backlog);
 
+            listener = socket.Accept();
+            Console.WriteLine("connected to regulator");
+        }
         public void StartSending()
-        {
-            SendLoop();
-        }
-
-        public void Close()
-        {
-            Exit();
-        }
-
-        private void Exit()
-        {
-            socket.Shutdown(SocketShutdown.Both);
-            //socket.Close();
-            Environment.Exit(0);
-        }
-
-        private void SendLoop()
         {
             while (true)
             {
@@ -88,8 +76,6 @@ namespace light_device
                 }
 
 
-
-
                 byte[] answer = msg.ToBytes();
                 listener.Send(answer, 0, answer.Length, SocketFlags.None);
                 Console.WriteLine("current staus :" + status);
@@ -97,15 +83,12 @@ namespace light_device
 
         }
 
-        private void ConnectLoop()
+        public void Close()
         {
-            Console.WriteLine("waiting for regulator to respone");
-            socket.Bind(new IPEndPoint(IPAddress.Any, port));
-            socket.Listen(backlog);
-
-            listener = socket.Accept();
-            Console.WriteLine("connected to regulator");
+            socket.Shutdown(SocketShutdown.Both);
+            Environment.Exit(0);
         }
+
 
     }
 }
