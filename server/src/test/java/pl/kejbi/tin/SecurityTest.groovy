@@ -19,6 +19,7 @@ class SecurityTest extends Specification {
 
         when:
         KeyIO.writeKeyToFile("keys/privateKey.rsa", keyPair.getPrivate())
+        KeyIO.writeKeyToFile("keys/publicKey.rsa", keyPair.getPublic())
 
         then:
         "Created file with encoded public key"

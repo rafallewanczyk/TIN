@@ -79,10 +79,10 @@ class ServerProcesser(Processer):
                     data = bytearray(pack("!d", data))
                 data_to_send_to_server.extend(data)
             else:
-                if message_type == CURR_DATA:
-                    data_to_send_to_server.append(pack("!d", -300))
-                elif message_type == CHANGE_PARAMS:
-                    data_to_send_to_server.append(pack("!i", 2))
+                if message_type == self.MessageType.CURR_DATA:
+                    data_to_send_to_server.extend(pack("!d", -300.0))
+                elif message_type == self.MessageType.CHANGE_PARAMS:
+                    data_to_send_to_server.extend(pack("!i", 2))
             processed_messages_count += 1
         self._send_answer(message_type, data_to_send_to_server)
 
@@ -154,6 +154,7 @@ class ServerProcesser(Processer):
 
     def _send_parameters_to_device(self, id: int, address: Tuple[str, int], public_key: rsa.RSAPublicKey, parameters: Tuple, queue: Queue):
         try:
+            queue.devices_count += 1
             device_socket = self._connect_to_device(address)
         except OSError:
             ip, port = address
@@ -171,7 +172,6 @@ class ServerProcesser(Processer):
                                         DeviceProcesser.MessageType.CHANGE_TEMP,
                                         parameters))
         thread.start()
-        queue.devices_count += 1
 
     def _connect_to_device(self, address: Tuple[str, int]) -> socket.socket:
         device_socket = socket.create_connection(address)
@@ -182,6 +182,7 @@ class ServerProcesser(Processer):
         devices = self._devices_list.get_all_devices_info()
         for id, devices_infos in devices.items():
             try:
+                queue.devices_count += 1
                 device_socket = self._connect_to_device(devices_infos.address)
             except OSError:
                 ip, port = devices_infos.address
@@ -197,4 +198,3 @@ class ServerProcesser(Processer):
             thread = threading.Thread(target=DeviceProcesser.run,
                                       args=(device_thread, DeviceProcesser.MessageType.GET_TEMP, None))
             thread.start()
-            queue.devices_count += 1

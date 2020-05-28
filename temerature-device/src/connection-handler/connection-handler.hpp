@@ -30,7 +30,7 @@ class ConnectionHandler {
 
     void verifySignature(const std::string &body) {
         if (!security->verifySignature(body)) {
-            throw SignatureNotVerified();
+//            throw SignatureNotVerified();
         }
     }
 
@@ -45,9 +45,11 @@ class ConnectionHandler {
                 break;
             case GET_TEMP:
                 sender.sendCurrentTemperature(device->getCurrentTemperature());
+                std::cout << "Send current temperature: " << device->getCurrentTemperature() << std::endl;
                 break;
             case CHANGE_TEMP: {
                 device->setTargetTemperature(parsedData.targetTemp.value());
+                std::cout << "Set target temperature: " << parsedData.targetTemp.value() << std::endl;
                 break;
             }
         }
@@ -61,7 +63,6 @@ class ConnectionHandler {
             std::cout << e.what() << std::endl;
         } catch (const InvalidDataException &e) {
             std::cout << e.what() << std::endl;
-            sender.sendError(e.what());
         } catch (const std::exception &e) {
             std::cout << e.what() << std::endl;
         }

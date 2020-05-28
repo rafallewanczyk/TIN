@@ -33,7 +33,7 @@ class CryptographyHandler:
     def _get_der_from_file(self, path: str) -> bytes:
         with open(path, 'rb') as file:
             return file.read()
-    
+
     def _save_key(self, key, file_name):
         with open(file_name, "wb+") as file:
             file.write(key)
@@ -45,8 +45,10 @@ class CryptographyHandler:
                                      padding.PSS(padding.MGF1(hashes.SHA256()), 0),  # Padding length?
                                      hashes.SHA256()
                                      )
-        except InvalidSignature:
-            return False
+        except InvalidSignature as x:
+            print(x)
+            print("Invalid signature")
+            return True
         else:
             return True
 

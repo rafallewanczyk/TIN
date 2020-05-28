@@ -11,5 +11,5 @@ public class LightTargetDTO {
     @NotNull
     private Integer id;
     @NotNull
-    private Boolean target;
+    private Boolean targetData;
 }

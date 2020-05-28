@@ -65,13 +65,13 @@ public class DeviceController {
 
     @PostMapping("/light/setTargetData")
     public void setLightTargetData(@RequestBody LightTargetDTO lightTargetData) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
-        LightDevice device = deviceService.setLightTarget(lightTargetData.getId(), lightTargetData.getTarget());
+        LightDevice device = deviceService.setLightTarget(lightTargetData.getId(), lightTargetData.getTargetData());
         regulatorService.sendLightChangeParams(device.getRegulatorId(), device);
     }
 
     @PostMapping("/temperature/setTargetData")
     public void setTemperatureTargetData(@RequestBody TemperatureTargetDto temperatureTargetData) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
-        TemperatureDevice device = deviceService.setTemperatureTarget(temperatureTargetData.getId(), temperatureTargetData.getTarget());
+        TemperatureDevice device = deviceService.setTemperatureTarget(temperatureTargetData.getId(), temperatureTargetData.getTargetData());
         regulatorService.sendTemperatureChangeParams(device.getRegulatorId(), device);
     }
 

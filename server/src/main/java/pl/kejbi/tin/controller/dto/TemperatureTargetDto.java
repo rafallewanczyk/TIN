@@ -11,5 +11,5 @@ public class TemperatureTargetDto {
     @NotNull
     private Integer id;
     @NotNull
-    private Double target;
+    private Double targetData;
 }

@@ -50,7 +50,8 @@ public:
             return messageToDecrypt;
         }
 
-        CryptoPP::RSAES_OAEP_SHA_Decryptor d(serverKeyPair.privateKey);
+        RSAES<OAEP<SHA256>>::Decryptor d(serverKeyPair.privateKey);
+
         std::string decryptedMessage;
 
         CryptoPP::StringSource ss2(messageToDecrypt, true,
@@ -66,7 +67,7 @@ public:
             return messageToEncrypt;
         }
 
-        CryptoPP::RSAES_OAEP_SHA_Encryptor e(regulatorPublicKey);
+        RSAES<OAEP<SHA256>>::Encryptor e(regulatorPublicKey);
         std::string encryptedMessage;
 
         CryptoPP::StringSource ss1(messageToEncrypt, true,

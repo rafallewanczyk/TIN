@@ -22,12 +22,12 @@ public class ResponseHandler {
     public void handleResponse(byte[] response) {
         switch (MessageParser.parseMessage(response)) {
             case CURRENT_DATA_RES:
-                switch (ByteBuffer.wrap(response).getShort(12)) {
-                    case 1:
+                switch (ByteBuffer.wrap(response).getShort(16)) {
+                    case 0:
                         deviceService.updateTemperatureCurrData(response);
                         logger.info("Successfully converted temperature data");
                         break;
-                    case 2:
+                    case 1:
                         deviceService.updateLightCurrData(response);
                         logger.info("Successfully converted light data");
                         break;
@@ -36,7 +36,7 @@ public class ResponseHandler {
                 }
                 break;
             case CHANGE_PARAMS_RE:
-                switch (ByteBuffer.wrap(response).getShort(12)) {
+                switch (ByteBuffer.wrap(response).getShort(16)) {
                     case 0:
                         logger.info("CHANGE PARAMS succeed");
                         break;
