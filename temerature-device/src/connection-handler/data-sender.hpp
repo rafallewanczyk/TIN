@@ -34,23 +34,21 @@ class DataSender {
         }
     }
 
-    Header buildHeader(const std::string &message) {
+    Header buildHeader(const std::string &message, int signatureSize) {
         return {HeaderHandler::PROTOCOL_VERSION,
-                HeaderHandler::HEADER_SIZE + int(message.size()) + SecurityModule::SIGNATURE_SIZE,
+                HeaderHandler::HEADER_SIZE + int(message.size()) + signatureSize,
                 0}; //what about device id?
     }
 
     std::vector<char> buildMessage(const std::vector<char> &message) {
         auto messageBytes = security->encrypt(std::string(message.begin(), message.end()));
-        auto headerBytes = buildHeader(messageBytes).toBytes();
+        auto signature = security->makeSignature(messageBytes);
+        auto headerBytes = buildHeader(messageBytes, signature.size()).toBytes();
 
         std::vector<char> wholeMessage;
 
         wholeMessage.insert(wholeMessage.end(), headerBytes.begin(), headerBytes.end());
         wholeMessage.insert(wholeMessage.end(), messageBytes.begin(), messageBytes.end());
-
-        auto signature = security->makeSignature(wholeMessage);
-
         wholeMessage.insert(wholeMessage.end(), signature.begin(), signature.end());
 
         return wholeMessage;
@@ -80,7 +78,7 @@ public:
 
         std::memcpy(message.data(), messageType.data(), messageType.size());
         std::memcpy(message.data() + messageType.size(), &currentTemperature, DOUBLE_SIZE);
-        std::reverse(messageType.end() - DOUBLE_SIZE, message.end());
+        std::reverse(message.end() - DOUBLE_SIZE, message.end());
 
         sendMessage(message);
     }

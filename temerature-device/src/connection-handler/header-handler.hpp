@@ -48,7 +48,6 @@ class HeaderHandler {
         return value;
     }
 
-
     void validate(const Header &header) {
         if (header.contentSize < 0)
             throw InvalidMessageHeaderException("Content size is negative.");
@@ -75,8 +74,5 @@ public:
     }
 
 };
-
-//HeaderHandler::HEADER_SIZE
-
 
 #endif //UNTITLED_HEADER_HANDLER_HPP

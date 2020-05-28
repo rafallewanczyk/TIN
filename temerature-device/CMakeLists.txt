@@ -16,5 +16,6 @@ add_executable(AProgram main.cpp src/server/server.hpp src/server/socket-initial
 add_executable(ClientProgram clientmain.cpp)
 add_executable(test test/catch.hpp test/maintest.cpp src/server/server.hpp src/server/socket-initialisation-exception.hpp src/server/accept-connection-exception.hpp src/security/security-module.hpp src/security/key-generator.hpp src/device/device.hpp src/security/regulator-keys-not-found.hpp src/connection-handler/connection-exceptions.hpp src/utils/errno-exception.hpp src/connection-handler/header-handler.hpp src/connection-handler/data-reader.hpp src/connection-handler/data-sender.hpp src/connection-handler/data-parser.hpp src/connection-handler/invalid-data-exceptions.hpp src/device/device-handler.hpp ${MyTests})
 target_link_libraries(AProgram ${crypto})
+target_link_libraries(ClientProgram ${crypto})
 target_link_libraries(test ${crypto})
 

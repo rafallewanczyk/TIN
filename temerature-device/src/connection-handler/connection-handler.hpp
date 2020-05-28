@@ -28,21 +28,10 @@ class ConnectionHandler {
     DataReader reader;
     DataParser dataParser;
 
-    void verifySignature(RequestData data, const std::string &signature) {
-        std::vector<char> body;
-
-        body.insert(body.end(), data.header.rawData.begin(), data.header.rawData.end());
-        body.insert(body.end(), data.data.begin(), data.data.end() - SecurityModule::SIGNATURE_SIZE);
-
-        if (!security->verifySignature(std::string(body.begin(), body.end()), signature)) {
-            throw SignatureNotVerified();
-        }
-    }
-
     void handleData() {
-        auto requestData = reader.readAllData();
-        auto parsedData = dataParser.parse(requestData.data);
-        verifySignature(requestData, parsedData.signature);
+        auto body = reader.readAllData();
+        security->verifySignature(body);
+        auto parsedData = dataParser.parse(body);
 
         switch (parsedData.messageType) {
             case PING:
@@ -63,11 +52,11 @@ class ConnectionHandler {
             handleData();
         } catch (const ConnectionException &e) {
         } catch (const InvalidMessageHeaderException &e) {
-           std::cout << e.what() << std::endl;
+            std::cout << e.what() << std::endl;
         } catch (const InvalidDataException &e) {
             sender.sendError(e.what());
-        } catch (...) {
-            std::cout << "Other exception" <<std::endl;
+        } catch (const std::exception &e) {
+            std::cout << e.what() << std::endl;
         }
 
         destroy();
