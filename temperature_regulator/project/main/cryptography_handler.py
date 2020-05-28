@@ -17,7 +17,7 @@ class CryptographyHandler:
             public_key = self._regulator_private_key.public_key()
             key = self._regulator_private_key.private_bytes(encoding=serialization.Encoding.DER, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption())
             self._save_key(key, private_key_path)
-            key = public_key.public_bytes(encoding=serialization.Encoding.DER, format=serialization.PublicFormat.PKCS1)
+            key = public_key.public_bytes(encoding=serialization.Encoding.DER, format=serialization.PublicFormat.SubjectPublicKeyInfo)
             self._save_key(key, "Wygenerowany_klucz_publiczny.public")
         else:
             self._regulator_private_key = load_der_private_key(private_key_data, None, default_backend())
