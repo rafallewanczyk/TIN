@@ -1,30 +1,28 @@
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.serialization import load_pem_private_key, load_pem_public_key
+from cryptography.hazmat.primitives.serialization import load_der_private_key, load_der_public_key
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import hashes
 from cryptography.exceptions import InvalidSignature
 from typing import List
-import base64
 
 
 class CryptographyHandler:
     def __init__(self, private_key_path: str, servers_public_keys_paths: List[str]):
-        private_key_pem = self._get_pem_from_file(private_key_path)
-        self._regulator_private_key = load_pem_private_key(data=private_key_pem, password=None, backend=default_backend())
+        private_key_data = self._get_der_from_file(private_key_path)
+        self._regulator_private_key = load_der_private_key(data=private_key_data, password=None, backend=default_backend())
         self._server_public_keys = list()
         for path in servers_public_keys_paths:
-            server_public_key_pem = self._get_pem_from_file(path)
-            base64_key_data = base64.decodebytes(server_public_key_pem)
-            server_public_key = load_pem_public_key(data=base64_key_data, backend=default_backend())
+            server_public_key_der = self._get_der_from_file(path)
+            server_public_key = load_der_public_key(data=server_public_key_der, backend=default_backend())
             self._server_public_keys.append(server_public_key)
 
     def get_servers_public_key(self, id: int):
         return self._server_public_keys[id]
 
-    def _get_pem_from_file(self, path: str) -> bytes:
-        with open(path, 'rb') as pem_file:
-            return pem_file.read()
+    def _get_der_from_file(self, path: str) -> bytes:
+        with open(path, 'rb') as file:
+            return file.read()
 
     def check_signature(self, signature: bytearray, signed_data: bytearray, sender_public_key: rsa.RSAPublicKey) -> bool:
         try:
