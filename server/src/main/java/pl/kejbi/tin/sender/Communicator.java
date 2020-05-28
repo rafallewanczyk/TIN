@@ -21,9 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.InvalidKeyException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.*;
 import java.util.List;
 
 @Component
@@ -33,10 +31,11 @@ public class Communicator {
     private final SignatureManager signatureManager;
     private final ResponseHandler responseHandler;
 
-    public DataWithSignature sendData(byte[] data, String hostname, int port, int timeout, PublicKey receiverKey, PrivateKey myKey) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException {
+    public DataWithSignature sendData(byte[] data, String hostname, int port, int timeout, PublicKey receiverKey, PrivateKey myKey) throws IOException, BadPaddingException, InvalidKeyException, IllegalBlockSizeException, InvalidAlgorithmParameterException, SignatureException {
         byte[] encryptedData = cryptography.encryptData(data, receiverKey);
+        byte[] signature = signatureManager.getSignature(encryptedData, myKey);
         byte[] wholeMessage = Protocol.messageWithHeader(encryptedData);
-        byte[] signature = signatureManager.getSignature(wholeMessage, myKey);
+
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         byteStream.write(wholeMessage);
         byteStream.write(signature);
@@ -51,7 +50,7 @@ public class Communicator {
         return client.sendDataAndReceiveResponse(byteStream.toByteArray());
     }
 
-    public void processResponse(DataWithSignature response, PublicKey receiverKey, PrivateKey myKey) throws BadPaddingException, InvalidKeyException, IllegalBlockSizeException {
+    public void processResponse(DataWithSignature response, PublicKey receiverKey, PrivateKey myKey) throws BadPaddingException, InvalidKeyException, IllegalBlockSizeException, IOException, InvalidAlgorithmParameterException, SignatureException {
         if(!signatureManager.verifySignature(response.getData(), receiverKey, response.getSignature())) {
             throw new IncorrectSignatureException();
         }
