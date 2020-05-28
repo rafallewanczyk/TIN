@@ -121,7 +121,7 @@ class ServerProcesser(Processer):
             public_key_size, = unpack("!i", public_key_size)
             if self._cryptography_handler is not None:
                 public_key_bytes, data = data[:public_key_size], data[public_key_size:]
-                public_key = load_pem_public_key(public_key_bytes, default_backend())
+                public_key = load_pem_public_key(bytes(public_key_bytes), default_backend())
             else:
                 public_key = None
             parameters, data = self._get_parameters_from_data(data)

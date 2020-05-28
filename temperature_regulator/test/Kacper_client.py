@@ -36,10 +36,10 @@ def get_change_config_body_with_public_key():
     with open("Jarek_server_key.public", 'rb') as pem_file:
         pem_key = pem_file.read()
     return (bytes(bytearray("CHANGE_CONFIG", 'utf-8')) +  # Type
-            pack("!i", 0) + pack("!ii", 8081, len("127.0.0.1")) +  # id, port, address length
+            pack("!i", 0) + pack("!ii", 20001, len("127.0.0.1")) +  # id, port, address length
             bytes(bytearray("127.0.0.1", 'utf-8')) +  # address
             pack("!i", len(pem_key)) + pem_key  # size of key, key
-            + pack("!d", 50)  # parameters 
+            + pack("!d", 50)  # parameters
             )
 
 
