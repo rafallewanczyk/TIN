@@ -6,14 +6,19 @@ import pl.kejbi.tin.controller.dto.RegulatorDTO;
 import pl.kejbi.tin.controller.dto.RegulatorUpdateDTO;
 import pl.kejbi.tin.devices.LightDevice;
 import pl.kejbi.tin.devices.Regulator;
+import pl.kejbi.tin.devices.StatusType;
 import pl.kejbi.tin.devices.TemperatureDevice;
 import pl.kejbi.tin.repository.RegulatorRepository;
 import pl.kejbi.tin.security.KeyEncoder;
 import pl.kejbi.tin.sender.RegulatorCommunicator;
+import pl.kejbi.tin.socket.exceptions.NoRegulatorConnectionException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -64,27 +69,69 @@ public class RegulatorService {
     public void sendCurrData() throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         var regulators = regulatorRepository.findAll();
         for(Regulator regulator: regulators) {
-            regulatorCommunicator.sendCurrData(regulator);
+            try {
+                regulatorCommunicator.sendCurrData(regulator);
+                checkRegulatorStatus(regulator);
+            }
+            catch(NoRegulatorConnectionException ex) {
+                regulator.setStatus(StatusType.INACTIVE);
+                regulatorRepository.save(regulator);
+            }
         }
     }
 
     public void sendLightConfig(int regulatorId, List<LightDevice> devices) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         Regulator regulator = regulatorRepository.findById(regulatorId).orElseThrow(RuntimeException::new);
-        regulatorCommunicator.sendLightChangeConfig(regulator, devices);
+        try {
+            regulatorCommunicator.sendLightChangeConfig(regulator, devices);
+            checkRegulatorStatus(regulator);
+        }
+        catch(NoRegulatorConnectionException ex) {
+            regulator.setStatus(StatusType.INACTIVE);
+            regulatorRepository.save(regulator);
+        }
     }
 
     public void sendTemperatureConfig(int regulatorId, List<TemperatureDevice> devices) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         Regulator regulator = regulatorRepository.findById(regulatorId).orElseThrow(RuntimeException::new);
-        regulatorCommunicator.sendTemperatureChangeConfig(regulator, devices);
+        try {
+            regulatorCommunicator.sendTemperatureChangeConfig(regulator, devices);
+            checkRegulatorStatus(regulator);
+        }
+        catch(NoRegulatorConnectionException ex) {
+            regulator.setStatus(StatusType.INACTIVE);
+            regulatorRepository.save(regulator);
+        }
     }
 
     public void sendLightChangeParams(int regulatorId, LightDevice device) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         Regulator regulator = regulatorRepository.findById(regulatorId).orElseThrow(RuntimeException::new);
-        regulatorCommunicator.sendLightChangeParams(regulator, device);
+        try {
+            regulatorCommunicator.sendLightChangeParams(regulator, device);
+            checkRegulatorStatus(regulator);
+        }
+        catch(NoRegulatorConnectionException ex) {
+            regulator.setStatus(StatusType.INACTIVE);
+            regulatorRepository.save(regulator);
+        }
     }
 
     public void sendTemperatureChangeParams(int regulatorId, TemperatureDevice device) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         Regulator regulator = regulatorRepository.findById(regulatorId).orElseThrow(RuntimeException::new);
-        regulatorCommunicator.sendTemperatureChangeParams(regulator, device);
+        try {
+            regulatorCommunicator.sendTemperatureChangeParams(regulator, device);
+            checkRegulatorStatus(regulator);
+        }
+        catch(NoRegulatorConnectionException ex) {
+            regulator.setStatus(StatusType.INACTIVE);
+            regulatorRepository.save(regulator);
+        }
+    }
+
+    private void checkRegulatorStatus(Regulator regulator) {
+        if (regulator.getStatus() == StatusType.INACTIVE) {
+            regulator.setStatus(StatusType.ACTIVE);
+            regulatorRepository.save(regulator);
+        }
     }
 }

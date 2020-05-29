@@ -123,6 +123,9 @@ public class DeviceService {
             }
             else {
                 device.setCurrentData(param == 1);
+                if(device.getStatus() == StatusType.INACTIVE) {
+                    device.setReset(true);
+                }
                 device.setStatus(StatusType.ACTIVE);
             }
             lightDeviceRepository.save(device);
@@ -146,6 +149,9 @@ public class DeviceService {
             }
             else {
                 device.setCurrentData(param);
+                if(device.getStatus() == StatusType.INACTIVE) {
+                    device.setReset(true);
+                }
                 device.setStatus(StatusType.ACTIVE);
             }
             temperatureDeviceRepository.save(device);
@@ -157,6 +163,22 @@ public class DeviceService {
         List<DeviceWithDataDTO> devices = new ArrayList<>();
         lightDeviceRepository.findAll().forEach(device -> devices.add(new LightDeviceWithDataDTO(device)));
         temperatureDeviceRepository.findAll().forEach(device -> devices.add(new TemperatureDeviceWithDataDTO(device)));
+
+        return devices;
+    }
+
+    public List<Device> getResetDevices() {
+        List<Device> devices = new ArrayList<>();
+        lightDeviceRepository.findAll().forEach(device -> {
+            if(device.isReset()) {
+                devices.add(device);
+            }
+        });
+        temperatureDeviceRepository.findAll().forEach(device -> {
+            if(device.isReset()) {
+                devices.add(device);
+            }
+        });
 
         return devices;
     }

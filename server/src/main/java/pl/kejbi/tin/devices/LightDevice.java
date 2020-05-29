@@ -15,8 +15,8 @@ public class LightDevice extends Device {
     private Boolean turnedOn;
     private Boolean currentData;
 
-    public LightDevice(int id, int port, String name, String host, String key, boolean turnedOn, int regulatorId, StatusType status) {
-        super(id, port, host, name, key, regulatorId, status);
+    public LightDevice(int id, int port, String name, String host, String key, boolean turnedOn, int regulatorId, StatusType status, boolean reset) {
+        super(id, port, host, name, key, regulatorId, status, reset);
         this.turnedOn = turnedOn;
         this.currentData = false;
     }

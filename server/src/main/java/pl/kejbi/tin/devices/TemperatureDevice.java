@@ -17,8 +17,8 @@ public class TemperatureDevice extends Device{
     private Double temperature;
     private Double currentData;
 
-    public TemperatureDevice(int id, int port, String name, String host, String key, double temperature, int regulatorId, StatusType status) {
-        super(id, port, name, host, key, regulatorId, status);
+    public TemperatureDevice(int id, int port, String name, String host, String key, double temperature, int regulatorId, StatusType status, boolean reset) {
+        super(id, port, name, host, key, regulatorId, status, reset);
         this.temperature = temperature;
     }
 }
