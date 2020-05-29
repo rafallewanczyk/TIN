@@ -11,9 +11,9 @@ import { ALL_DEVICES_QUERY, ALL_REGULATORS_QUERY } from './devices-list/useDevic
 export type DevicesListProps = RouteComponentProps;
 
 export const AllDevicesList: React.FC<DevicesListProps> = (props) => {
-  const refreshDevicesAndRegulators = (): void => {
-    queryCache.refetchQueries(ALL_DEVICES_QUERY);
-    queryCache.refetchQueries(ALL_REGULATORS_QUERY);
+  const refreshDevicesAndRegulators = async (): Promise<void> => {
+    await queryCache.refetchQueries(ALL_DEVICES_QUERY);
+    await queryCache.refetchQueries(ALL_REGULATORS_QUERY);
   };
 
   return (

@@ -1,33 +1,33 @@
 package pl.kejbi.tin.security;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import java.io.IOException;
 import java.security.*;
-import java.util.Arrays;
+import java.security.spec.MGF1ParameterSpec;
+import java.security.spec.PSSParameterSpec;
 
 @Component
 public class SignatureManager {
-    private MessageDigest messageDigest;
-    private Cryptography cryptography;
+    private Signature signature;
 
-    public SignatureManager(Cryptography crypto) throws NoSuchAlgorithmException {
-        messageDigest = MessageDigest.getInstance("SHA-256");
-        cryptography = crypto;
+    public SignatureManager() throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+        Security.addProvider(new BouncyCastleProvider());
+        signature = Signature.getInstance("SHA256withRSA/PSS");
+//        signature.setParameter(new PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, 0, 1));
     }
 
-    public byte[] getSignature(byte[] message, PrivateKey key) throws BadPaddingException, InvalidKeyException, IllegalBlockSizeException, IOException, InvalidAlgorithmParameterException {
-        byte[] binaryHash = messageDigest.digest(message);
+    public synchronized byte[] getSignature(byte[] message, PrivateKey key) throws InvalidKeyException, SignatureException {
+        signature.initSign(key);
+        signature.update(message);
 
-        return cryptography.encryptData(binaryHash, key);
+        return signature.sign();
     }
 
-    public boolean verifySignature(byte[] message, PublicKey key, byte[] signature) throws BadPaddingException, InvalidKeyException, IllegalBlockSizeException, IOException, InvalidAlgorithmParameterException {
-        byte[] binaryHash = messageDigest.digest(message);
-        byte[] decryptedSignature = cryptography.decryptData(signature, key);
+    public boolean verifySignature(byte[] message, PublicKey key, byte[] sign) throws InvalidKeyException, SignatureException {
+        signature.initVerify(key);
+        signature.update(message);
 
-        return Arrays.equals(binaryHash, decryptedSignature);
+        return signature.verify(sign);
     }
 }
