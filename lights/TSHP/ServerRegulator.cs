@@ -5,19 +5,20 @@ using System.Text;
 
 namespace TSHP
 {
-    public class Messege
+    public class ServerRegulator
     {
+        private bool end = true;
         private int version, id, size;
         private string data, signature;
-        private byte[] messege;
+        private byte[] message;
         private List<DeviceSetting> settings = new List<DeviceSetting>();
 
         public int Size { get => size; set => size = value; }
         public string Data { get => data; set => data = value; }
 
-        public List<DeviceSetting> Settings { get => settings;  }
+        public List<DeviceSetting> Settings { get => settings; }
 
-        public Messege(int version, int id, string data, string signature)
+        public ServerRegulator(int version, int id, string data, string signature)
         {
             this.version = version;
             this.id = id;
@@ -33,13 +34,19 @@ namespace TSHP
             byte[] messege = new byte[Size];
             int offset = 0;
 
-            Array.Copy(BitConverter.GetBytes(version), 0, messege, offset, sizeof(int));
+            byte[] temp = BitConverter.GetBytes(version);
+            if (end) Array.Reverse(temp);
+            Array.Copy(temp, 0, messege, offset, sizeof(int));
             offset += sizeof(int);
 
-            Array.Copy(BitConverter.GetBytes(Size), 0, messege, offset, sizeof(int));
+            temp = BitConverter.GetBytes(Size);
+            if (end) Array.Reverse(temp);
+            Array.Copy(temp, 0, messege, offset, sizeof(int));
             offset += sizeof(int);
 
-            Array.Copy(BitConverter.GetBytes(id), 0, messege, offset, sizeof(int));
+            temp = BitConverter.GetBytes(id);
+            if (end) Array.Reverse(temp);
+            Array.Copy(temp, 0, messege, offset, sizeof(int));
             offset += sizeof(int);
 
             Array.Copy(Encoding.UTF8.GetBytes(data), 0, messege, offset, data_size);
@@ -49,32 +56,16 @@ namespace TSHP
             return messege;
         }
 
-        public void CalculateMessege()
+
+
+        public ServerRegulator(byte[] messege)
         {
-            int offset = 0;
-            version = BitConverter.ToInt32(messege, offset);
-            offset += sizeof(int);
-
-            Size = BitConverter.ToInt32(messege, offset);
-            offset += sizeof(int);
-
-            id = BitConverter.ToInt32(messege, offset);
-            offset += sizeof(int);
-
-            data = Encoding.UTF8.GetString(messege, offset, Size - 3 * sizeof(int) - 32); //todo set constant 
-            offset += Encoding.UTF8.GetByteCount(data);
-
-            signature = Encoding.UTF8.GetString(messege, offset, 32);
-
-        }
-
-        public Messege(byte[] messege)
-        {
-            this.messege = messege;
+            this.message = messege;
+            ReadMessege();
         }
 
 
-        public void ReadMessegeFromServer()
+        public void ReadMessege()
         {
 
             //reading header 
@@ -89,11 +80,11 @@ namespace TSHP
             offset += 4;
 
             //checking messege type 
-            data = Encoding.UTF8.GetString(messege, offset, 13);
+            data = Encoding.UTF8.GetString(message, offset, 13);
             if (data.Equals("CHANGE_CONFIG"))
             {
-                offset += Encoding.UTF8.GetByteCount("CHANGE_CONFIG"); 
-                while(offset < size)
+                offset += Encoding.UTF8.GetByteCount("CHANGE_CONFIG");
+                while (offset < size)
                 {
                     int newId = ReadInt(offset);
                     offset += 4;
@@ -101,8 +92,16 @@ namespace TSHP
                     offset += 4;
                     int status = ReadInt(offset);
                     offset += 4;
-                    settings.Add(new ChangeConfig(newId, newPort, status)); 
+                    settings.Add(new ChangeConfig(newId, newPort, status));
                 }
+            }
+            if (data.Equals("CURR_DATA"))
+            {
+                offset += Encoding.UTF8.GetByteCount("CURR_DATA");
+            }
+            if (data.Equals("CHANGE_PARAMS"))
+            {
+
             }
 
 
@@ -111,9 +110,10 @@ namespace TSHP
         private int ReadInt(int offset)
         {
             byte[] temp = new byte[4];
-            Array.Copy(messege, offset, temp, 0, 4);
-            Array.Reverse(temp);
-            return BitConverter.ToInt32(temp, 0); 
+            Array.Copy(message, offset, temp, 0, 4);
+            if (end)
+                Array.Reverse(temp);
+            return BitConverter.ToInt32(temp, 0);
         }
 
         public override string ToString()
