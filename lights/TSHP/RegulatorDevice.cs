@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace TSHP
@@ -8,24 +10,71 @@ namespace TSHP
     {
         private int version, id, size;
         private string data, signature;
-        private byte[] messege;
+        private byte[] dataBytes; 
+        public byte[] message;
+        public byte[] encryptedData;
+
+        RSACryptoServiceProvider publicKey;
+        RSACryptoServiceProvider privateKey;
 
         public int Size { get => size; set => size = value; }
         public string Data { get => data; set => data = value; }
 
-
-        public RegulatorDevice(int version, int id, string data, string signature)
+        public RegulatorDevice(byte[] buffer, RSACryptoServiceProvider publicKey, RSACryptoServiceProvider privateKey)
         {
+            this.publicKey = publicKey;
+            this.privateKey = privateKey;
+
+            //Console.WriteLine(privateKey.ToXmlString(true));
+            //Console.WriteLine("--------------------------------");
+            //Console.WriteLine(publicKey.ToXmlString(false));
+
+
+            encryptedData = buffer;
+            Decrypt(); 
+            ReadMessege(this.message);
+        }
+
+
+        public RegulatorDevice(int version, int id, string data, string signature, RSACryptoServiceProvider publicKey, RSACryptoServiceProvider privateKey)
+        {
+            this.publicKey = publicKey;
+            this.privateKey = privateKey;
             this.version = version;
             this.id = id;
             this.data = data;
             this.signature = signature;
+
+            message = ToBytes();
+            Encrypt(); 
+
         }
 
-        public RegulatorDevice(byte[] messege)
+
+        public void Encrypt()
         {
-            this.messege = messege;
-            ReadMessege();
+            try
+            {
+                encryptedData = publicKey.Encrypt(message, true); 
+            }
+            catch (CryptographicException e)
+            {
+                Console.WriteLine(e.Message);
+                //todo unable to encrypt data exception
+            }
+        }
+
+        public void Decrypt()
+        {
+            try
+            {
+                message = privateKey.Decrypt(encryptedData, true); 
+            }
+            catch (CryptographicException e)
+            {
+                Console.WriteLine(e.ToString());
+                //todo unable to decrypt data exception
+            }
         }
 
         public byte[] ToBytes()
@@ -46,6 +95,7 @@ namespace TSHP
             offset += sizeof(int);
 
             Array.Copy(Encoding.UTF8.GetBytes(data), 0, messege, offset, data_size);
+            //Array.Copy(Encoding.UTF8.GetBytes(data), 0, dataBytes, 0, data_size);
             offset += data_size;
 
 
@@ -53,22 +103,22 @@ namespace TSHP
             return messege;
         }
 
-        public void ReadMessege()
+        public void ReadMessege(byte[] msg)
         {
             int offset = 0;
-            version = BitConverter.ToInt32(messege, offset);
+            version = BitConverter.ToInt32(msg, offset);
             offset += sizeof(int);
 
-            Size = BitConverter.ToInt32(messege, offset);
+            Size = BitConverter.ToInt32(msg, offset);
             offset += sizeof(int);
 
-            id = BitConverter.ToInt32(messege, offset);
+            id = BitConverter.ToInt32(msg, offset);
             offset += sizeof(int);
 
-            data = Encoding.UTF8.GetString(messege, offset, Size - 3 * sizeof(int) - 32); //todo set constant 
+            data = Encoding.UTF8.GetString(msg, offset, Size - 3 * sizeof(int) - 32); //todo set constant 
             offset += Encoding.UTF8.GetByteCount(data);
 
-            signature = Encoding.UTF8.GetString(messege, offset, 32);
+            signature = Encoding.UTF8.GetString(msg, offset, 32);
 
         }
 

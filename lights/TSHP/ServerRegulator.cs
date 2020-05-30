@@ -10,7 +10,7 @@ namespace TSHP
         private bool end = true;
         private int version, id, size;
         private string data, signature;
-        private byte[] messege;
+        private byte[] message;
         private List<DeviceSetting> settings = new List<DeviceSetting>();
 
         public int Size { get => size; set => size = value; }
@@ -60,7 +60,7 @@ namespace TSHP
 
         public ServerRegulator(byte[] messege)
         {
-            this.messege = messege;
+            this.message = messege;
             ReadMessege();
         }
 
@@ -80,7 +80,7 @@ namespace TSHP
             offset += 4;
 
             //checking messege type 
-            data = Encoding.UTF8.GetString(messege, offset, 13);
+            data = Encoding.UTF8.GetString(message, offset, 13);
             if (data.Equals("CHANGE_CONFIG"))
             {
                 offset += Encoding.UTF8.GetByteCount("CHANGE_CONFIG");
@@ -110,7 +110,7 @@ namespace TSHP
         private int ReadInt(int offset)
         {
             byte[] temp = new byte[4];
-            Array.Copy(messege, offset, temp, 0, 4);
+            Array.Copy(message, offset, temp, 0, 4);
             if (end)
                 Array.Reverse(temp);
             return BitConverter.ToInt32(temp, 0);
