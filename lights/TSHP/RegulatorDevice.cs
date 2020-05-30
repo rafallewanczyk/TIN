@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace TSHP
@@ -9,26 +8,22 @@ namespace TSHP
     public class RegulatorDevice
     {
         private int version, id, size;
-        private string data, signature;
+        private string data;
+        public string operation; 
         private byte[] dataBytes; 
         public byte[] message;
         public byte[] encryptedData;
 
-        RSACryptoServiceProvider publicKey;
-        RSACryptoServiceProvider privateKey;
+        RSA publicKey;
+        RSA privateKey;
 
         public int Size { get => size; set => size = value; }
         public string Data { get => data; set => data = value; }
 
-        public RegulatorDevice(byte[] buffer, RSACryptoServiceProvider publicKey, RSACryptoServiceProvider privateKey)
+        public RegulatorDevice(byte[] buffer, RSA publicKey, RSA privateKey)
         {
             this.publicKey = publicKey;
             this.privateKey = privateKey;
-
-            //Console.WriteLine(privateKey.ToXmlString(true));
-            //Console.WriteLine("--------------------------------");
-            //Console.WriteLine(publicKey.ToXmlString(false));
-
 
             encryptedData = buffer;
             Decrypt(); 
@@ -36,14 +31,13 @@ namespace TSHP
         }
 
 
-        public RegulatorDevice(int version, int id, string data, string signature, RSACryptoServiceProvider publicKey, RSACryptoServiceProvider privateKey)
+        public RegulatorDevice(int version, int id, string data,  RSA publicKey, RSA privateKey)
         {
             this.publicKey = publicKey;
             this.privateKey = privateKey;
             this.version = version;
             this.id = id;
             this.data = data;
-            this.signature = signature;
 
             message = ToBytes();
             Encrypt(); 
@@ -55,7 +49,7 @@ namespace TSHP
         {
             try
             {
-                encryptedData = publicKey.Encrypt(message, true); 
+                encryptedData = publicKey.Encrypt(message, RSAEncryptionPadding.OaepSHA256); 
             }
             catch (CryptographicException e)
             {
@@ -68,7 +62,7 @@ namespace TSHP
         {
             try
             {
-                message = privateKey.Decrypt(encryptedData, true); 
+                message = privateKey.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA256); 
             }
             catch (CryptographicException e)
             {
@@ -80,8 +74,7 @@ namespace TSHP
         public byte[] ToBytes()
         {
             int data_size = Encoding.UTF8.GetByteCount(data);
-            int signature_size = 32; // Encoding.ASCII.GetByteCount(signature);
-            Size = sizeof(int) + sizeof(int) + sizeof(int) + data_size + signature_size;
+            Size = sizeof(int) + sizeof(int) + sizeof(int) + data_size + 32;
             byte[] messege = new byte[Size];
             int offset = 0;
 
@@ -98,8 +91,6 @@ namespace TSHP
             //Array.Copy(Encoding.UTF8.GetBytes(data), 0, dataBytes, 0, data_size);
             offset += data_size;
 
-
-            Array.Copy(Encoding.UTF8.GetBytes(signature), 0, messege, offset, signature_size);
             return messege;
         }
 
@@ -118,8 +109,6 @@ namespace TSHP
             data = Encoding.UTF8.GetString(msg, offset, Size - 3 * sizeof(int) - 32); //todo set constant 
             offset += Encoding.UTF8.GetByteCount(data);
 
-            signature = Encoding.UTF8.GetString(msg, offset, 32);
-
         }
 
 
@@ -127,7 +116,7 @@ namespace TSHP
         public override string ToString()
         {
 
-            return ("version:" + version + " size:" + Size + " id:" + id + " data:" + data + " signature:" + signature);
+            return ("version:" + version + " size:" + Size + " id:" + id + " data:" + data);
         }
     }
 }
