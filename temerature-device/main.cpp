@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
 
     std::thread handlerThread(std::ref(deviceHandler));
 
-    Server("20002").run(ConnectionHandler::getConnectionHandler, device);
+    Server("20001").run(ConnectionHandler::getConnectionHandler, device);
 
 
     return 0;

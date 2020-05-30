@@ -6,7 +6,14 @@ import { queryCache } from 'react-query';
 import { DevicesList } from './devices-list/DevicesList';
 import { RegulatorDevicesList } from './regulator-devices-list/RegulatorDevicesList';
 import style from './AllDevicesList.module.css';
-import { ALL_DEVICES_QUERY, ALL_REGULATORS_QUERY } from './devices-list/useDevicesQuery';
+import {
+  ALL_DEVICES_QUERY,
+  ALL_REGULATORS_QUERY,
+  useDevicesQuery,
+  useRegulatorsQuery,
+} from './devices-list/useDevicesQuery';
+
+const RefreshBtnCyClass = 'data-cy-refresh-all-btn';
 
 export type DevicesListProps = RouteComponentProps;
 
@@ -16,25 +23,32 @@ export const AllDevicesList: React.FC<DevicesListProps> = (props) => {
     await queryCache.refetchQueries(ALL_REGULATORS_QUERY);
   };
 
+  const [devices, devicesLoading] = useDevicesQuery();
+  const [regulators, regulatorsLoading] = useRegulatorsQuery(devicesLoading);
+
+  const Header = () => (
+    <PageHeader
+      extra={[
+        <Button
+          className={RefreshBtnCyClass}
+          key="1"
+          type="primary"
+          onClick={refreshDevicesAndRegulators}
+        >
+          Refresh all
+        </Button>,
+      ]}
+      title="Devices list"
+    />
+  );
+
   return (
     <div className={style.wrapper}>
-      <PageHeader
-        extra={[
-          <Button
-            className="data-cy-refresh-all-btn"
-            key="1"
-            type="primary"
-            onClick={refreshDevicesAndRegulators}
-          >
-            Refresh all
-          </Button>,
-        ]}
-        title="Devices list"
-      />
+      <Header />
       <Title level={2}>Regulator devices</Title>
-      <RegulatorDevicesList />
+      <RegulatorDevicesList loading={regulatorsLoading} regulators={regulators} />
       <Title level={2}>Devices</Title>
-      <DevicesList />
+      <DevicesList devices={devices} loading={devicesLoading} />
     </div>
   );
 };

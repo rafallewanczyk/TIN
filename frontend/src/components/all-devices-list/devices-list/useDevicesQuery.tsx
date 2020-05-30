@@ -21,15 +21,22 @@ export const useDevicesQuery = (): [DeviceModel[] | undefined, boolean] => {
   return [data, status === 'loading'];
 };
 
-export const useAllRegulatorsQuery = (options?: QueryOptions<RegulatorModel[]>) =>
-  useQuery(ALL_REGULATORS_QUERY, fetchRegulators, options);
+export const useAllRegulatorsQuery = (
+  options?: QueryOptions<RegulatorModel[]>,
+  devicesLoading = false,
+) => useQuery(!devicesLoading && ALL_REGULATORS_QUERY, fetchRegulators, options);
 
-export const useRegulatorsQuery = (): [RegulatorModel[] | undefined, boolean] => {
-  const { data, status } = useAllRegulatorsQuery({
-    refetchOnWindowFocus: false,
-    refetchInterval: REFETCH_INTERVAL,
-    retry: false,
-  });
+export const useRegulatorsQuery = (
+  devicesLoading: boolean,
+): [RegulatorModel[] | undefined, boolean] => {
+  const { data, status } = useAllRegulatorsQuery(
+    {
+      refetchOnWindowFocus: false,
+      refetchInterval: REFETCH_INTERVAL,
+      retry: false,
+    },
+    devicesLoading,
+  );
 
   return [data, status === 'loading'];
 };

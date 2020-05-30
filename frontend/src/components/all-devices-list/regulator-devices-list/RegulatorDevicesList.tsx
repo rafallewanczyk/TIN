@@ -7,13 +7,19 @@ import style from './RegulatorDevicesList.module.css';
 import { RegulatorModel } from '../../models/regulator-device-model/RegulatorDeviceModel';
 import { deviceTableColumns } from '../utils/deviceTableColumns';
 import { useTableScroll } from '../utils/useTableScroll';
-import { useRegulatorsQuery } from '../devices-list/useDevicesQuery';
 
-export const RegulatorDevicesList: React.FC = () => {
+interface RegulatorDevicesListProps {
+  regulators: RegulatorModel[] | undefined;
+  loading: boolean;
+}
+
+export const RegulatorDevicesList: React.FC<RegulatorDevicesListProps> = ({
+  regulators,
+  loading,
+}) => {
   const ref = useRef<HTMLDivElement>(null);
   const scroll = useTableScroll(ref, 500);
   const navigate = useNavigate();
-  const [regulators, loading] = useRegulatorsQuery();
   const regulatorsWithKeys = regulators?.map((it) =>
     produce(it, (regulatorWithKey) => {
       (regulatorWithKey as RegulatorModel & { key: number }).key = it.id;
