@@ -1,6 +1,8 @@
 package pl.kejbi.tin.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import pl.kejbi.tin.controller.dto.*;
 import pl.kejbi.tin.devices.Device;
@@ -25,6 +27,7 @@ import java.util.List;
 public class DeviceController {
     private final DeviceService deviceService;
     private final RegulatorService regulatorService;
+    private final Logger logger = LoggerFactory.getLogger(DeviceController.class);
 
     @PostMapping
     public void addDevice(@RequestBody DeviceDTO deviceDTO) throws InvalidKeySpecException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidAlgorithmParameterException, SignatureException {
@@ -78,7 +81,34 @@ public class DeviceController {
     @GetMapping
     public List<DeviceWithDataDTO> getAllDevices() throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         regulatorService.sendCurrData();
+        Thread updateReset = new Thread(sendTargetToResetDevices());
+        updateReset.start();
 
         return deviceService.getDevicesCurrentData();
+    }
+
+    private Runnable sendTargetToResetDevices() {
+        return () -> {
+            for (Device device : deviceService.getResetDevices()) {
+                if(device instanceof LightDevice) {
+                    try {
+                        regulatorService.sendLightChangeParams(device.getRegulatorId(), (LightDevice) device);
+                        device.setReset(false);
+                        deviceService.addDevice(device);
+                    } catch (Exception ex){
+                        logger.error(ex.getMessage());
+                    }
+                }
+                else {
+                    try {
+                        regulatorService.sendTemperatureChangeParams(device.getRegulatorId(), (TemperatureDevice) device);
+                        device.setReset(false);
+                        deviceService.addDevice(device);
+                    } catch (Exception ex){
+                        logger.error(ex.getMessage());
+                    }
+                }
+            }
+        };
     }
 }

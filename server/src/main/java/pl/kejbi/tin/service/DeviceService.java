@@ -6,14 +6,14 @@ import pl.kejbi.tin.controller.dto.DeviceUpdateDTO;
 import pl.kejbi.tin.controller.dto.DeviceWithDataDTO;
 import pl.kejbi.tin.controller.dto.LightDeviceWithDataDTO;
 import pl.kejbi.tin.controller.dto.TemperatureDeviceWithDataDTO;
-import pl.kejbi.tin.socket.exceptions.InvalidDataException;
 import pl.kejbi.tin.devices.Device;
 import pl.kejbi.tin.devices.LightDevice;
+import pl.kejbi.tin.devices.RegulatorType;
 import pl.kejbi.tin.devices.StatusType;
 import pl.kejbi.tin.devices.TemperatureDevice;
 import pl.kejbi.tin.repository.LightDeviceRepository;
 import pl.kejbi.tin.repository.TemperatureDeviceRepository;
-import pl.kejbi.tin.security.KeyEncoder;
+import pl.kejbi.tin.socket.exceptions.InvalidDataException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -36,22 +36,20 @@ public class DeviceService {
 
     public Device addDevice(Device device) throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException, IOException {
         int regulatorId = device.getRegulatorId();
-        if(device instanceof LightDevice) {
-            return lightDeviceRepository.save((LightDevice)device);
-        }
-        else {
-            return temperatureDeviceRepository.save((TemperatureDevice)device);
+        if (device instanceof LightDevice) {
+            return lightDeviceRepository.save((LightDevice) device);
+        } else {
+            return temperatureDeviceRepository.save((TemperatureDevice) device);
         }
     }
 
     public Device deleteDevice(int id) throws InvalidKeyException, BadPaddingException, IllegalBlockSizeException, IOException {
         Device device;
-        if(lightDeviceRepository.findById(id).isPresent()) {
+        if (lightDeviceRepository.findById(id).isPresent()) {
             device = lightDeviceRepository.findById(id).get();
             lightDeviceRepository.deleteById(id);
             return device;
-        }
-        else {
+        } else {
             device = temperatureDeviceRepository.findById(id).orElseThrow(RuntimeException::new);
             temperatureDeviceRepository.deleteById(id);
             return device;
@@ -60,27 +58,26 @@ public class DeviceService {
 
     public Device updateDevice(int id, DeviceUpdateDTO deviceUpdateDTO) throws InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, IOException {
         Device device;
-        if(lightDeviceRepository.findById(id).isPresent()) {
+        if (lightDeviceRepository.findById(id).isPresent()) {
             device = lightDeviceRepository.findById(id).get();
-        }
-        else {
+        } else {
             device = temperatureDeviceRepository.findById(id).orElseThrow(RuntimeException::new);
         }
 
 
-        if(deviceUpdateDTO.getName() != null) {
+        if (deviceUpdateDTO.getName() != null) {
             device.setName(deviceUpdateDTO.getName());
         }
-        if(deviceUpdateDTO.getRegulatorId() != null) {
+        if (deviceUpdateDTO.getRegulatorId() != null) {
             device.setRegulatorId(deviceUpdateDTO.getRegulatorId());
         }
-        if(deviceUpdateDTO.getPublicKey() != null) {
+        if (deviceUpdateDTO.getPublicKey() != null) {
             device.setPublicKey(deviceUpdateDTO.getPublicKey());
         }
-        if(deviceUpdateDTO.getAddress() != null) {
+        if (deviceUpdateDTO.getAddress() != null) {
             device.setHostname(deviceUpdateDTO.getAddress());
         }
-        if(deviceUpdateDTO.getPort() != null) {
+        if (deviceUpdateDTO.getPort() != null) {
             device.setPort(deviceUpdateDTO.getPort());
         }
 
@@ -110,19 +107,20 @@ public class DeviceService {
     public void updateLightCurrData(byte[] data) {
         ByteBuffer buffer = ByteBuffer.wrap(data, OFFSET, data.length - OFFSET);
         int bytesRemaining = data.length - OFFSET;
-        if(bytesRemaining % LIGHT_DATA_SIZE != 0) {
+        if (bytesRemaining % LIGHT_DATA_SIZE != 0) {
             throw new InvalidDataException();
         }
-        while(bytesRemaining > 0) {
+        while (bytesRemaining > 0) {
             int id = buffer.getInt();
             short param = buffer.getShort();
             LightDevice device = lightDeviceRepository.findById(id).orElseThrow(RuntimeException::new);
-            if(param == 2) {
-                device.setCurrentData(null);
-                device.setStatus(StatusType.INACTIVE);
-            }
-            else {
+            if (param == 2) {
+                setDeviceToInactive(device);
+            } else {
                 device.setCurrentData(param == 1);
+                if (device.getStatus() == StatusType.INACTIVE) {
+                    device.setReset(true);
+                }
                 device.setStatus(StatusType.ACTIVE);
             }
             lightDeviceRepository.save(device);
@@ -133,19 +131,20 @@ public class DeviceService {
     public void updateTemperatureCurrData(byte[] data) {
         ByteBuffer buffer = ByteBuffer.wrap(data, OFFSET, data.length - OFFSET);
         int bytesRemaining = data.length - OFFSET;
-        if(bytesRemaining % TEMPERATURE_DATA_SIZE != 0) {
+        if (bytesRemaining % TEMPERATURE_DATA_SIZE != 0) {
             throw new InvalidDataException();
         }
-        while(bytesRemaining > 0) {
+        while (bytesRemaining > 0) {
             int id = buffer.getInt();
             double param = buffer.getDouble();
             TemperatureDevice device = temperatureDeviceRepository.findById(id).orElseThrow(RuntimeException::new);
-            if(param == -300) {
-                device.setCurrentData(null);
-                device.setStatus(StatusType.INACTIVE);
-            }
-            else {
+            if (param == -300) {
+                setDeviceToInactive(device);
+            } else {
                 device.setCurrentData(param);
+                if (device.getStatus() == StatusType.INACTIVE) {
+                    device.setReset(true);
+                }
                 device.setStatus(StatusType.ACTIVE);
             }
             temperatureDeviceRepository.save(device);
@@ -157,6 +156,49 @@ public class DeviceService {
         List<DeviceWithDataDTO> devices = new ArrayList<>();
         lightDeviceRepository.findAll().forEach(device -> devices.add(new LightDeviceWithDataDTO(device)));
         temperatureDeviceRepository.findAll().forEach(device -> devices.add(new TemperatureDeviceWithDataDTO(device)));
+
+        return devices;
+    }
+
+    public void setRegulatorsDevicesToInactive(int regulatorId, RegulatorType type) {
+        var repository = type == RegulatorType.TEMPERATURE ? temperatureDeviceRepository : lightDeviceRepository;
+
+        repository
+                .findAll()
+                .stream()
+                .filter((it) -> it.getRegulatorId() == regulatorId)
+                .filter((it) -> it.getStatus() != StatusType.INACTIVE)
+                .forEach((it) -> {
+                    setDeviceToInactive(it);
+                    if (it instanceof LightDevice)
+                        lightDeviceRepository.save((LightDevice) it);
+                    else temperatureDeviceRepository.save((TemperatureDevice) it);
+                });
+    }
+
+    private void setDeviceToInactive(Device device) {
+        if (device instanceof LightDevice) {
+            ((LightDevice) device).setCurrentData(null);
+            device.setStatus(StatusType.INACTIVE);
+        }
+        if (device instanceof TemperatureDevice) {
+            ((TemperatureDevice) device).setCurrentData(null);
+            device.setStatus(StatusType.INACTIVE);
+        }
+    }
+
+    public List<Device> getResetDevices() {
+        List<Device> devices = new ArrayList<>();
+        lightDeviceRepository.findAll().forEach(device -> {
+            if (device.isReset()) {
+                devices.add(device);
+            }
+        });
+        temperatureDeviceRepository.findAll().forEach(device -> {
+            if (device.isReset()) {
+                devices.add(device);
+            }
+        });
 
         return devices;
     }

@@ -18,4 +18,5 @@ public abstract class Device {
     private String publicKey;
     private int regulatorId;
     private StatusType status;
+    private boolean reset;
 }

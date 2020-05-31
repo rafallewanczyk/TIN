@@ -42,19 +42,17 @@ class CryptographyHandler:
         try:
             sender_public_key.verify(bytes(signature),
                                      bytes(signed_data),
-                                     padding.PSS(padding.MGF1(hashes.SHA256()), 0),  # Padding length?
+                                     padding.PSS(padding.MGF1(hashes.SHA256()), 32),  # Padding length?
                                      hashes.SHA256()
                                      )
         except InvalidSignature as x:
-            print(x)
-            print("Invalid signature")
-            return True
+            return False
         else:
             return True
 
     def create_signature(self, data_to_sign: bytearray) -> bytearray:
         return self._regulator_private_key.sign(bytes(data_to_sign),
-                                                padding.PSS(padding.MGF1(hashes.SHA256()), 0),  # Padding length?
+                                                padding.PSS(padding.MGF1(hashes.SHA256()), 32),  # Padding length?
                                                 hashes.SHA256()
                                                 )
 

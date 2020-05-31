@@ -8,6 +8,7 @@ import pl.kejbi.tin.security.Cryptography;
 import pl.kejbi.tin.security.SignatureManager;
 import pl.kejbi.tin.socket.exceptions.IncorrectMessageSizeException;
 import pl.kejbi.tin.socket.exceptions.IncorrectSignatureException;
+import pl.kejbi.tin.socket.exceptions.NoRegulatorConnectionException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -23,26 +24,22 @@ import java.security.PublicKey;
 @RequiredArgsConstructor
 public class Client implements Protocol {
     private final Socket clientSocket;
-
+    private final Logger logger = LoggerFactory.getLogger(Client.class);
 
     public DataWithSignature sendDataAndReceiveResponse(byte[] data) throws IOException {
-        DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
-        DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
-        outputStream.write(data);
-        DataWithSignature dataWithSignature = receiveMessage(inputStream);
-        clientSocket.close();
+        try {
+            DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
+            DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
+            outputStream.write(data);
+            DataWithSignature dataWithSignature = receiveMessage(inputStream);
+            clientSocket.close();
 
-        return dataWithSignature;
-//        try {
-//            outputStream = new DataOutputStream(clientSocket.getOutputStream());
-//            inputStream = new DataInputStream(clientSocket.getInputStream());
-//            outputStream.write(data);
-//            byte[] decryptedData = receiveMessage(inputStream);
-//            responseHandler.handleResponse(decryptedData);
-//            clientSocket.close();
-//        } catch (Exception e) {
-//            logger.error(e.getMessage());
-//        }
+            return dataWithSignature;
+        }
+        catch (IOException e) {
+            clientSocket.close();
+            throw new NoRegulatorConnectionException();
+        }
     }
 
     private ByteBuffer readHeader(DataInputStream inputStream) throws IOException {

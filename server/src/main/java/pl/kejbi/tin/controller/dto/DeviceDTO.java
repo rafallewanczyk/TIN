@@ -43,10 +43,10 @@ public class DeviceDTO {
 
     public Device convertToDevice() throws InvalidKeySpecException, NoSuchAlgorithmException {
         if(type == RegulatorType.TEMPERATURE) {
-            return new TemperatureDevice(id, port, name, address, publicKey, 20.5, regulatorId, StatusType.ACTIVE);
+            return new TemperatureDevice(id, port, name, address, publicKey, 20.5, regulatorId, StatusType.ACTIVE, false);
         }
         else {
-            return new LightDevice(id, port, name, address, publicKey, false, regulatorId, StatusType.ACTIVE);
+            return new LightDevice(id, port, name, address, publicKey, false, regulatorId, StatusType.ACTIVE, false);
         }
     }
 }

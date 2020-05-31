@@ -23,8 +23,8 @@ class Device {
         auto temperatureDifference = targetTemperature - currentTemperature;
         auto newChangeRate = temperatureDifference * temperatureChangeRateCoefficient;
 
-        auto low = temperatureDifference < 0 ? newChangeRate : -0.3;
-        auto high = temperatureDifference > 0 ? newChangeRate : 0.3;
+        auto low = temperatureDifference < 0 ? newChangeRate : 0;
+        auto high = temperatureDifference > 0 ? newChangeRate : 0;
         generateTemperatureChange = std::uniform_real_distribution<double>(low, high);
     }
 

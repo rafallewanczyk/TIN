@@ -97,16 +97,9 @@ public:
         }
 
         try {
-            std::string recovered;
-            RSASS<PSS, SHA256>::Verifier verifier(regulatorPublicKey);
-            StringSource ss2(message, true,
-                 new SignatureVerificationFilter(
-                         verifier,
-                         new StringSink(recovered),
-                         SignatureVerificationFilter::THROW_EXCEPTION |
-                         SignatureVerificationFilter::PUT_MESSAGE
-                 )
-            );
+            auto verifier = RSASS<PSS, SHA256>::Verifier(regulatorPublicKey);
+            auto filter = new SignatureVerificationFilter(verifier, nullptr, SignatureVerificationFilter::THROW_EXCEPTION);
+            StringSource ss2(message, true, filter);
         }
         catch (...) {
             return false;
