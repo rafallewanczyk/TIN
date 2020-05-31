@@ -30,7 +30,7 @@ class ConnectionHandler {
 
     void verifySignature(const std::string &body) {
         if (!security->verifySignature(body)) {
-//            throw SignatureNotVerified();
+            throw SignatureNotVerified();
         }
     }
 

@@ -47,7 +47,8 @@ int main(int argc, char *argv[]) {
         std::memcpy(doubleBytes.data(), &value, 8);
         std::reverse(doubleBytes.begin(), doubleBytes.end());
 
-        auto encryptedData = security->encrypt(std::string("CHANGE_TEMP") + std::string(doubleBytes.begin(), doubleBytes.end()));
+        auto encryptedData = security->encrypt(
+                std::string("CHANGE_TEMP") + std::string(doubleBytes.begin(), doubleBytes.end()));
 
         bytesToSend = {'\0', '\0', '\0', protocol, '\0', '\0', '\0', contentSize, '\0', '\0', '\0', id};
         bytesToSend.insert(bytesToSend.end(), encryptedData.begin(), encryptedData.end());
@@ -110,7 +111,8 @@ int main(int argc, char *argv[]) {
         std::string response = security->decrypt(doubleData);
         std::reverse(response.begin() + 9, response.end());
         double val = parseDouble(response.substr(9, 8));
-        std::cout << "Verified: " <<security->verifySignature(std::string(buffer.begin() + 12, buffer.end())) << std::endl;
+        std::cout << "Verified: " << security->verifySignature(std::string(buffer.begin() + 12, buffer.end()))
+                  << std::endl;
         std::cout << "Current temp: " << val << std::endl;
 
     } else if (strcmp(argv[1], "set") == 0) {

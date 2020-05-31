@@ -52,7 +52,7 @@ public class Communicator {
 
     public void processResponse(DataWithSignature response, PublicKey receiverKey, PrivateKey myKey) throws BadPaddingException, InvalidKeyException, IllegalBlockSizeException, IOException, InvalidAlgorithmParameterException, SignatureException {
         if(!signatureManager.verifySignature(response.getData(), receiverKey, response.getSignature())) {
-//            throw new IncorrectSignatureException();
+            throw new IncorrectSignatureException();
         }
         byte[] decryptedData = cryptography.decryptData(response.getData(), myKey);
         responseHandler.handleResponse(decryptedData);
