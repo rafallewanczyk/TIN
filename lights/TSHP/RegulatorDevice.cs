@@ -41,33 +41,6 @@ namespace TSHP
             this.operation = operation;
         }
 
-
-        //public void Encrypt()
-        //{
-        //    try
-        //    {
-        //        encryptedData = publicKey.Encrypt(message, RSAEncryptionPadding.OaepSHA256); 
-        //    }
-        //    catch (CryptographicException e)
-        //    {
-        //        Console.WriteLine(e.Message);
-        //        //todo unable to encrypt data exception
-        //    }
-        //}
-
-        //public void Decrypt()
-        //{
-        //    try
-        //    {
-        //        message = privateKey.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA256); 
-        //    }
-        //    catch (CryptographicException e)
-        //    {
-        //        Console.WriteLine(e.ToString());
-        //        //todo unable to decrypt data exception
-        //    }
-        //}
-
         public void Decrypt()
         {
 
@@ -101,7 +74,7 @@ namespace TSHP
                 //signature
                 message = decryptedData.ToArray();
             }
-            catch (CryptographicException e)
+            catch (Exception e)
             {
                 utils.Log(e.ToString(), -1);
             }

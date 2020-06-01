@@ -82,7 +82,7 @@ namespace light_regulator
             return null;
         }
 
-        public void CloseRegulator()
+        public void DeleteAllDevices()
         {
             foreach (SocketMemory memory in clientSockets)
             {
@@ -97,13 +97,6 @@ namespace light_regulator
 
             utils.Log("Searchnig for server", 0);
             serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
-
-            //to delete
-            //List<DeviceSetting> devices = new List<DeviceSetting>();
-            //devices.Add(new ChangeConfig(1, 60000, 1));
-            //SearchForDevices(devices);
-
-
 
             Console.Read();
         }
@@ -121,7 +114,7 @@ namespace light_regulator
                 return;
             }
 
-            SocketMemory memory = new SocketMemory(socket, new byte[1024], port, serverKey);
+            SocketMemory memory = new SocketMemory(socket, port, serverKey);
             Task.Run(() => StartReceivingFromServer(memory));
 
             serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
@@ -194,6 +187,7 @@ namespace light_regulator
 
         private void SearchForDevices(List<DeviceSetting> list)
         {
+            DeleteAllDevices();
             var ts = new CancellationTokenSource();
             CancellationToken ct = ts.Token;
 
@@ -218,10 +212,8 @@ namespace light_regulator
                         }
                         catch (SocketException)
                         {
-                            //Console.WriteLine("conneciton attmpts with port " + port + ":" + attempts);
                             if (ct.IsCancellationRequested)
                             {
-                                //Console.WriteLine("task canceled");
                                 return 0;
                             }
                             Thread.Sleep(1000);
@@ -232,13 +224,12 @@ namespace light_regulator
 
                     RSACng publicKey = new RSACng(2048);
                     publicKey.ImportSubjectPublicKeyInfo(key, out _);
-                    SocketMemory memory = new SocketMemory(socket, new byte[256], port, publicKey);
+                    SocketMemory memory = new SocketMemory(socket, port, publicKey);
                     clientSockets.Add(memory);
-                    //StartPinging(memory);
                     return port;
                 }, ct);
             }
-            Thread.Sleep(5000);
+            Thread.Sleep(2000);
 
             ts.Cancel();
 
@@ -298,7 +289,7 @@ namespace light_regulator
             Thread.Sleep(1000);
             statuses.ForEach(Console.WriteLine);
 
-            ts.Dispose(); 
+            ts.Dispose();
             //ts.Cancel();
             return statuses;
         }
@@ -308,7 +299,7 @@ namespace light_regulator
             var ts = new CancellationTokenSource();
             CancellationToken ct = ts.Token;
 
-            String newParameter = parameter == 1? "SET1" : "SET0";
+            String newParameter = parameter == 1 ? "SET1" : "SET0";
 
             SocketMemory memory = FindById(id);
             if (memory == null)
@@ -334,141 +325,22 @@ namespace light_regulator
             }, ct);
 
             Thread.Sleep(1000);
-            int result = task.IsCompleted ? task.Result : 2; 
+            int result = task.IsCompleted ? task.Result : 2;
             task.Dispose();
             //ts.Cancel();
 
             return result;
 
         }
-
-        private void StartPinging(SocketMemory memory)
-        {
-            RegulatorDevice msg = new RegulatorDevice(1, id, "PING", memory.publicKey, myKeys);
-            memory.pingBuffer = msg.ToBytes();
-            try
-            {
-                memory.socket.BeginSend(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, new AsyncCallback(SendPing), memory);
-            }
-            catch (SocketException)
-            {
-                //device disconnected
-                utils.Log("Device " + memory.port + " disconnected", -1);
-            }
-
-        }
-        private void SendPing(IAsyncResult AR)
-        {
-            SocketMemory memory = (SocketMemory)AR.AsyncState;
-            Socket socket = memory.socket;
-            socket.EndSend(AR);
-            socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, ReceivePing, memory);
-        }
-        private void ReceivePing(IAsyncResult AR)
-        {
-            SocketMemory memory = (SocketMemory)AR.AsyncState;
-            Socket socket = memory.socket;
-
-            int received;
-
-            try
-            {
-                received = socket.EndReceive(AR);
-            }
-            catch (SocketException)
-            {
-                utils.Log("client forcefully disconnected", -1);
-                socket.Close();
-                clientSockets.Remove(memory);
-                return;
-            }
-
-            RegulatorDevice msg = new RegulatorDevice(memory.pingBuffer, memory.publicKey, myKeys);
-            string text = msg.ToString();
-            utils.Log("received: " + text, 0);
-
-            Thread.Sleep(5000);
-
-            //todo catch client disconnected exception 
-            StartPinging(memory);
-        }
-
-        //private void CustomMessege()
-        //{
-        //    int lampId = 1;
-        //    string operation;
-
-        //    while (lampId != 0)
-        //    {
-        //        lampId = Int32.Parse(Console.ReadLine()); //todo handle exception
-        //        operation = Console.ReadLine();
-        //        SocketMemory selected = null;
-        //        foreach (SocketMemory memory in clientSockets)
-        //        {
-        //            if (memory.port == lampId)
-        //            {
-        //                selected = memory;
-        //                break;
-        //            }
-        //        }
-
-        //        StartCustom(selected, operation);
-        //    }
-        //}
-
-        //private void StartCustom(SocketMemory memory, string operation)
-        //{
-        //    RegulatorDevice msg = new RegulatorDevice(1, id, operation, randomSignature);
-        //    Array.Copy(msg.ToBytes(), memory.pingBuffer, msg.Size); //todo delete parralel access to memory
-        //    memory.socket.BeginSend(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, new AsyncCallback(SendCustom), memory);//todo merge with startping
-
-        //}
-
-        //private void SendCustom(IAsyncResult AR)
-        //{
-        //    SocketMemory memory = (SocketMemory)AR.AsyncState;
-        //    Socket socket = memory.socket;
-        //    socket.EndSend(AR);
-        //    socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, ReceiveCustom, memory);
-        //}
-
-        //private void ReceiveCustom(IAsyncResult AR)
-        //{
-        //    SocketMemory memory = (SocketMemory)AR.AsyncState;
-        //    Socket socket = memory.socket;
-
-        //    int received;
-
-        //    try
-        //    {
-        //        received = socket.EndReceive(AR);
-        //    }
-        //    catch (SocketException)
-        //    {
-        //        Console.WriteLine("client forcefully disconnected");
-        //        socket.Close();
-        //        clientSockets.Remove(memory);
-        //        return;
-        //    }
-
-
-        //    RegulatorDevice msg = new RegulatorDevice(memory.pingBuffer);
-
-        //    string text = msg.ToString();
-        //    Console.WriteLine("received: " + text);
-        //}
-
         private class SocketMemory
         {
             public Socket socket;
-            public byte[] pingBuffer;
             public byte[] messageBuffer;
             public RSACng publicKey;
             public int port;
-            public SocketMemory(Socket socket, byte[] pingBuffer, int port, RSACng publicKey)
+            public SocketMemory(Socket socket, int port, RSACng publicKey)
             {
                 this.socket = socket;
-                this.pingBuffer = pingBuffer;
                 this.port = port;
                 this.publicKey = publicKey;
             }

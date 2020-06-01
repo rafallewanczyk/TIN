@@ -8,7 +8,7 @@ namespace light_regulator
         {
             LampRegulator regulator = new LampRegulator(4000, 5, 1);
             regulator.StartRegulator();
-            regulator.CloseRegulator();
+            regulator.DeleteAllDevices();
         }
     }
 }
