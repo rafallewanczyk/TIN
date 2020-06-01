@@ -136,6 +136,7 @@ class ServerProcesser(Processer):
 
     def _change_devices_config(self, data: bytearray, queue: Queue):
         devices_info_list = self._get_devices_info_from_data(data)
+        self._devices_list.clear_list()
         for id, public_key, address, parameters in devices_info_list:
             self._devices_list.add_device_or_overwrite(id, public_key, address, parameters)
             self._send_parameters_to_device(id, address, public_key, parameters, queue)

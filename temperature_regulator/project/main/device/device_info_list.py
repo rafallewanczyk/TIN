@@ -59,3 +59,7 @@ class DeviceInfoList:
     def get_all_devices_info(self) -> Dict[int, DeviceInfo]:
         with self._lock.gen_rlock():
             return self._devices.copy()
+    
+    def clear_list(self):
+        with self._lock.gen_wlock():
+            self._devices = dict()
