@@ -18,13 +18,12 @@ namespace light_regulator
         private int backlog;
         private int port;
         private int id;
-        private String randomSignature = "414140de5dae2223b00361a396177a9cb410ff61f20015ad"; //only for testing purpose 
         private int privateKeyLength = 0;
-        private int publicKeyLength = 0;
 
-        RSA myKeys = new RSACng(2048);
-        RSA serverKey = new RSACng(2048);  
-        int serverKeyLength; 
+        RSACng myKeys = new RSACng(2048);
+        RSACng serverKey = new RSACng(2048);
+        int serverKeyLength;
+
 
 
         public LampRegulator(int port, int backlog, int id)
@@ -43,10 +42,6 @@ namespace light_regulator
                 int c = fs.Read(buff, 0, buff.Length);
                 myKeys.ImportPkcs8PrivateKey(buff, out privateKeyLength);
 
-                using FileStream fs1 = File.OpenRead(port.ToString() + "Public.rsa");
-                c = fs1.Read(buff, 0, buff.Length);
-                //myKeys.ImportSubjectPublicKeyInfo(buff, out publicKeyLength);
-
             }
             catch (FileNotFoundException)
             {
@@ -55,7 +50,7 @@ namespace light_regulator
                 fs.Write(data, 0, data.Length);
 
                 using FileStream fs1 = File.OpenWrite(port.ToString() + "Public.rsa");
-                byte [] data1 = myKeys.ExportSubjectPublicKeyInfo();
+                byte[] data1 = myKeys.ExportSubjectPublicKeyInfo();
                 fs1.Write(data1, 0, data1.Length);
             }
 
@@ -64,13 +59,12 @@ namespace light_regulator
                 using FileStream fs = File.OpenRead("C:\\Users\\rafal\\source\\repos\\TIN\\server\\keys\\publicKey.rsa");
                 byte[] buff = new byte[2048];
                 int c = fs.Read(buff, 0, buff.Length);
-                serverKey.ImportSubjectPublicKeyInfo(buff, out serverKeyLength); 
+                serverKey.ImportSubjectPublicKeyInfo(buff, out serverKeyLength);
             }
             catch (FileNotFoundException)
             {
-                Console.WriteLine("cant access regulator key"); 
+                utils.Log("cant access server key", -1);
             }
-
 
         }
 
@@ -101,14 +95,22 @@ namespace light_regulator
         public void StartRegulator()
         {
 
-            Console.WriteLine("Searchnig for server");
+            utils.Log("Searchnig for server", 0);
             serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
+
+            //to delete
+            //List<DeviceSetting> devices = new List<DeviceSetting>();
+            //devices.Add(new ChangeConfig(1, 60000, 1));
+            //SearchForDevices(devices);
+
+
+
             Console.Read();
         }
 
         private void AcceptCallback(IAsyncResult AR)
         {
-            Console.WriteLine("new server message");
+            utils.Log("new server message", 1);
             Socket socket;
             try
             {
@@ -119,7 +121,7 @@ namespace light_regulator
                 return;
             }
 
-            SocketMemory memory = new SocketMemory(socket, new byte[1024], port);
+            SocketMemory memory = new SocketMemory(socket, new byte[1024], port, serverKey);
             Task.Run(() => StartReceivingFromServer(memory));
 
             serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
@@ -150,37 +152,39 @@ namespace light_regulator
             }
             catch (SocketException)
             {
-                Console.WriteLine("Lost connection to server");
+                utils.Log("Lost connection to server", -1);
                 socket.Close();
                 return;
             }
 
-            ServerRegulator msg = new ServerRegulator(memory.messageBuffer, serverKey, myKeys);
+            ServerRegulator msg = new ServerRegulator(memory.messageBuffer, memory.publicKey, myKeys);
 
             string text = msg.ToString();
-            Console.WriteLine("received: " + text);
-            Console.WriteLine("received settigns");
+            utils.Log("received: " + text, 0);
+            utils.Log("received settigns", 0);
             msg.Settings.ForEach(Console.WriteLine);
 
 
             if (msg.operation.Equals("CHANGE_CONFIG"))
             {
                 Task.Run(() => SearchForDevices(msg.Settings));
+                ServerRegulator response = new ServerRegulator(1, port, "CHANGE_DATA_RE", memory.publicKey, myKeys);
+                socket.Send(response.ChangeConfigRe());
             }
 
             if (msg.operation.Equals("CURR_DATA"))
             {
-                Console.WriteLine("wysylam odp");
-                ServerRegulator response = new ServerRegulator(1, port, "CURR_DATA_RE", serverKey, myKeys);
-                socket.Send(response.CurrDataRe(new List<CurrentData>())); 
-                //Task.Run(() => GetAllStats());
-                //ServerRegulator msg = new ServerRegulator(1, port, "Currdata_re")
+                Task<List<CurrentData>> t = Task.Run(() => GetAllStats());
+                ServerRegulator response = new ServerRegulator(1, port, "CURR_DATA_RE", memory.publicKey, myKeys);
+                socket.Send(response.CurrDataRe(t.Result));
 
             }
 
-            if (msg.operation.Equals("CHANGE_PARAM"))
+            if (msg.operation.Equals("CHANGE_PARAMS"))
             {
-                //Task.Run(() => ChangeParameter(parameter));
+                Task<int> t = Task.Run(() => ChangeParameter(msg.Id, msg.target));
+                ServerRegulator response = new ServerRegulator(1, port, "CHANGE_PARAMS_RE", memory.publicKey, myKeys);
+                socket.Send(response.ChangeParamsRe((short)t.Result));
             }
 
 
@@ -199,9 +203,10 @@ namespace light_regulator
             {
 
                 int port = ((ChangeConfig)list[i]).Port;
+                byte[] key = ((ChangeConfig)list[i]).Key;
                 tasks[i] = Task.Factory.StartNew(() =>
                 {
-                    Console.WriteLine("searching for device " + port);
+                    utils.Log("searching for device " + port, 0);
                     Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     int attempts = 0;
                     while (!socket.Connected)
@@ -223,9 +228,11 @@ namespace light_regulator
                         }
                     }
 
-                    Console.WriteLine("found device " + port + ", starting pings");
+                    utils.Log("found device " + port, 1);
 
-                    SocketMemory memory = new SocketMemory(socket, new byte[256], port);
+                    RSACng publicKey = new RSACng(2048);
+                    publicKey.ImportSubjectPublicKeyInfo(key, out _);
+                    SocketMemory memory = new SocketMemory(socket, new byte[256], port, publicKey);
                     clientSockets.Add(memory);
                     //StartPinging(memory);
                     return port;
@@ -239,139 +246,152 @@ namespace light_regulator
             {
                 if (tasks[i].Result == 0)
                 {
-                    Console.WriteLine("cannot conect to port " + ((ChangeConfig)list[i]).Port);
+                    utils.Log("cannot conect to port " + ((ChangeConfig)list[i]).Port, -1);
                 }
                 else
                 {
-                    Console.WriteLine("connected to port " + ((ChangeConfig)list[i]).Port);
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    utils.Log("connected to port " + ((ChangeConfig)list[i]).Port, 1);
                 }
             }
         }
 
-        //public void GetAllStats()
-        //{
-        //    var ts = new CancellationTokenSource();
-        //    CancellationToken ct = ts.Token;
+        public List<CurrentData> GetAllStats()
+        {
+            List<CurrentData> statuses = new List<CurrentData>();
+            var ts = new CancellationTokenSource();
+            CancellationToken ct = ts.Token;
 
-        //    Task<int>[] tasks = new Task<int>[clientSockets.Count];
-        //    for (int i = 0; i < clientSockets.Count; i++)
-        //    {
-        //        SocketMemory memory = clientSockets[i];
-        //        tasks[i] = Task.Factory.StartNew(() =>
-        //        {
-        //            RegulatorDevice msg = new RegulatorDevice(1, 1, "STATUS", randomSignature);
-        //            memory.socket.Send(msg.ToBytes());
+            Task<bool>[] tasks = new Task<bool>[clientSockets.Count];
+            for (int i = 0; i < clientSockets.Count; i++)
+            {
+                SocketMemory memory = clientSockets[i];
 
-        //            memory.socket.Receive(memory.messageBuffer);
-        //            msg = new RegulatorDevice(memory.messageBuffer);
+                tasks[i] = Task.Factory.StartNew(() =>
+                {
+                    RegulatorDevice msg = new RegulatorDevice(1, port, "GETSTATUS", memory.publicKey, myKeys);
+                    memory.messageBuffer = msg.ToBytes();
+                    memory.socket.Send(memory.messageBuffer);
 
-
-
-        //            if (ct.IsCancellationRequested)
-        //            {
-        //                //Console.WriteLine("task canceled");
-        //                return 0;
-        //            }
-        //            return int.Parse(msg.Data);
-        //        }, ct);
-
-        //    }
-
-        //    Thread.Sleep(5000);
-
-        //    ts.Cancel();
-        //}
-
-        //private int ChangeParameter(int id, int parameter)
-        //{
-        //    var ts = new CancellationTokenSource();
-        //    CancellationToken ct = ts.Token;
-
-        //    String newParameter = parameter == 1 ? "SET1" : "SET0";
-
-        //    SocketMemory memory = FindById(id);
-        //    if (memory == null)
-        //    {
-        //        return 1;
-        //    }
-
-        //    Task<int> task = Task.Factory.StartNew(() =>
-        //    {
-        //        RegulatorDevice msg = new RegulatorDevice(1, 1, newParameter, randomSignature);
-        //        memory.socket.Send(msg.ToBytes());
-
-        //        memory.socket.Receive(memory.messageBuffer);
-        //        msg = new RegulatorDevice(memory.messageBuffer);
-
-        //        if (ct.IsCancellationRequested)
-        //        {
-        //            //Console.WriteLine("task canceled");
-        //            return 2;
-        //        }
-
-        //        return 0;
-        //    }, ct);
-
-        //    Thread.Sleep(1000);
-        //    ts.Cancel();
-
-        //    return task.Result;
+                    memory.socket.Receive(memory.messageBuffer);
+                    msg = new RegulatorDevice(memory.messageBuffer, memory.publicKey, myKeys);
+                    string text = msg.ToString();
+                    utils.Log(text, 1);
 
 
-        //}
 
-        //private void StartPinging(SocketMemory memory)
-        //{
-        //    RegulatorDevice msg = new RegulatorDevice(1, id, "PING", randomSignature, serverKey, myKeys);
-        //    //RegulatorDevice.Encrypt()
-        //    Array.Copy(msg.encryptedData, memory.pingBuffer, msg.encryptedData.Length);
-        //    try
-        //    {
-        //        memory.socket.BeginSend(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, new AsyncCallback(SendPing), memory);
-        //    }
-        //    catch (SocketException)
-        //    {
-        //        //device disconnected
-        //        Console.WriteLine("Device " + memory.port + " disconnected");
-        //    }
+                    //if (ct.IsCancellationRequested)
+                    //{
+                    //    //Console.WriteLine("task canceled");
+                    //    statuses.Add(new CurrentData(msg.Id, 2));
+                    //    return false;
+                    //}
+                    utils.Log($"returned status : {bool.Parse(msg.operation)}", 1);
+                    short currStatus = bool.Parse(msg.operation) == true ? (short)1 : (short)0;
+                    statuses.Add(new CurrentData(msg.Id, currStatus));
+                    return bool.Parse(msg.operation);
+                }, ct);
 
-        //}
-        //private void SendPing(IAsyncResult AR)
-        //{
-        //    SocketMemory memory = (SocketMemory)AR.AsyncState;
-        //    Socket socket = memory.socket;
-        //    socket.EndSend(AR);
-        //    socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, ReceivePing, memory);
-        //}
-        //private void ReceivePing(IAsyncResult AR)
-        //{
-        //    Console.WriteLine("started ping rec");
-        //    SocketMemory memory = (SocketMemory)AR.AsyncState;
-        //    Socket socket = memory.socket;
 
-        //    int received;
+            }
 
-        //    try
-        //    {
-        //        received = socket.EndReceive(AR);
-        //    }
-        //    catch (SocketException)
-        //    {
-        //        Console.WriteLine("client forcefully disconnected");
-        //        socket.Close();
-        //        clientSockets.Remove(memory);
-        //        return;
-        //    }
+            Thread.Sleep(1000);
+            statuses.ForEach(Console.WriteLine);
 
-        //    RegulatorDevice msg = new RegulatorDevice(memory.pingBuffer, serverKey, myKeys);
-        //    string text = msg.ToString();
-        //    Console.WriteLine("received: " + text);
+            ts.Dispose(); 
+            //ts.Cancel();
+            return statuses;
+        }
 
-        //    Thread.Sleep(5000);
+        private int ChangeParameter(int id, short parameter)
+        {
+            var ts = new CancellationTokenSource();
+            CancellationToken ct = ts.Token;
 
-        //    //todo catch client disconnected exception 
-        //    StartPinging(memory);
-        //}
+            String newParameter = parameter == 1? "SET1" : "SET0";
+
+            SocketMemory memory = FindById(id);
+            if (memory == null)
+            {
+                return 1;
+            }
+
+            Task<int> task = Task.Factory.StartNew(() =>
+            {
+                RegulatorDevice msg = new RegulatorDevice(1, 1, newParameter, memory.publicKey, myKeys);
+                memory.socket.Send(msg.ToBytes());
+
+                memory.socket.Receive(memory.messageBuffer);
+                msg = new RegulatorDevice(memory.messageBuffer, memory.publicKey, myKeys);
+
+                //if (ct.IsCancellationRequested)
+                //{
+                //    //Console.WriteLine("task canceled");
+                //    return 2;
+                //}
+
+                return 0;
+            }, ct);
+
+            Thread.Sleep(1000);
+            int result = task.IsCompleted ? task.Result : 2; 
+            task.Dispose();
+            //ts.Cancel();
+
+            return result;
+
+        }
+
+        private void StartPinging(SocketMemory memory)
+        {
+            RegulatorDevice msg = new RegulatorDevice(1, id, "PING", memory.publicKey, myKeys);
+            memory.pingBuffer = msg.ToBytes();
+            try
+            {
+                memory.socket.BeginSend(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, new AsyncCallback(SendPing), memory);
+            }
+            catch (SocketException)
+            {
+                //device disconnected
+                utils.Log("Device " + memory.port + " disconnected", -1);
+            }
+
+        }
+        private void SendPing(IAsyncResult AR)
+        {
+            SocketMemory memory = (SocketMemory)AR.AsyncState;
+            Socket socket = memory.socket;
+            socket.EndSend(AR);
+            socket.BeginReceive(memory.pingBuffer, 0, memory.pingBuffer.Length, SocketFlags.None, ReceivePing, memory);
+        }
+        private void ReceivePing(IAsyncResult AR)
+        {
+            SocketMemory memory = (SocketMemory)AR.AsyncState;
+            Socket socket = memory.socket;
+
+            int received;
+
+            try
+            {
+                received = socket.EndReceive(AR);
+            }
+            catch (SocketException)
+            {
+                utils.Log("client forcefully disconnected", -1);
+                socket.Close();
+                clientSockets.Remove(memory);
+                return;
+            }
+
+            RegulatorDevice msg = new RegulatorDevice(memory.pingBuffer, memory.publicKey, myKeys);
+            string text = msg.ToString();
+            utils.Log("received: " + text, 0);
+
+            Thread.Sleep(5000);
+
+            //todo catch client disconnected exception 
+            StartPinging(memory);
+        }
 
         //private void CustomMessege()
         //{
@@ -443,14 +463,16 @@ namespace light_regulator
             public Socket socket;
             public byte[] pingBuffer;
             public byte[] messageBuffer;
-            public RSACryptoServiceProvider publicKey;
+            public RSACng publicKey;
             public int port;
-            public SocketMemory(Socket socket, byte[] pingBuffer, int port)
+            public SocketMemory(Socket socket, byte[] pingBuffer, int port, RSACng publicKey)
             {
                 this.socket = socket;
                 this.pingBuffer = pingBuffer;
                 this.port = port;
+                this.publicKey = publicKey;
             }
+
         }
 
     }

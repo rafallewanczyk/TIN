@@ -7,12 +7,17 @@ namespace TSHP
     public class CurrentData : DeviceSetting
     {
         public int id;
-        public bool state;
+        public short state;
 
-        public CurrentData(int id, bool state)
+        public CurrentData(int id, short state)
         {
             this.id = id;
             this.state = state;
+        }
+
+        public override string ToString()
+        {
+            return $"id: {id}, status: {state}"; 
         }
     }
 }

@@ -6,11 +6,29 @@ namespace TSHP
 {
     public static class utils
     {
-		public static T[] SubArray<T>(this T[] array, int offset, int length)
-		{
-			T[] result = new T[length];
-			Array.Copy(array, offset, result, 0, length);
-			return result;
-		}
-	}
+        public static void Log(string message, int status)
+        {
+            switch (status)
+            {
+                case -1:
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    break;
+
+                case 0:
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    break;
+
+                case 1:
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    break;
+
+                default:
+                    Console.ForegroundColor = ConsoleColor.White;
+                    break;
+            }
+
+            Console.WriteLine(message); 
+            Console.ForegroundColor = ConsoleColor.Yellow;
+        }
+    }
 }

@@ -8,106 +8,130 @@ namespace TSHP
     public class RegulatorDevice
     {
         private int version, id, size;
-        private string data;
-        public string operation; 
-        private byte[] dataBytes; 
+        public string operation;
+        private byte[] dataBytes;
         public byte[] message;
         public byte[] encryptedData;
 
-        RSA publicKey;
-        RSA privateKey;
+        RSACng publicKey;
+        RSACng privateKey;
 
         public int Size { get => size; set => size = value; }
-        public string Data { get => data; set => data = value; }
+        public int Version { get => version; set => version = value; }
+        public int Id { get => id; set => id = value; }
+        public int Size1 { get => size; set => size = value; }
 
-        public RegulatorDevice(byte[] buffer, RSA publicKey, RSA privateKey)
+        public RegulatorDevice(byte[] buffer, RSACng publicKey, RSACng privateKey)
         {
             this.publicKey = publicKey;
             this.privateKey = privateKey;
 
             encryptedData = buffer;
-            Decrypt(); 
+            Decrypt();
             ReadMessege(this.message);
         }
 
 
-        public RegulatorDevice(int version, int id, string data,  RSA publicKey, RSA privateKey)
+        public RegulatorDevice(int version, int id, string operation, RSACng publicKey, RSACng privateKey)
         {
             this.publicKey = publicKey;
             this.privateKey = privateKey;
             this.version = version;
             this.id = id;
-            this.data = data;
-
-            message = ToBytes();
-            Encrypt(); 
-
+            this.operation = operation;
         }
 
 
-        public void Encrypt()
-        {
-            try
-            {
-                encryptedData = publicKey.Encrypt(message, RSAEncryptionPadding.OaepSHA256); 
-            }
-            catch (CryptographicException e)
-            {
-                Console.WriteLine(e.Message);
-                //todo unable to encrypt data exception
-            }
-        }
+        //public void Encrypt()
+        //{
+        //    try
+        //    {
+        //        encryptedData = publicKey.Encrypt(message, RSAEncryptionPadding.OaepSHA256); 
+        //    }
+        //    catch (CryptographicException e)
+        //    {
+        //        Console.WriteLine(e.Message);
+        //        //todo unable to encrypt data exception
+        //    }
+        //}
+
+        //public void Decrypt()
+        //{
+        //    try
+        //    {
+        //        message = privateKey.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA256); 
+        //    }
+        //    catch (CryptographicException e)
+        //    {
+        //        Console.WriteLine(e.ToString());
+        //        //todo unable to decrypt data exception
+        //    }
+        //}
 
         public void Decrypt()
         {
+
             try
             {
-                message = privateKey.Decrypt(encryptedData, RSAEncryptionPadding.OaepSHA256); 
+                int offset = 0;
+                version = BitConverter.ToInt32(encryptedData, offset);
+                offset += 4;
+
+                Size = BitConverter.ToInt32(encryptedData, offset);
+                offset += 4;
+
+                id = BitConverter.ToInt32(encryptedData, offset);
+                offset += 4;
+
+                List<byte> decryptedData = new List<byte>();
+                byte[] codedBlock = new byte[256];
+                Array.Copy(encryptedData, size - 256, codedBlock, 0, 256);
+                if (!publicKey.VerifyData(encryptedData, offset, size - offset - 256, codedBlock, HashAlgorithmName.SHA256, RSASignaturePadding.Pss))
+                {
+                    utils.Log("nie odczytano podpisu", -1);
+                    return;
+                }
+                while (offset < size - 256)
+                {
+                    Array.Copy(encryptedData, offset, codedBlock, 0, 256);
+                    codedBlock = privateKey.Decrypt(codedBlock, RSAEncryptionPadding.OaepSHA256);
+                    decryptedData.AddRange(codedBlock);
+                    offset += 256;
+                }
+                //signature
+                message = decryptedData.ToArray();
             }
             catch (CryptographicException e)
             {
-                Console.WriteLine(e.ToString());
-                //todo unable to decrypt data exception
+                utils.Log(e.ToString(), -1);
             }
         }
 
         public byte[] ToBytes()
         {
-            int data_size = Encoding.UTF8.GetByteCount(data);
-            Size = sizeof(int) + sizeof(int) + sizeof(int) + data_size + 32;
-            byte[] messege = new byte[Size];
-            int offset = 0;
+            List<byte> response = new List<byte>();
 
-            Array.Copy(BitConverter.GetBytes(version), 0, messege, offset, sizeof(int));
-            offset += sizeof(int);
+            List<byte> data = new List<byte>();
+            data.AddRange(Encoding.UTF8.GetBytes(operation));
+            byte[] encryptedData = publicKey.Encrypt(data.ToArray(), RSAEncryptionPadding.OaepSHA256);
+            byte[] signature = privateKey.SignData(encryptedData, HashAlgorithmName.SHA256, RSASignaturePadding.Pss);
 
-            Array.Copy(BitConverter.GetBytes(Size), 0, messege, offset, sizeof(int));
-            offset += sizeof(int);
+            response.AddRange(BitConverter.GetBytes(version));
+            response.AddRange(BitConverter.GetBytes(12 + encryptedData.Length + signature.Length));
+            response.AddRange(BitConverter.GetBytes(id));
+            response.AddRange(encryptedData);
+            response.AddRange(signature);
 
-            Array.Copy(BitConverter.GetBytes(id), 0, messege, offset, sizeof(int));
-            offset += sizeof(int);
 
-            Array.Copy(Encoding.UTF8.GetBytes(data), 0, messege, offset, data_size);
-            //Array.Copy(Encoding.UTF8.GetBytes(data), 0, dataBytes, 0, data_size);
-            offset += data_size;
+            return response.ToArray();
 
-            return messege;
+
         }
 
         public void ReadMessege(byte[] msg)
         {
-            int offset = 0;
-            version = BitConverter.ToInt32(msg, offset);
-            offset += sizeof(int);
 
-            Size = BitConverter.ToInt32(msg, offset);
-            offset += sizeof(int);
-
-            id = BitConverter.ToInt32(msg, offset);
-            offset += sizeof(int);
-
-            data = Encoding.UTF8.GetString(msg, offset, Size - 3 * sizeof(int) - 32); //todo set constant 
-            offset += Encoding.UTF8.GetByteCount(data);
+            operation = Encoding.UTF8.GetString(msg, 0, msg.Length); //todo set constant 
 
         }
 
@@ -116,7 +140,7 @@ namespace TSHP
         public override string ToString()
         {
 
-            return ("version:" + version + " size:" + Size + " id:" + id + " data:" + data);
+            return ("version:" + version + " size:" + Size + " id:" + id + " data:" + operation);
         }
     }
 }

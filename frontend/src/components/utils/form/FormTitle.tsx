@@ -48,7 +48,7 @@ export const FormTitle: React.FC<FormTitleProps> = ({
       className="data-cy-del-btn"
       disabled={deleteButtonDisabled}
       key="1"
-      type="danger"
+      danger
       onClick={handleDelete}
     >
       Delete

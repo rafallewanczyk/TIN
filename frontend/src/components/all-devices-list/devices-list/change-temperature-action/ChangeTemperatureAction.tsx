@@ -21,7 +21,7 @@ export const ChangeTemperatureAction: React.FC<ChangeTemperatureActionProps> = (
     DEBOUNCE_TIME,
   );
 
-  const handleInputChange = (value: number | undefined): void => {
+  const handleInputChange = (value:any): void => {
     setTargetValue(value || 0);
     sendDelayedChangeRequest(value);
   };

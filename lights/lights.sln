@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "light_device", "light_devic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "light_regulator", "light_regulator\light_regulator.csproj", "{84BAD32E-B721-4AA0-B4A7-AE2C1698E8C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TSHP", "TSHP\TSHP.csproj", "{5273629C-ACF0-4EF6-86B8-F23DFE4F2F49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TSHP", "TSHP\TSHP.csproj", "{5273629C-ACF0-4EF6-86B8-F23DFE4F2F49}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
