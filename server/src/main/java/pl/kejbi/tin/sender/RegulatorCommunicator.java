@@ -1,6 +1,7 @@
 package pl.kejbi.tin.sender;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import pl.kejbi.tin.devices.Device;
 import pl.kejbi.tin.devices.LightDevice;

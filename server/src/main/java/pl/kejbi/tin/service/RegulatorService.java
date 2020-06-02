@@ -2,6 +2,8 @@ package pl.kejbi.tin.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pl.kejbi.tin.controller.dto.RegulatorUpdateDTO;
 import pl.kejbi.tin.devices.Device;
@@ -33,6 +35,7 @@ public class RegulatorService {
     private final DeviceService deviceService;
     private final RegulatorRepository regulatorRepository;
     private final RegulatorCommunicator regulatorCommunicator;
+    private final Logger logger = LoggerFactory.getLogger(RegulatorService.class);
 
     public void addRegulator(Regulator regulator) {
         regulatorRepository.save(regulator);
@@ -71,15 +74,11 @@ public class RegulatorService {
     public void sendCurrData() throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
         var regulators = regulatorRepository.findAll();
         for (Regulator regulator : regulators) {
-            try {
-                if(regulator.getStatus() == StatusType.INACTIVE)
-                    resetRegulatorConfiguration(regulator);
-                regulatorCommunicator.sendCurrData(regulator);
-                checkRegulatorStatus(regulator);
-            } catch (NoRegulatorConnectionException | ConnectException ex) {
-                setRegulatorToInactive(regulator);
-            }
+            Thread sendCurr = new Thread(sendCurrDataToOneRegulator(regulator));
+            sendCurr.start();
         }
+        Thread sendReset = new Thread(sendTargetToResetDevices());
+        sendReset.start();
     }
 
     public void sendLightConfig(int regulatorId, List<LightDevice> devices) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
@@ -141,5 +140,43 @@ public class RegulatorService {
         regulator.setStatus(StatusType.INACTIVE);
         deviceService.setRegulatorsDevicesToInactive(regulator.getId(), regulator.getType());
         regulatorRepository.save(regulator);
+    }
+
+    private Runnable sendCurrDataToOneRegulator(Regulator regulator) {
+        return () -> {
+            try {
+                if(regulator.getStatus() == StatusType.INACTIVE)
+                    resetRegulatorConfiguration(regulator);
+                regulatorCommunicator.sendCurrData(regulator);
+                checkRegulatorStatus(regulator);
+            } catch (Exception ex) {
+                setRegulatorToInactive(regulator);
+            }
+        };
+    }
+
+    private Runnable sendTargetToResetDevices() {
+        return () -> {
+            for (Device device : deviceService.getResetDevices()) {
+                if(device instanceof LightDevice) {
+                    try {
+                        sendLightChangeParams(device.getRegulatorId(), (LightDevice) device);
+                        device.setReset(false);
+                        deviceService.addDevice(device);
+                    } catch (Exception ex){
+                        logger.error(ex.getMessage());
+                    }
+                }
+                else {
+                    try {
+                        sendTemperatureChangeParams(device.getRegulatorId(), (TemperatureDevice) device);
+                        device.setReset(false);
+                        deviceService.addDevice(device);
+                    } catch (Exception ex){
+                        logger.error(ex.getMessage());
+                    }
+                }
+            }
+        };
     }
 }
