@@ -15,6 +15,7 @@ private:
     [[nodiscard]] std::vector<char> intToBytes(int value) const {
         std::vector<char> bytes(4);
         std::memcpy(bytes.data(), &value, 4);
+        std::reverse(bytes.begin(), bytes.end());
 
         return bytes;
     }
