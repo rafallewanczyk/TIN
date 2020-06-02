@@ -18,8 +18,8 @@ namespace light_device
         private int privateKeyLength;
         private int publicKeyLength;
         private int regulatorKeyLenght;
-        RSA myKeys = new RSAOpenSsl(2048);
-        RSA regulatorKey = new RSAOpenSsl(2048);
+        RSA myKeys = new RSACng(2048);
+        RSA regulatorKey = new RSACng(2048);
 
         public LampDevice(int port)
         {
@@ -69,18 +69,17 @@ namespace light_device
             socket.Bind(new IPEndPoint(IPAddress.Any, port));
             socket.Listen(backlog);
 
-            listener = socket.Accept();
             Utils.Log("connected to regulator", 1);
         }
         public void StartSending()
         {
             while (true)
             {
+                listener = socket.Accept();
                 byte[] receivedBytes = new byte[524];
                 int receive = 0;
                 try
                 {
-                    Console.Write("Czekam na wiadomosc");
                     receive = listener.Receive(receivedBytes, SocketFlags.None);
                 }
                 catch (SocketException)
@@ -126,6 +125,7 @@ namespace light_device
 
                 listener.Send(msg.ToBytes(), 0, msg.ToBytes().Length, SocketFlags.None);
                 Utils.Log("current staus :" + status, 0);
+                listener.Close(); 
             }
 
         }
