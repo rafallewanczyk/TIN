@@ -52,7 +52,6 @@
 ## Opis komunikacji
 
 W nawiasach jest opisane jaka strukturę będzie miała wiadomość.
-Typ widomości ma 24 bajty.
 Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości.
 
 ### Urządzenie temperatury - regulator temperatury:
@@ -98,15 +97,12 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
 
 - Zapal/Zgaś światło
   (domyślne nagłówki) (typ wiadomości - CHANGE_LIGHT) (operacja) [short 1B]
-- Ping
-  (domyślne nagłówki) (typ wiadomości = PING)
 - Podaj stan oświetlenia
   (domyślne nagłówki) (typ wiadomości = GET_LIGHT)
 
 #### Urządzenie -> Regulator:
 
-- Stan oświetlenia (domyślne nagłówki) (typ wiadomości = CURR_LIGHT) (stan światła) [short 1B]
-- Ping return (domyślne nagłówki) (typ wiadomości = PING_RETURN)
+- Stan oświetlenia (domyślne nagłówki) (typ wiadomości = CURR_LIGHT) (stan światła) [short 1B
 
 ### Serwer - Klient:
 
@@ -116,9 +112,7 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
 
 #### Klient -> Serwer:
 
-- Zaloguj się
 - Podaj stan urządzenia
-- Pobierz dane historyczne (logi)
 - Pobierz listę urządzeń
 - Dodaj regulator
 - Dodaj urządzenie
@@ -133,7 +127,7 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
       "id": "string",
       "regulatorId": "string",
       "name": "string",
-      "status": "ENUM: ACTIVE | INACTIVE | INVALID | CONNECTING",
+      "status": "ENUM: ACTIVE | INACTIVE ",
       "type": "ENUM: TEMPERATURE | LIGHT",
       "data": "string | boolean",
       "targetData": "string | boolean",
@@ -175,7 +169,7 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
     {
       "id": "string",
       "name": "string",
-      "status": "ENUM: ACTIVE | INACTIVE | INVALID | CONNECTING",
+      "status": "ENUM: ACTIVE | INACTIVE ",
       "type": "ENUM: TEMPERATURE | LIGHT",
       "address: "string",
       "port": "string"
