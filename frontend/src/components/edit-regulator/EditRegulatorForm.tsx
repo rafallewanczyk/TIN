@@ -11,8 +11,8 @@ export type EditRegulatorFormProps = RouteComponentProps<RouteParams>;
 
 export const EditRegulatorForm: React.FC<EditRegulatorFormProps> = ({ regulatorId }) => {
   const navigate = useNavigate();
-
-  const regulator = useFetchRegulator(regulatorId);
+  const parsedDeviceId = parseInt(regulatorId || '', 10);
+  const regulator = useFetchRegulator(parsedDeviceId);
 
   if (!regulator) {
     navigate('/newRegulator');

@@ -3,15 +3,14 @@ import threading
 from server.server_processer import ServerProcesser
 from server.processer import Processer
 from config_handling.config_handler import ConfigHandler
-from cryptography_handler import CryptographyHandler
-from temperature_device.temperature_device_info_list import TemperatureDeviceInfoList
+from device.device_info_list import DeviceInfoList
 
 
 class ServerDispatcher:
     def __init__(self, config_handler: ConfigHandler):
         Processer.configure(config_handler)
         self._create_listener_socket(config_handler)
-        self._device_list = TemperatureDeviceInfoList()
+        self._device_list = DeviceInfoList()
 
     def _create_listener_socket(self, config_handler: ConfigHandler):
         try:
@@ -22,8 +21,7 @@ class ServerDispatcher:
         self._listener_socket.bind((config_handler.listener_socket_address, config_handler.listener_socket_port))
         self._listener_socket.listen(config_handler.listener_socket_max_connections)
         self._listener_socket.settimeout(config_handler.listener_socket_timeout)
-        print(
-            f"Server created. Interface: {config_handler.listener_socket_address} Port: {config_handler.listener_socket_port}")
+        print(f"Server created. Interface: {config_handler.listener_socket_address} Port: {config_handler.listener_socket_port}")
 
     def run(self):
         try:
@@ -41,7 +39,5 @@ class ServerDispatcher:
                     processer = ServerProcesser(connection_socket, client_address, self._device_list)
                     thread = threading.Thread(target=ServerProcesser.run, args=(processer,))
                     thread.start()
-
-
         except KeyboardInterrupt:  # SIGINT
             self._listener_socket.close()

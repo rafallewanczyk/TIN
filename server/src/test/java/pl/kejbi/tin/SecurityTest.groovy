@@ -18,7 +18,8 @@ class SecurityTest extends Specification {
         KeyPair keyPair = keyGenerator.generateKeyPair(2048)
 
         when:
-        KeyIO.writeKeyToFile("keys/publicKey", keyPair.getPublic())
+        KeyIO.writeKeyToFile("keys/privateKey.rsa", keyPair.getPrivate())
+        KeyIO.writeKeyToFile("keys/publicKey.rsa", keyPair.getPublic())
 
         then:
         "Created file with encoded public key"
@@ -43,8 +44,8 @@ class SecurityTest extends Specification {
         KeyPair keyPair = keyGenerator.generateKeyPair(2048)
 
         when:
-        KeyIO.writeKeyToFile("keys/privateKey", keyPair.getPrivate())
-        PrivateKey key = KeyIO.loadPrivateKey("keys/privateKey")
+        KeyIO.writeKeyToFile("keys/privateKey.rsa", keyPair.getPrivate())
+        PrivateKey key = KeyIO.loadPrivateKey("keys/privateKey.rsa")
 
         then:
         key.equals(keyPair.getPrivate())
@@ -55,7 +56,10 @@ class SecurityTest extends Specification {
         KeyGenerator keyGenerator = new KeyGenerator()
         KeyPair keyPair = keyGenerator.generateKeyPair(2048)
         Cryptography cryptography = new Cryptography()
-        String message = "TOP SECRET"
+        String message = "TOP SECRETAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" +
+                "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa"
 
         when:
         byte[] encryptedMessage = cryptography.encryptData(message.getBytes(), keyPair.getPublic())
@@ -69,7 +73,7 @@ class SecurityTest extends Specification {
         given:
         KeyGenerator keyGenerator = new KeyGenerator()
         Cryptography cryptography = new Cryptography()
-        SignatureManager signatureManager = new SignatureManager(cryptography)
+        SignatureManager signatureManager = new SignatureManager()
         KeyPair keyPair = keyGenerator.generateKeyPair(2048)
         byte[] message = "TOP SECRET".getBytes()
 

@@ -20,6 +20,7 @@ double parseDouble(const std::string &bytes) {
 }
 
 int main(int argc, char *argv[]) {
+    std::shared_ptr<SecurityModule> security = std::make_shared<SecurityModule>("key.public.rsa");
     char protocol = '\0' + 1;
     char contentSize = '\0';
     char id = '\0';
@@ -29,10 +30,13 @@ int main(int argc, char *argv[]) {
         std::cout << "not enough parameters" << std::endl;
         return 1;
     }
-
+    std::string signature;
     if (strcmp(argv[1], "get") == 0) {
-        bytesToSend = {protocol, '\0', '\0', '\0', contentSize, '\0', '\0', '\0', '\0', '\0', '\0', id,
-                       'G', 'E', 'T', '_', 'T', 'E', 'M', 'P'};
+        auto encryptedData = security->encrypt(std::string("GET_TEMP"));
+        signature = security->makeSignature(encryptedData);
+
+        bytesToSend = {'\0', '\0', '\0', protocol, '\0', '\0', '\0', contentSize, '\0', '\0', '\0', id};
+        bytesToSend.insert(bytesToSend.end(), encryptedData.begin(), encryptedData.end());
     } else if (strcmp(argv[1], "set") == 0) {
         if (argc < 3) {
             std::cout << "not enough parameters" << std::endl;
@@ -41,15 +45,28 @@ int main(int argc, char *argv[]) {
         auto value = std::stod(argv[2]);
         std::array<char, 8> doubleBytes = {};
         std::memcpy(doubleBytes.data(), &value, 8);
-        bytesToSend = {protocol, '\0', '\0', '\0', contentSize, '\0', '\0', '\0', '\0', '\0', '\0', id,
-                       'C', 'H', 'A', 'N', 'G', 'E', '_', 'T', 'E', 'M', 'P'};
-        bytesToSend.insert(bytesToSend.end(), doubleBytes.begin(), doubleBytes.end());
-    } else {
-        bytesToSend = {protocol, '\0', '\0', '\0', contentSize, '\0', '\0', '\0', '\0', '\0', '\0', id,
-                       'P', 'I', 'N', 'G'};
-    }
+        std::reverse(doubleBytes.begin(), doubleBytes.end());
 
-    bytesToSend[4] = '\0' + int(bytesToSend.size());
+        auto encryptedData = security->encrypt(
+                std::string("CHANGE_TEMP") + std::string(doubleBytes.begin(), doubleBytes.end()));
+
+        bytesToSend = {'\0', '\0', '\0', protocol, '\0', '\0', '\0', contentSize, '\0', '\0', '\0', id};
+        bytesToSend.insert(bytesToSend.end(), encryptedData.begin(), encryptedData.end());
+        signature = security->makeSignature(std::string(bytesToSend.begin() + 12, bytesToSend.end()));
+    } else {
+        bytesToSend = {'\0', '\0', '\0', protocol, '\0', '\0', '\0', contentSize, '\0', '\0', '\0', id};
+        auto encryptedData = security->encrypt(std::string("PING"));
+        signature = security->makeSignature(encryptedData);
+        bytesToSend.insert(bytesToSend.end(), encryptedData.begin(), encryptedData.end());
+    }
+    bytesToSend.insert(bytesToSend.end(), signature.begin(), signature.end());
+    auto bytesSize = int(bytesToSend.size());
+    std::array<char, 4> doubleBytes = {};
+    std::memcpy(doubleBytes.data(), &bytesSize, 4);
+    bytesToSend[7] = doubleBytes[0];
+    bytesToSend[6] = doubleBytes[1];
+    bytesToSend[5] = doubleBytes[2];
+    std::cout << "Sending bytes: " << bytesToSend.size() << std::endl;
 
     int sockfd, portno, n;
     struct sockaddr_in serv_addr;
@@ -76,22 +93,26 @@ int main(int argc, char *argv[]) {
         std::cout << ("ERROR connecting") << std::endl;
         exit(0);
     }
+    std::cout << int(bytesToSend[6]) << std::endl;
     n = write(sockfd, bytesToSend.data(), bytesToSend.size());
     if (n < 0) {
         cout << ("ERROR writing to socket") << endl;
         exit(0);
     }
-    std::vector<char> buffer(256);
-    n = read(sockfd, buffer.data(), 255);
+    std::vector<char> buffer(524);
+    n = read(sockfd, buffer.data(), 524);
     if (n < 0) {
         cout << ("ERROR reading from socket") << endl;
         exit(0);
     }
 
     if (strcmp(argv[1], "get") == 0) {
-        std::string response(buffer.begin(), buffer.end());
-        double val = parseDouble(response.substr(12 + 9, 8));
-        std::cout << "Whole data: " << response.substr(12, 9) << std::endl;
+        auto doubleData = std::string(buffer.begin() + 12, buffer.end() - 256);
+        std::string response = security->decrypt(doubleData);
+        std::reverse(response.begin() + 9, response.end());
+        double val = parseDouble(response.substr(9, 8));
+        std::cout << "Verified: " << security->verifySignature(std::string(buffer.begin() + 12, buffer.end()))
+                  << std::endl;
         std::cout << "Current temp: " << val << std::endl;
 
     } else if (strcmp(argv[1], "set") == 0) {

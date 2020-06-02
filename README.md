@@ -123,6 +123,98 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
 - Dodaj regulator
 - Dodaj urządzenie
 
+## API
+```text
+// undefined oznacza, że może nie być tego w requeście
+{
+  //GET /devices - zwrotka
+  [
+    {
+      "id": "string",
+      "regulatorId": "string",
+      "name": "string",
+      "status": "ENUM: ACTIVE | INACTIVE | INVALID | CONNECTING",
+      "type": "ENUM: TEMPERATURE | LIGHT",
+      "data": "string | boolean",
+      "targetData": "string | boolean",
+      "address: "string",
+      "port": "string"
+    },
+    // ...
+  ],
+
+  //POST /devices - request klienta
+  {
+    "regulatorId": "string",
+    "name": "string",
+    "publicKey": "BASE64 encoded string",
+    "address: "string",
+    "port": "string"
+  },
+
+  //PATCH /devices/:deviceId request klienta
+  {
+    "regulatorId": "string | undefined",
+    "name": "string | undefined",
+    "publicKey": "BASE64 encoded string | undefined",
+    "address: "string | undefined",
+    "port": "string | undefined"
+  }
+  // ...,
+
+  //DELETE /devices/:deviceId
+
+  // POST /devices/setTargetData
+  {
+    "id": "string",
+    "targetData": "string | boolean"
+  }
+
+  //GET /regulators - tak powinna wyglądać zwrotka
+  [
+    {
+      "id": "string",
+      "name": "string",
+      "status": "ENUM: ACTIVE | INACTIVE | INVALID | CONNECTING",
+      "type": "ENUM: TEMPERATURE | LIGHT",
+      "address: "string",
+      "port": "string"
+    },
+    // ...
+  ],
+
+  //POST /regulators request klienta
+  {
+    "regulatorId": "string",
+    "name": "string",
+    "publicKey": "BASE64 encoded string",
+    "address: "string",
+    "port": "string"
+  }
+
+  //PATCH /regulators/:regulatorId request klienta
+  {
+    "type": "ENUM: TEMPERATURE | LIGHT" | undefined,
+    "name": "string | undefined",
+    "publicKey": "BASE64 encoded string | undefined",
+    "address: "string | undefined",
+    "port": "string | undefined"
+  },
+
+  // DELETE /regulators/:regulatorId
+}
+
+// ERROR jeżeli będzie jakiś błąd to chciałbym otrzymać takie body
+  "error": "string"
+
+// albo
+  "errors": [
+    "string",
+    ...
+  ]
+```
+
+
 ## Potencjalne błędy komunikacji
 
 Ogólne błędy przy komunikacji socketami:

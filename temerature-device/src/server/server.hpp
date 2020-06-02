@@ -34,7 +34,7 @@ class Server {
 private:
     int socketDescriptor{}, port;
     struct sockaddr_in serverAddressStruct{};
-    std::shared_ptr<SecurityModule> security = std::make_shared<SecurityModule>("regulator.public.rsa");
+    std::shared_ptr<SecurityModule> security = std::make_shared<SecurityModule>("Wygenerowany_klucz_publiczny.rsa");
 
     static std::string getError() {
         return "Errno: " + std::to_string(errno) + " - " + strerror(errno);

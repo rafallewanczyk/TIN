@@ -9,7 +9,7 @@ import { fetchRegulators } from '../../rest-client/devices/RegulatorsRestClient'
 
 export const ALL_DEVICES_QUERY = 'devicesList';
 export const ALL_REGULATORS_QUERY = 'regulatorsList';
-const REFETCH_INTERVAL = 2000;
+export const REFETCH_INTERVAL = 60000;
 
 export const useDevicesQuery = (): [DeviceModel[] | undefined, boolean] => {
   const { data, status } = useQuery(ALL_DEVICES_QUERY, fetchDevices, {
@@ -21,15 +21,22 @@ export const useDevicesQuery = (): [DeviceModel[] | undefined, boolean] => {
   return [data, status === 'loading'];
 };
 
-export const useAllRegulatorsQuery = (options?: QueryOptions<RegulatorModel[]>) =>
-  useQuery(ALL_REGULATORS_QUERY, fetchRegulators, options);
+export const useAllRegulatorsQuery = (
+  options?: QueryOptions<RegulatorModel[]>,
+  devicesLoading = false,
+) => useQuery(!devicesLoading && ALL_REGULATORS_QUERY, fetchRegulators, options);
 
-export const useRegulatorsQuery = (): [RegulatorModel[] | undefined, boolean] => {
-  const { data, status } = useAllRegulatorsQuery({
-    refetchOnWindowFocus: false,
-    refetchInterval: REFETCH_INTERVAL,
-    retry: false,
-  });
+export const useRegulatorsQuery = (
+  devicesLoading: boolean,
+): [RegulatorModel[] | undefined, boolean] => {
+  const { data, status } = useAllRegulatorsQuery(
+    {
+      refetchOnWindowFocus: false,
+      refetchInterval: REFETCH_INTERVAL,
+      retry: false,
+    },
+    devicesLoading,
+  );
 
   return [data, status === 'loading'];
 };

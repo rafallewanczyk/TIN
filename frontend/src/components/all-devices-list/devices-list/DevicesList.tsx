@@ -3,6 +3,7 @@ import { Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { useNavigate } from '@reach/router';
 import produce from 'immer';
+import clsx from 'clsx';
 import style from '../regulator-devices-list/RegulatorDevicesList.module.css';
 import {
   DeviceModel,
@@ -13,7 +14,6 @@ import {
 import { deviceTableColumns } from '../utils/deviceTableColumns';
 import { renderDeviceData } from './dataRenderers';
 import { useTableScroll } from '../utils/useTableScroll';
-import { useDevicesQuery } from './useDevicesQuery';
 import { ChangeTemperatureAction } from './change-temperature-action/ChangeTemperatureAction';
 import { ChangeLightAction } from './change-light-action/ChangeLightAction';
 
@@ -40,21 +40,26 @@ const columns: ColumnsType<DeviceModel> = [
   },
 ];
 
-export const DevicesList: React.FC = () => {
+interface RegulatorDevicesListProps {
+  devices: DeviceModel[] | undefined;
+  loading: boolean;
+}
+
+export const DevicesList: React.FC<RegulatorDevicesListProps> = ({ devices, loading }) => {
   const ref = useRef<HTMLDivElement>(null);
   const scroll = useTableScroll(ref, 700);
   const navigate = useNavigate();
-  const [devices, loading] = useDevicesQuery();
   const devicesWithKeys = devices?.map((it) =>
     produce(it, (deviceWithKey) => {
-      (deviceWithKey as DeviceModel & { key: string }).key = it.id;
+      (deviceWithKey as DeviceModel & { key: number }).key = it.id;
     }),
   );
 
   return (
     <Table
-      className={style.wrapper}
+      className={clsx(style.wrapper, 'data-cy-devices-table')}
       columns={columns}
+      data-cy="devices-table"
       dataSource={devicesWithKeys}
       loading={loading}
       pagination={false}

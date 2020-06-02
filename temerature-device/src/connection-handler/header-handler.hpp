@@ -15,6 +15,7 @@ private:
     [[nodiscard]] std::vector<char> intToBytes(int value) const {
         std::vector<char> bytes(4);
         std::memcpy(bytes.data(), &value, 4);
+        std::reverse(bytes.begin(), bytes.end());
 
         return bytes;
     }
@@ -48,11 +49,7 @@ class HeaderHandler {
         return value;
     }
 
-
     void validate(const Header &header) {
-        if (header.protocolVersion != PROTOCOL_VERSION)
-            throw InvalidMessageHeaderException("Wrong protocol version");
-
         if (header.contentSize < 0)
             throw InvalidMessageHeaderException("Content size is negative.");
     }
@@ -78,8 +75,5 @@ public:
     }
 
 };
-
-//HeaderHandler::HEADER_SIZE
-
 
 #endif //UNTITLED_HEADER_HANDLER_HPP

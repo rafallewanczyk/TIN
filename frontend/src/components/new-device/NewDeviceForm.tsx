@@ -10,6 +10,7 @@ import { DeviceModel, RegulatorModel } from '../models/regulator-device-model/Re
 import { FormTitle } from '../utils/form/FormTitle';
 import { OptionalKeyUploader } from '../utils/form/OptionalKeyUploader';
 import { FormSpinner } from '../new-regulator/FormSpinner';
+import { renderDeviceType } from '../enum-renderers/deviceTypeRenderer';
 
 export interface NewDeviceProps extends RouteComponentProps {
   device?: DeviceModel;
@@ -19,6 +20,11 @@ export interface NewDeviceProps extends RouteComponentProps {
 const { Option } = Select;
 
 const fields: Record<NewDeviceFieldNames, Omit<FormItemProps, 'children'>> = {
+  [NewDeviceFieldNames.id]: {
+    rules: [{ required: true, message: 'Please give device id' }],
+    name: NewDeviceFieldNames.id,
+    label: 'Device id: ',
+  },
   [NewDeviceFieldNames.name]: {
     rules: [{ required: true, message: 'Please give device name' }],
     name: NewDeviceFieldNames.name,
@@ -54,7 +60,7 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
 
   const renderRegulatorOption = (regulator: RegulatorModel): ReactNode => (
     <Option key={regulator.id} value={regulator.id}>
-      {regulator.name} [type: {regulator.type}]
+      {regulator.name} [type: {renderDeviceType(regulator.type)}]
     </Option>
   );
 
@@ -75,6 +81,13 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
         size="middle"
       >
         {fetchingInProgress && <FormSpinner />}
+        <Form.Item {...fields.id}>
+          <InputNumber
+            disabled={editMode}
+            parser={(value) => value?.replace('.', '') ?? ''}
+            step={1}
+          />
+        </Form.Item>
         <Form.Item {...fields.name}>
           <Input autoComplete="off" />
         </Form.Item>
@@ -94,6 +107,7 @@ export const NewDeviceForm: React.FC<NewDeviceProps> = ({ device, editMode = fal
         )}
         <Form.Item className={style.submitButton}>
           <Button
+            className="data-cy-submit-btn"
             disabled={fetchingInProgress}
             icon={<EditOutlined />}
             type="primary"

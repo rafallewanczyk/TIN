@@ -4,8 +4,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using TSHP;
+
 namespace light_device
 {
     class LampDevice
@@ -15,11 +15,11 @@ namespace light_device
         private int port;
         private bool status = false;
         private int backlog = 1;
-        private int privateKeyLength; 
+        private int privateKeyLength;
         private int publicKeyLength;
-        private int regulatorKeyLenght; 
-        RSACryptoServiceProvider myKeys = new RSACryptoServiceProvider(2048);
-        RSACryptoServiceProvider regulatorKey = new RSACryptoServiceProvider(2048);
+        private int regulatorKeyLenght;
+        RSA myKeys = new RSACng(2048);
+        RSA regulatorKey = new RSACng(2048);
 
         public LampDevice(int port)
         {
@@ -36,11 +36,6 @@ namespace light_device
                 byte[] buff = new byte[2048];
                 int c = fs.Read(buff, 0, buff.Length);
                 myKeys.ImportPkcs8PrivateKey(buff, out privateKeyLength);
-
-                using FileStream fs1 = File.OpenRead(port.ToString() + "Public.rsa");
-                c = fs1.Read(buff, 0, buff.Length);
-                //myKeys.ImportSubjectPublicKeyInfo(buff, out publicKeyLength);
-
             }
             catch (FileNotFoundException)
             {
@@ -55,36 +50,33 @@ namespace light_device
 
             try
             {
-                using FileStream fs = File.OpenRead("C:\\Users\\rafal\\source\\repos\\TIN\\lights\\light_regulator\\bin\\Debug\\netcoreapp3.1\\4000Public.rsa");
+                using FileStream fs = File.OpenRead("4000Public.rsa");
                 byte[] buff = new byte[2048];
                 int c = fs.Read(buff, 0, buff.Length);
                 regulatorKey.ImportSubjectPublicKeyInfo(buff, out regulatorKeyLenght);
             }
             catch (FileNotFoundException)
             {
-                Console.WriteLine("cant access regulator key");
+                Utils.Log("cant access regulator key", -1);
             }
-
-            Console.WriteLine(myKeys.ToXmlString(true)); 
 
 
         }
 
-
         public void StartConnection()
         {
-            Console.WriteLine("waiting for regulator to respone");
+            Utils.Log("waiting for regulator to respone", 0);
             socket.Bind(new IPEndPoint(IPAddress.Any, port));
             socket.Listen(backlog);
 
-            listener = socket.Accept();
-            Console.WriteLine("connected to regulator");
+            Utils.Log("connected to regulator", 1);
         }
         public void StartSending()
         {
             while (true)
             {
-                byte[] receivedBytes = new byte[256];
+                listener = socket.Accept();
+                byte[] receivedBytes = new byte[524];
                 int receive = 0;
                 try
                 {
@@ -93,7 +85,7 @@ namespace light_device
                 catch (SocketException)
                 {
                     //regulator disconnected try to connect again
-                    Console.WriteLine("regulator disconnected, searching for new regulator");
+                    Utils.Log("regulator disconnected, searching for new regulator", -1);
                     listener.Shutdown(SocketShutdown.Both);
                     listener.Disconnect(true);
                     listener = socket.Accept();
@@ -102,33 +94,38 @@ namespace light_device
                 byte[] data = new byte[receive];
                 Array.Copy(receivedBytes, data, receive);
 
+                if(receive == 0)
+                {
+                    continue;
+                }
                 RegulatorDevice msg = new RegulatorDevice(data, regulatorKey, myKeys);
 
-                Console.WriteLine("received :" + msg);
+                Utils.Log("received :" + msg, 0);
 
-                if (msg.Data.Equals("PING"))
+                if (msg.operation.Equals("PING"))
                 {
-                    msg = new RegulatorDevice(1, port, "REPING", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", regulatorKey, myKeys);
+                    msg = new RegulatorDevice(1, port, "REPING",  regulatorKey, myKeys);
                 }
-                //else if (msg.Data.Equals("GETSTATUS"))
-                //{
-                //    msg = new RegulatorDevice(1, port, status.ToString(), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
-                //}
-                //else if (msg.Data.Equals("SET1"))
-                //{
-                //    status = true;
-                //    msg = new RegulatorDevice(1, port, status.ToString(), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
-                //}
-                //else if (msg.Data.Equals("SET0"))
-                //{
-                //    status = false;
-                //    msg = new RegulatorDevice(1, port, status.ToString(), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
-                //}
+                else if (msg.operation.Equals("GETSTATUS"))
+                {
+                    msg = new RegulatorDevice(1, port, status.ToString(), regulatorKey, myKeys);
+                }
+                else if (msg.operation.Equals("SET1"))
+                {
+                    status = true;
+                    msg = new RegulatorDevice(1, port, status.ToString(), regulatorKey, myKeys);
+                }
+                else if (msg.operation.Equals("SET0"))
+                {
+                    status = false;
+                    msg = new RegulatorDevice(1, port, status.ToString(), regulatorKey, myKeys);
+                }
 
 
-                byte[] answer = msg.encryptedData;
-                listener.Send(answer, 0, answer.Length, SocketFlags.None);
-                Console.WriteLine("current staus :" + status);
+
+                listener.Send(msg.ToBytes(), 0, msg.ToBytes().Length, SocketFlags.None);
+                Utils.Log("current staus :" + status, 0);
+                listener.Close(); 
             }
 
         }

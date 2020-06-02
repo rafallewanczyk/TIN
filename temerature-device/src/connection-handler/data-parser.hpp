@@ -21,7 +21,6 @@ enum MessageType {
 
 struct ParsedData {
     MessageType messageType;
-    std::string signature;
     std::optional<double> targetTemp = std::nullopt;
 };
 
@@ -76,23 +75,17 @@ class DataParser {
 public:
     explicit DataParser(std::shared_ptr<SecurityModule> security) : security(std::move(security)) {}
 
-    ParsedData parse(const std::vector<char> &data) {
-        auto decryptedData = security->decrypt(std::string(data.begin(), data.end()));
+    ParsedData parse(const std::string &body) {
+        auto decryptedData = security->decrypt(std::string(body.begin(), body.end() - SecurityModule::SIGNATURE_SIZE));
         auto messageType = parseMessageType(decryptedData);
-        auto messageTypeSize = messageTypeToString(messageType).size();
 
         switch (messageType) {
             case PING:
             case GET_TEMP: {
-                auto signature = decryptedData.substr(messageTypeSize);
-
-                return {messageType, signature};
+                return {messageType};
             }
             case CHANGE_TEMP: {
-                auto doubleData = decryptedData.substr(messageTypeSize, 8);
-                auto signature = decryptedData.substr(messageTypeSize + 8);
-
-                return {CHANGE_TEMP, signature, parseDouble(doubleData)};
+                return {CHANGE_TEMP, parseDouble(decryptedData)};
             }
         }
     }

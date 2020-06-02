@@ -3,17 +3,22 @@ package pl.kejbi.tin.devices;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.security.PublicKey;
 
 @Getter
 @Setter
+@Document
+@NoArgsConstructor
 public class TemperatureDevice extends Device{
-    private double temperature;
+    private Double temperature;
+    private Double currentData;
 
-    public TemperatureDevice(int id, int port, double temperature) {
-        super(id, port);
+    public TemperatureDevice(int id, int port, String name, String host, String key, double temperature, int regulatorId, StatusType status, boolean reset) {
+        super(id, port, name, host, key, regulatorId, status, reset);
         this.temperature = temperature;
     }
 }

@@ -8,11 +8,6 @@
 #define UNTITLED_DATA_READER_HPP
 
 
-struct RequestData {
-    Header header;
-    std::vector<char> data;
-};
-
 class DataReader {
     const static inline int RECEIVE_BUFFER_SIZE = 255;
     int socketDescriptor;
@@ -34,7 +29,7 @@ public:
         return headerHandler.parseHeader(std::vector(receiveBuffer.begin(), receiveBuffer.end()));
     }
 
-    RequestData readAllData() {
+    std::string readAllData() {
         std::vector<char> result;
         std::array<char, RECEIVE_BUFFER_SIZE> receiveBuffer{};
 
@@ -52,7 +47,7 @@ public:
             }
         }
 
-        return {header, result};
+        return {result.begin(), result.end()};
     }
 
 };

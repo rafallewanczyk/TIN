@@ -28,21 +28,16 @@ class ConnectionHandler {
     DataReader reader;
     DataParser dataParser;
 
-    void verifySignature(RequestData data, const std::string &signature) {
-        std::vector<char> body;
-
-        body.insert(body.end(), data.header.rawData.begin(), data.header.rawData.end());
-        body.insert(body.end(), data.data.begin(), data.data.end() - SecurityModule::SIGNATURE_SIZE);
-
-        if (!security->verifySignature(std::string(body.begin(), body.end()), signature)) {
+    void verifySignature(const std::string &body) {
+        if (!security->verifySignature(body)) {
             throw SignatureNotVerified();
         }
     }
 
     void handleData() {
-        auto requestData = reader.readAllData();
-        auto parsedData = dataParser.parse(requestData.data);
-        verifySignature(requestData, parsedData.signature);
+        auto body = reader.readAllData();
+        verifySignature(body);
+        auto parsedData = dataParser.parse(body);
 
         switch (parsedData.messageType) {
             case PING:
@@ -50,9 +45,11 @@ class ConnectionHandler {
                 break;
             case GET_TEMP:
                 sender.sendCurrentTemperature(device->getCurrentTemperature());
+                std::cout << "Send current temperature: " << device->getCurrentTemperature() << std::endl;
                 break;
             case CHANGE_TEMP: {
                 device->setTargetTemperature(parsedData.targetTemp.value());
+                std::cout << "Set target temperature: " << parsedData.targetTemp.value() << std::endl;
                 break;
             }
         }
@@ -63,11 +60,11 @@ class ConnectionHandler {
             handleData();
         } catch (const ConnectionException &e) {
         } catch (const InvalidMessageHeaderException &e) {
-           std::cout << e.what() << std::endl;
+            std::cout << e.what() << std::endl;
         } catch (const InvalidDataException &e) {
-            sender.sendError(e.what());
-        } catch (...) {
-            std::cout << "Other exception" <<std::endl;
+            std::cout << e.what() << std::endl;
+        } catch (const std::exception &e) {
+            std::cout << e.what() << std::endl;
         }
 
         destroy();

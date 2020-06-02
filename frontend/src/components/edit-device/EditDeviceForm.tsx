@@ -11,7 +11,8 @@ export type EditDeviceFormProps = RouteComponentProps<RouteParams>;
 
 export const EditDeviceForm: React.FC<EditDeviceFormProps> = ({ deviceId }) => {
   const navigate = useNavigate();
-  const device = useFetchDevice(deviceId);
+  const parsedDeviceId = parseInt(deviceId || '', 10);
+  const device = useFetchDevice(parsedDeviceId);
 
   if (!device) {
     navigate('/');

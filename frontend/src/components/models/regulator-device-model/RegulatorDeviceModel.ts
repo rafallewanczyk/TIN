@@ -13,7 +13,7 @@ export enum DeviceType {
 export class RegulatorModel {
   public constructor(
     public name: string,
-    public id: string,
+    public id: number,
     public status: Status,
     public type: DeviceType,
     public address: string,
@@ -23,8 +23,8 @@ export class RegulatorModel {
 
 export class DeviceModel {
   public constructor(
-    public id: string,
-    public regulatorId: string,
+    public id: number,
+    public regulatorId: number,
     public name: string,
     public status: Status,
     public type: DeviceType,
@@ -35,14 +35,14 @@ export class DeviceModel {
 
 export class TemperatureDeviceModel extends DeviceModel {
   public constructor(
-    id: string,
-    regulatorId: string,
+    id: number,
+    regulatorId: number,
     name: string,
     status: Status,
     address: string,
     port: number,
-    public data: number,
-    public targetData: number,
+    public data: number | null,
+    public targetData: number | null,
   ) {
     super(id, regulatorId, name, status, DeviceType.TEMPERATURE, address, port);
   }
@@ -50,14 +50,14 @@ export class TemperatureDeviceModel extends DeviceModel {
 
 export class LightDeviceModel extends DeviceModel {
   public constructor(
-    id: string,
-    regulatorId: string,
+    id: number,
+    regulatorId: number,
     name: string,
     status: Status,
     address: string,
     port: number,
-    public data: boolean,
-    public targetData: boolean,
+    public data: boolean | null,
+    public targetData: boolean | null,
   ) {
     super(id, regulatorId, name, status, DeviceType.LIGHT, address, port);
   }
