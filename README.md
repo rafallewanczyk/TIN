@@ -127,7 +127,7 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
       "id": "string",
       "regulatorId": "string",
       "name": "string",
-      "status": "ENUM: ACTIVE | INACTIVE | INVALID | CONNECTING",
+      "status": "ENUM: ACTIVE | INACTIVE ",
       "type": "ENUM: TEMPERATURE | LIGHT",
       "data": "string | boolean",
       "targetData": "string | boolean",
@@ -169,7 +169,7 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
     {
       "id": "string",
       "name": "string",
-      "status": "ENUM: ACTIVE | INACTIVE | INVALID | CONNECTING",
+      "status": "ENUM: ACTIVE | INACTIVE ",
       "type": "ENUM: TEMPERATURE | LIGHT",
       "address: "string",
       "port": "string"
