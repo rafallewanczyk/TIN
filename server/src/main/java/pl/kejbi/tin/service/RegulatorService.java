@@ -27,6 +27,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -71,11 +72,16 @@ public class RegulatorService {
         regulatorRepository.save(regulator);
     }
 
-    public void sendCurrData() throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
+    public void sendCurrData() throws InterruptedException {
         var regulators = regulatorRepository.findAll();
-        for (Regulator regulator : regulators) {
+        List<Thread> sendCurrDataThreads = new ArrayList<>();
+        for (var regulator : regulators) {
             Thread sendCurr = new Thread(sendCurrDataToOneRegulator(regulator));
+            sendCurrDataThreads.add(sendCurr);
             sendCurr.start();
+        }
+        for(var thread: sendCurrDataThreads) {
+            thread.join();
         }
         Thread sendReset = new Thread(sendTargetToResetDevices());
         sendReset.start();

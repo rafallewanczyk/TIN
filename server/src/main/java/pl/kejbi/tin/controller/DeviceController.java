@@ -79,7 +79,7 @@ public class DeviceController {
     }
 
     @GetMapping
-    public List<DeviceWithDataDTO> getAllDevices() throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, SignatureException {
+    public List<DeviceWithDataDTO> getAllDevices() throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InterruptedException {
         regulatorService.sendCurrData();
 
         return deviceService.getDevicesCurrentData();
