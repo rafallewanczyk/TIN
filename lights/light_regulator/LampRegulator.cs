@@ -20,8 +20,8 @@ namespace light_regulator
         private int id;
         private int privateKeyLength = 0;
 
-        RSA myKeys = new RSACng(2048);
-        RSA serverKey = new RSACng(2048);
+        RSA myKeys = new RSAOpenSsl(2048);
+        RSA serverKey = new RSAOpenSsl(2048);
         int serverKeyLength;
 
 
@@ -56,7 +56,7 @@ namespace light_regulator
 
             try
             {
-                using FileStream fs = File.OpenRead("C:\\Users\\rafal\\source\\repos\\TIN\\server\\keys\\publicKey.rsa");
+                using FileStream fs = File.OpenRead("publicKey.rsa");
                 byte[] buff = new byte[2048];
                 int c = fs.Read(buff, 0, buff.Length);
                 serverKey.ImportSubjectPublicKeyInfo(buff, out serverKeyLength);
@@ -129,7 +129,7 @@ namespace light_regulator
 
             try
             {
-                memory.messageBuffer = Utils.ReadFromSocket(socket); 
+                memory.messageBuffer = Utils.ReadFromSocket(socket);
             }
             catch (SocketException)
             {
@@ -241,9 +241,11 @@ namespace light_regulator
             CancellationToken ct = ts.Token;
 
             Task<bool>[] tasks = new Task<bool>[clientSockets.Count];
+            Console.WriteLine(clientSockets.Count);
             for (int i = 0; i < clientSockets.Count; i++)
             {
                 SocketMemory memory = clientSockets[i];
+                Console.WriteLine("Loop");
 
                 tasks[i] = Task.Factory.StartNew(() =>
                 {
@@ -251,11 +253,12 @@ namespace light_regulator
                     RegulatorDevice msg = new RegulatorDevice(1, port, "GETSTATUS", memory.publicKey, myKeys);
 
                     memory.messageBuffer = msg.ToBytes();
+                    Console.WriteLine("Wysyłam zapytanie...");
                     memory.socket.Send(memory.messageBuffer);
 
-                    //memory.messageBuffer = Utils.ReadFromSocket(memory.socket); 
-                    //socket disconnected exception 
-                    memory.socket.Receive(memory.messageBuffer); 
+                    //memory.messageBuffer = Utils.ReadFromSocket(memory.socket);
+                    //socket disconnected exception
+                    memory.socket.Receive(memory.messageBuffer);
                     msg = new RegulatorDevice(memory.messageBuffer, memory.publicKey, myKeys);
                     string text = msg.ToString();
                     Utils.Log(text, 1);
@@ -303,7 +306,7 @@ namespace light_regulator
                 memory.socket.Send(msg.ToBytes());
 
                 //memory.messageBuffer = Utils.ReadFromSocket(memory.socket);
-                memory.socket.Receive(memory.messageBuffer); 
+                memory.socket.Receive(memory.messageBuffer);
                 msg = new RegulatorDevice(memory.messageBuffer, memory.publicKey, myKeys);
 
                 if (ct.IsCancellationRequested)

@@ -15,9 +15,9 @@ namespace light_device
         private int port;
         private bool status = false;
         private int backlog = 1;
-        private int privateKeyLength; 
+        private int privateKeyLength;
         private int publicKeyLength;
-        private int regulatorKeyLenght; 
+        private int regulatorKeyLenght;
         RSA myKeys = new RSAOpenSsl(2048);
         RSA regulatorKey = new RSAOpenSsl(2048);
 
@@ -50,7 +50,7 @@ namespace light_device
 
             try
             {
-                using FileStream fs = File.OpenRead("C:\\Users\\rafal\\source\\repos\\TIN\\lights\\light_regulator\\bin\\Debug\\netcoreapp3.1\\4000Public.rsa");
+                using FileStream fs = File.OpenRead("4000Public.rsa");
                 byte[] buff = new byte[2048];
                 int c = fs.Read(buff, 0, buff.Length);
                 regulatorKey.ImportSubjectPublicKeyInfo(buff, out regulatorKeyLenght);
@@ -80,6 +80,7 @@ namespace light_device
                 int receive = 0;
                 try
                 {
+                    Console.Write("Czekam na wiadomosc");
                     receive = listener.Receive(receivedBytes, SocketFlags.None);
                 }
                 catch (SocketException)
@@ -96,7 +97,7 @@ namespace light_device
 
                 if(receive == 0)
                 {
-                    continue; 
+                    continue;
                 }
                 RegulatorDevice msg = new RegulatorDevice(data, regulatorKey, myKeys);
 
