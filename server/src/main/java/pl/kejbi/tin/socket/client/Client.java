@@ -1,24 +1,15 @@
-package pl.kejbi.tin.socket;
+package pl.kejbi.tin.socket.client;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.kejbi.tin.security.Cryptography;
-import pl.kejbi.tin.security.SignatureManager;
 import pl.kejbi.tin.socket.exceptions.IncorrectMessageSizeException;
-import pl.kejbi.tin.socket.exceptions.IncorrectSignatureException;
 import pl.kejbi.tin.socket.exceptions.NoRegulatorConnectionException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.security.InvalidKeyException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 
 @Getter
 @RequiredArgsConstructor

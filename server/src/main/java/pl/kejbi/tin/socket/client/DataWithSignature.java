@@ -1,4 +1,4 @@
-package pl.kejbi.tin.socket;
+package pl.kejbi.tin.socket.client;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

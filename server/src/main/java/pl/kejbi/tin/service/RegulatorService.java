@@ -12,10 +12,8 @@ import pl.kejbi.tin.devices.Regulator;
 import pl.kejbi.tin.devices.RegulatorType;
 import pl.kejbi.tin.devices.StatusType;
 import pl.kejbi.tin.devices.TemperatureDevice;
-import pl.kejbi.tin.repository.LightDeviceRepository;
 import pl.kejbi.tin.repository.RegulatorRepository;
-import pl.kejbi.tin.repository.TemperatureDeviceRepository;
-import pl.kejbi.tin.sender.RegulatorCommunicator;
+import pl.kejbi.tin.communicator.RegulatorCommunicator;
 import pl.kejbi.tin.socket.exceptions.NoRegulatorConnectionException;
 
 import javax.crypto.BadPaddingException;

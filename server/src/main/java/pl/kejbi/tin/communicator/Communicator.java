@@ -1,28 +1,23 @@
-package pl.kejbi.tin.sender;
+package pl.kejbi.tin.communicator;
 
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import pl.kejbi.tin.devices.LightDevice;
-import pl.kejbi.tin.devices.Regulator;
-import pl.kejbi.tin.devices.TemperatureDevice;
 import pl.kejbi.tin.security.Cryptography;
 import pl.kejbi.tin.security.SignatureManager;
-import pl.kejbi.tin.socket.Client;
-import pl.kejbi.tin.socket.DataWithSignature;
-import pl.kejbi.tin.socket.Protocol;
+import pl.kejbi.tin.socket.client.Client;
+import pl.kejbi.tin.socket.client.DataWithSignature;
+import pl.kejbi.tin.socket.client.Protocol;
 import pl.kejbi.tin.socket.builder.SocketBuilder;
-import pl.kejbi.tin.socket.ResponseHandler;
+import pl.kejbi.tin.socket.client.ResponseHandler;
 import pl.kejbi.tin.socket.exceptions.IncorrectSignatureException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.security.*;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor

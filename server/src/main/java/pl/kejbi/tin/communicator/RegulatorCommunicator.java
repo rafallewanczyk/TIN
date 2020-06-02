@@ -1,7 +1,6 @@
-package pl.kejbi.tin.sender;
+package pl.kejbi.tin.communicator;
 
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import pl.kejbi.tin.devices.Device;
 import pl.kejbi.tin.devices.LightDevice;
@@ -9,7 +8,7 @@ import pl.kejbi.tin.devices.Regulator;
 import pl.kejbi.tin.devices.TemperatureDevice;
 import pl.kejbi.tin.security.KeyEncoder;
 import pl.kejbi.tin.security.KeyHolder;
-import pl.kejbi.tin.socket.DataWithSignature;
+import pl.kejbi.tin.socket.client.DataWithSignature;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
