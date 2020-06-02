@@ -54,6 +54,7 @@ export const DevicesList: React.FC<RegulatorDevicesListProps> = ({ devices, load
       (deviceWithKey as DeviceModel & { key: number }).key = it.id;
     }),
   );
+  console.log('Devices', devices);
 
   return (
     <Table

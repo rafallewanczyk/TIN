@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Spin, Switch, Typography } from 'antd';
+import clsx from 'clsx';
 import { LightDeviceModel } from '../../../models/regulator-device-model/RegulatorDeviceModel';
 import style from '../DevicesList.module.css';
 import { stopPropagation } from '../../../utils/callback/callbacks';
 import { useChangeTargetDataMutation } from '../utils/useChangeTargetDataMutation';
-import clsx from 'clsx';
 
 export interface ChangeLightActionProps {
   device: LightDeviceModel;
@@ -20,9 +20,7 @@ export const ChangeLightAction: React.FC<ChangeLightActionProps> = ({ device }) 
   };
 
   useEffect(() => {
-    if (loading) {
-      setIsLightOn(device.targetData);
-    }
+    setIsLightOn(device.targetData);
   }, [device.targetData]);
 
   if (isLightOn === null) return null;

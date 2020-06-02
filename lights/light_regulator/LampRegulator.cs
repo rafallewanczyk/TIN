@@ -20,8 +20,8 @@ namespace light_regulator
         private int id;
         private int privateKeyLength = 0;
 
-        RSA myKeys = new RSACng(2048);
-        RSA serverKey = new RSACng(2048);
+        RSA myKeys = new RSAOpenSsl(2048);
+        RSA serverKey = new RSAOpenSsl(2048);
         int serverKeyLength;
 
 
@@ -187,7 +187,7 @@ namespace light_regulator
                     Utils.Log("searching for device " + port, 0);
                     Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     int attempts = 0;
-                    socket.Blocking = false; 
+                    socket.Blocking = false;
                     if(!socket.Connected)
                     {
                         try
@@ -204,11 +204,11 @@ namespace light_regulator
 
                     Utils.Log("found device " + port, 1);
 
-                    RSA publicKey = new RSACng(2048);
+                    RSA publicKey = new RSAOpenSsl(2048);
                     publicKey.ImportSubjectPublicKeyInfo(key, out _);
                     SocketMemory memory = new SocketMemory(port, publicKey);
                     clientSockets.Add(memory);
-                    socket.Close(); 
+                    socket.Close();
                     results[index] = port;
                 }, ct);
             }

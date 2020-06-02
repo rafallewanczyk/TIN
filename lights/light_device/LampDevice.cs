@@ -18,8 +18,8 @@ namespace light_device
         private int privateKeyLength;
         private int publicKeyLength;
         private int regulatorKeyLenght;
-        RSA myKeys = new RSACng(2048);
-        RSA regulatorKey = new RSACng(2048);
+        RSA myKeys = new RSAOpenSsl(2048);
+        RSA regulatorKey = new RSAOpenSsl(2048);
 
         public LampDevice(int port)
         {
@@ -125,7 +125,7 @@ namespace light_device
 
                 listener.Send(msg.ToBytes(), 0, msg.ToBytes().Length, SocketFlags.None);
                 Utils.Log("current staus :" + status, 0);
-                listener.Close(); 
+                listener.Close();
             }
 
         }
