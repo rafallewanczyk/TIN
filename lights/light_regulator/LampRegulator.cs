@@ -209,7 +209,7 @@ namespace light_regulator
 
                     Utils.Log("found device " + port, 1);
 
-                    RSACng publicKey = new RSACng(2048);
+                    RSA publicKey = new RSACng(2048);
                     publicKey.ImportSubjectPublicKeyInfo(key, out _);
                     SocketMemory memory = new SocketMemory(socket, port, publicKey);
                     clientSockets.Add(memory);
