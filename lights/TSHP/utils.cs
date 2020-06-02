@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.IO;
+using System.Net.Sockets;
 
 namespace TSHP
 {
-    public static class utils
+    public static class Utils
     {
         public static void Log(string message, int status)
         {
@@ -29,6 +29,24 @@ namespace TSHP
 
             Console.WriteLine(message); 
             Console.ForegroundColor = ConsoleColor.Yellow;
+        }
+        
+        public static byte[] ReadFromSocket(Socket socket)
+        {
+                 using (var resultStream = new MemoryStream())
+                {
+                    const int CHUNK_SIZE = 256;
+                    byte[] buffer = new byte[CHUNK_SIZE];
+                    int bytesReceived;
+                    while (socket.Available > 0)
+                    {
+                        bytesReceived = socket.Receive(buffer, buffer.Length, SocketFlags.None);
+                        byte[] actual = new byte[bytesReceived];
+                        Buffer.BlockCopy(buffer, 0, actual, 0, bytesReceived);
+                        resultStream.Write(actual, 0, actual.Length);
+                    }
+                    return resultStream.ToArray();
+                }
         }
     }
 }

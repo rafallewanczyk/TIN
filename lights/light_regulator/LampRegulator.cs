@@ -20,8 +20,8 @@ namespace light_regulator
         private int id;
         private int privateKeyLength = 0;
 
-        RSACng myKeys = new RSACng(2048);
-        RSACng serverKey = new RSACng(2048);
+        RSA myKeys = new RSACng(2048);
+        RSA serverKey = new RSACng(2048);
         int serverKeyLength;
 
 
@@ -63,7 +63,7 @@ namespace light_regulator
             }
             catch (FileNotFoundException)
             {
-                utils.Log("cant access server key", -1);
+                Utils.Log("cant access server key", -1);
             }
 
         }
@@ -86,16 +86,17 @@ namespace light_regulator
         {
             foreach (SocketMemory memory in clientSockets)
             {
-                memory.socket.Shutdown(SocketShutdown.Both);
+                //memory.socket.Shutdown(SocketShutdown.Both);
                 memory.socket.Close();
             }
+            clientSockets.Clear();
 
         }
 
         public void StartRegulator()
         {
 
-            utils.Log("Searchnig for server", 0);
+            Utils.Log("Searchnig for server", 0);
             serverSocket.BeginAccept(new AsyncCallback(AcceptCallback), null);
 
             Console.Read();
@@ -103,7 +104,7 @@ namespace light_regulator
 
         private void AcceptCallback(IAsyncResult AR)
         {
-            utils.Log("new server message", 1);
+            Utils.Log("new server message", 1);
             Socket socket;
             try
             {
@@ -128,24 +129,11 @@ namespace light_regulator
 
             try
             {
-                using (var resultStream = new MemoryStream())
-                {
-                    const int CHUNK_SIZE = 256;
-                    byte[] buffer = new byte[CHUNK_SIZE];
-                    int bytesReceived;
-                    while (socket.Available > 0)
-                    {
-                        bytesReceived = socket.Receive(buffer, buffer.Length, SocketFlags.None);
-                        byte[] actual = new byte[bytesReceived];
-                        Buffer.BlockCopy(buffer, 0, actual, 0, bytesReceived);
-                        resultStream.Write(actual, 0, actual.Length);
-                    }
-                    memory.messageBuffer = resultStream.ToArray();
-                }
+                memory.messageBuffer = Utils.ReadFromSocket(socket); 
             }
             catch (SocketException)
             {
-                utils.Log("Lost connection to server", -1);
+                Utils.Log("Lost connection to server", -1);
                 socket.Close();
                 return;
             }
@@ -153,31 +141,31 @@ namespace light_regulator
             ServerRegulator msg = new ServerRegulator(memory.messageBuffer, memory.publicKey, myKeys);
 
             string text = msg.ToString();
-            utils.Log("received: " + text, 0);
-            utils.Log("received settigns", 0);
+            Utils.Log("received: " + text, 0);
+            Utils.Log("received settigns", 0);
             msg.Settings.ForEach(Console.WriteLine);
 
 
             if (msg.operation.Equals("CHANGE_CONFIG"))
             {
-                Task.Run(() => SearchForDevices(msg.Settings));
+                SearchForDevices(msg.Settings);
                 ServerRegulator response = new ServerRegulator(1, port, "CHANGE_DATA_RE", memory.publicKey, myKeys);
                 socket.Send(response.ChangeConfigRe());
             }
 
             if (msg.operation.Equals("CURR_DATA"))
             {
-                Task<List<CurrentData>> t = Task.Run(() => GetAllStats());
+                List<CurrentData> statuses = GetAllStats();
                 ServerRegulator response = new ServerRegulator(1, port, "CURR_DATA_RE", memory.publicKey, myKeys);
-                socket.Send(response.CurrDataRe(t.Result));
+                socket.Send(response.CurrDataRe(statuses));
 
             }
 
             if (msg.operation.Equals("CHANGE_PARAMS"))
             {
-                Task<int> t = Task.Run(() => ChangeParameter(msg.Id, msg.target));
+                int result = ChangeParameter(msg.Id, msg.target);
                 ServerRegulator response = new ServerRegulator(1, port, "CHANGE_PARAMS_RE", memory.publicKey, myKeys);
-                socket.Send(response.ChangeParamsRe((short)t.Result));
+                socket.Send(response.ChangeParamsRe((short)result));
             }
 
 
@@ -187,20 +175,22 @@ namespace light_regulator
 
         private void SearchForDevices(List<DeviceSetting> list)
         {
-            DeleteAllDevices();
+            //DeleteAllDevices();
             var ts = new CancellationTokenSource();
             CancellationToken ct = ts.Token;
 
-            Task<int>[] tasks = new Task<int>[list.Count];
+            Task[] tasks = new Task[list.Count];
+            int[] results = new int[list.Count];
 
             for (int i = 0; i < list.Count; i++)
             {
 
                 int port = ((ChangeConfig)list[i]).Port;
                 byte[] key = ((ChangeConfig)list[i]).Key;
+                int index = i;
                 tasks[i] = Task.Factory.StartNew(() =>
                 {
-                    utils.Log("searching for device " + port, 0);
+                    Utils.Log("searching for device " + port, 0);
                     Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     int attempts = 0;
                     while (!socket.Connected)
@@ -212,21 +202,18 @@ namespace light_regulator
                         }
                         catch (SocketException)
                         {
-                            if (ct.IsCancellationRequested)
-                            {
-                                return 0;
-                            }
+                            results[index] = 0;
                             Thread.Sleep(1000);
                         }
                     }
 
-                    utils.Log("found device " + port, 1);
+                    Utils.Log("found device " + port, 1);
 
                     RSACng publicKey = new RSACng(2048);
                     publicKey.ImportSubjectPublicKeyInfo(key, out _);
                     SocketMemory memory = new SocketMemory(socket, port, publicKey);
                     clientSockets.Add(memory);
-                    return port;
+                    results[index] = port;
                 }, ct);
             }
             Thread.Sleep(2000);
@@ -235,14 +222,14 @@ namespace light_regulator
 
             for (int i = 0; i < tasks.Length; i++)
             {
-                if (tasks[i].Result == 0)
+                if (results[i] == 0)
                 {
-                    utils.Log("cannot conect to port " + ((ChangeConfig)list[i]).Port, -1);
+                    Utils.Log("cannot conect to port " + ((ChangeConfig)list[i]).Port, -1);
                 }
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
-                    utils.Log("connected to port " + ((ChangeConfig)list[i]).Port, 1);
+                    Utils.Log("connected to port " + ((ChangeConfig)list[i]).Port, 1);
                 }
             }
         }
@@ -260,24 +247,28 @@ namespace light_regulator
 
                 tasks[i] = Task.Factory.StartNew(() =>
                 {
+
                     RegulatorDevice msg = new RegulatorDevice(1, port, "GETSTATUS", memory.publicKey, myKeys);
+
                     memory.messageBuffer = msg.ToBytes();
                     memory.socket.Send(memory.messageBuffer);
 
-                    memory.socket.Receive(memory.messageBuffer);
+                    //memory.messageBuffer = Utils.ReadFromSocket(memory.socket); 
+                    //socket disconnected exception 
+                    memory.socket.Receive(memory.messageBuffer); 
                     msg = new RegulatorDevice(memory.messageBuffer, memory.publicKey, myKeys);
                     string text = msg.ToString();
-                    utils.Log(text, 1);
+                    Utils.Log(text, 1);
 
 
 
-                    //if (ct.IsCancellationRequested)
-                    //{
-                    //    //Console.WriteLine("task canceled");
-                    //    statuses.Add(new CurrentData(msg.Id, 2));
-                    //    return false;
-                    //}
-                    utils.Log($"returned status : {bool.Parse(msg.operation)}", 1);
+                    if (ct.IsCancellationRequested)
+                    {
+                        //Console.WriteLine("task canceled");
+                        statuses.Add(new CurrentData(msg.Id, 2));
+                        return false;
+                    }
+                    Utils.Log($"returned status : {bool.Parse(msg.operation)}", 1);
                     short currStatus = bool.Parse(msg.operation) == true ? (short)1 : (short)0;
                     statuses.Add(new CurrentData(msg.Id, currStatus));
                     return bool.Parse(msg.operation);
@@ -289,7 +280,6 @@ namespace light_regulator
             Thread.Sleep(1000);
             statuses.ForEach(Console.WriteLine);
 
-            ts.Dispose();
             //ts.Cancel();
             return statuses;
         }
@@ -312,22 +302,23 @@ namespace light_regulator
                 RegulatorDevice msg = new RegulatorDevice(1, 1, newParameter, memory.publicKey, myKeys);
                 memory.socket.Send(msg.ToBytes());
 
-                memory.socket.Receive(memory.messageBuffer);
+                //memory.messageBuffer = Utils.ReadFromSocket(memory.socket);
+                memory.socket.Receive(memory.messageBuffer); 
                 msg = new RegulatorDevice(memory.messageBuffer, memory.publicKey, myKeys);
 
-                //if (ct.IsCancellationRequested)
-                //{
-                //    //Console.WriteLine("task canceled");
-                //    return 2;
-                //}
+                if (ct.IsCancellationRequested)
+                {
+                    //Console.WriteLine("task canceled");
+                    return 2;
+                }
 
                 return 0;
             }, ct);
 
             Thread.Sleep(1000);
             int result = task.IsCompleted ? task.Result : 2;
-            task.Dispose();
-            //ts.Cancel();
+
+            ts.Cancel();
 
             return result;
 
@@ -336,9 +327,9 @@ namespace light_regulator
         {
             public Socket socket;
             public byte[] messageBuffer;
-            public RSACng publicKey;
+            public RSA publicKey;
             public int port;
-            public SocketMemory(Socket socket, int port, RSACng publicKey)
+            public SocketMemory(Socket socket, int port, RSA publicKey)
             {
                 this.socket = socket;
                 this.port = port;

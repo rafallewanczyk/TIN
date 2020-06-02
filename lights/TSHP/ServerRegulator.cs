@@ -43,22 +43,8 @@ namespace TSHP
             this.version = version;
             this.id = id;
             this.operation = operation;
-
-            //message = ToBytes();
-            //Encrypt(); 
         }
 
-        public void Encrypt()
-        {
-            try
-            {
-                encryptedData = publicKey.Encrypt(message, RSAEncryptionPadding.OaepSHA256);
-            }
-            catch (CryptographicException e)
-            {
-                utils.Log(e.Message, -1);
-            }
-        }
 
         public void Decrypt()
         {
@@ -78,7 +64,7 @@ namespace TSHP
                 Array.Copy(encryptedData, size - 256, codedBlock, 0, 256);
                 if (!publicKey.VerifyData(encryptedData, offset, size - offset - 256, codedBlock, HashAlgorithmName.SHA256, RSASignaturePadding.Pss))
                 {
-                    utils.Log("nie odczytano podpisu", -1);
+                    Utils.Log("nie odczytano podpisu", -1);
                     return;
                 }
                 while (offset < size - 256)
@@ -94,39 +80,9 @@ namespace TSHP
             }
             catch (CryptographicException e)
             {
-                utils.Log(e.ToString(), -1);
+                Utils.Log(e.ToString(), -1);
             }
         }
-
-        //public byte[] ToBytes()
-        //{
-        //    int data_size = Encoding.UTF8.GetByteCount(data);
-        //    int signature_size = 32; // Encoding.ASCII.GetByteCount(signature);
-        //    Size = sizeof(int) + sizeof(int) + sizeof(int) + data_size + signature_size;
-        //    byte[] messege = new byte[Size];
-        //    int offset = 0;
-
-        //    byte[] temp = BitConverter.GetBytes(version);
-        //    if (end) Array.Reverse(temp);
-        //    Array.Copy(temp, 0, messege, offset, sizeof(int));
-        //    offset += sizeof(int);
-
-        //    temp = BitConverter.GetBytes(Size);
-        //    if (end) Array.Reverse(temp);
-        //    Array.Copy(temp, 0, messege, offset, sizeof(int));
-        //    offset += sizeof(int);
-
-        //    temp = BitConverter.GetBytes(id);
-        //    if (end) Array.Reverse(temp);
-        //    Array.Copy(temp, 0, messege, offset, sizeof(int));
-        //    offset += sizeof(int);
-
-        //    Array.Copy(Encoding.UTF8.GetBytes(data), 0, messege, offset, data_size);
-        //    offset += data_size;
-
-        //    return messege;
-        //}
-
 
         public void ReadMessege()
         {
@@ -177,7 +133,9 @@ namespace TSHP
 
                 }
             }
-            catch (System.ArgumentOutOfRangeException) { }
+            catch (System.ArgumentOutOfRangeException) {
+                Utils.Log("unknown message type", -1); 
+            }
             
 
         }

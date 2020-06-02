@@ -13,26 +13,26 @@ namespace TSHP
         public byte[] message;
         public byte[] encryptedData;
 
-        RSACng publicKey;
-        RSACng privateKey;
+        RSA publicKey;
+        RSA privateKey;
 
         public int Size { get => size; set => size = value; }
         public int Version { get => version; set => version = value; }
         public int Id { get => id; set => id = value; }
         public int Size1 { get => size; set => size = value; }
 
-        public RegulatorDevice(byte[] buffer, RSACng publicKey, RSACng privateKey)
+        public RegulatorDevice(byte[] buffer, RSA publicKey, RSA privateKey)
         {
             this.publicKey = publicKey;
             this.privateKey = privateKey;
 
             encryptedData = buffer;
             Decrypt();
-            ReadMessege(this.message);
+            ReadMessege(message); 
         }
 
 
-        public RegulatorDevice(int version, int id, string operation, RSACng publicKey, RSACng privateKey)
+        public RegulatorDevice(int version, int id, string operation, RSA publicKey, RSA privateKey)
         {
             this.publicKey = publicKey;
             this.privateKey = privateKey;
@@ -61,7 +61,7 @@ namespace TSHP
                 Array.Copy(encryptedData, size - 256, codedBlock, 0, 256);
                 if (!publicKey.VerifyData(encryptedData, offset, size - offset - 256, codedBlock, HashAlgorithmName.SHA256, RSASignaturePadding.Pss))
                 {
-                    utils.Log("nie odczytano podpisu", -1);
+                    Utils.Log("nie odczytano podpisu", -1);
                     return;
                 }
                 while (offset < size - 256)
@@ -76,7 +76,7 @@ namespace TSHP
             }
             catch (Exception e)
             {
-                utils.Log(e.ToString(), -1);
+                Utils.Log(e.ToString(), -1);
             }
         }
 

@@ -18,8 +18,8 @@ namespace light_device
         private int privateKeyLength; 
         private int publicKeyLength;
         private int regulatorKeyLenght; 
-        RSACng myKeys = new RSACng(2048);
-        RSACng regulatorKey = new RSACng(2048);
+        RSA myKeys = new RSACng(2048);
+        RSA regulatorKey = new RSACng(2048);
 
         public LampDevice(int port)
         {
@@ -57,7 +57,7 @@ namespace light_device
             }
             catch (FileNotFoundException)
             {
-                utils.Log("cant access regulator key", -1);
+                Utils.Log("cant access regulator key", -1);
             }
 
 
@@ -65,12 +65,12 @@ namespace light_device
 
         public void StartConnection()
         {
-            utils.Log("waiting for regulator to respone", 0);
+            Utils.Log("waiting for regulator to respone", 0);
             socket.Bind(new IPEndPoint(IPAddress.Any, port));
             socket.Listen(backlog);
 
             listener = socket.Accept();
-            utils.Log("connected to regulator", 1);
+            Utils.Log("connected to regulator", 1);
         }
         public void StartSending()
         {
@@ -85,7 +85,7 @@ namespace light_device
                 catch (SocketException)
                 {
                     //regulator disconnected try to connect again
-                    utils.Log("regulator disconnected, searching for new regulator", -1);
+                    Utils.Log("regulator disconnected, searching for new regulator", -1);
                     listener.Shutdown(SocketShutdown.Both);
                     listener.Disconnect(true);
                     listener = socket.Accept();
@@ -94,9 +94,13 @@ namespace light_device
                 byte[] data = new byte[receive];
                 Array.Copy(receivedBytes, data, receive);
 
+                if(receive == 0)
+                {
+                    continue; 
+                }
                 RegulatorDevice msg = new RegulatorDevice(data, regulatorKey, myKeys);
 
-                utils.Log("received :" + msg, 0);
+                Utils.Log("received :" + msg, 0);
 
                 if (msg.operation.Equals("PING"))
                 {
@@ -120,7 +124,7 @@ namespace light_device
 
 
                 listener.Send(msg.ToBytes(), 0, msg.ToBytes().Length, SocketFlags.None);
-                utils.Log("current staus :" + status, 0);
+                Utils.Log("current staus :" + status, 0);
             }
 
         }
