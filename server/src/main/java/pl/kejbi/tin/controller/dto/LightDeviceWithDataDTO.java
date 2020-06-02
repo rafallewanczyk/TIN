@@ -29,6 +29,6 @@ public class LightDeviceWithDataDTO implements DeviceWithDataDTO {
         this.type = RegulatorType.LIGHT;
         this.status = device.getStatus();
         this.data = device.getCurrentData();
-        this.targetData = device.getTurnedOn();
+        this.targetData = status == StatusType.INACTIVE ? null : device.getTurnedOn();
     }
 }

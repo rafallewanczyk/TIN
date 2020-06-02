@@ -27,7 +27,7 @@ public class TemperatureDeviceWithDataDTO implements DeviceWithDataDTO {
         this.port = device.getPort();
         this.type = RegulatorType.TEMPERATURE;
         this.status = device.getStatus();
-        this.data = status == StatusType.INACTIVE ? null : device.getCurrentData();
+        this.data = device.getCurrentData();
         this.targetData = status == StatusType.INACTIVE ? null :device.getTemperature();
     }
 }
