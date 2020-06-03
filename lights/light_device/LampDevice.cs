@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KeyHolder;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -15,11 +16,10 @@ namespace light_device
         private int port;
         private bool status = false;
         private int backlog = 1;
-        private int privateKeyLength;
-        private int publicKeyLength;
-        private int regulatorKeyLenght;
-        RSA myKeys = new RSAOpenSsl(2048);
-        RSA regulatorKey = new RSAOpenSsl(2048);
+
+        RSA myKeys;
+        RSA regulatorKey;
+
 
         public LampDevice(int port)
         {
@@ -30,37 +30,9 @@ namespace light_device
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
 
-            try
-            {
-                using FileStream fs = File.OpenRead(port.ToString() + "Private.rsa");
-                byte[] buff = new byte[2048];
-                int c = fs.Read(buff, 0, buff.Length);
-                myKeys.ImportPkcs8PrivateKey(buff, out privateKeyLength);
-            }
-            catch (FileNotFoundException)
-            {
-                using FileStream fs = File.OpenWrite(port.ToString() + "Private.rsa");
-                byte[] data = myKeys.ExportPkcs8PrivateKey();
-                fs.Write(data, 0, data.Length);
-
-                using FileStream fs1 = File.OpenWrite(port.ToString() + "Public.rsa");
-                byte[] data1 = myKeys.ExportSubjectPublicKeyInfo();
-                fs1.Write(data1, 0, data1.Length);
-            }
-
-            try
-            {
-                using FileStream fs = File.OpenRead("4000Public.rsa");
-                byte[] buff = new byte[2048];
-                int c = fs.Read(buff, 0, buff.Length);
-                regulatorKey.ImportSubjectPublicKeyInfo(buff, out regulatorKeyLenght);
-            }
-            catch (FileNotFoundException)
-            {
-                Utils.Log("cant access regulator key", -1);
-            }
-
-
+            myKeys = KeyLoader.Generate(port.ToString());
+            regulatorKey = KeyLoader.Load("4000Public.rsa"); 
+          
         }
 
         public void StartConnection()
@@ -99,6 +71,10 @@ namespace light_device
                     continue;
                 }
                 RegulatorDevice msg = new RegulatorDevice(data, regulatorKey, myKeys);
+                if(msg.Message == null)
+                {
+                    return;
+                }
 
                 Utils.Log("received :" + msg, 0);
 
