@@ -60,7 +60,6 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
 
 - Zmień docelową temperaturę
   (domyślne nagłówki) (typ wiadomości = CHANGE_TEMP) (docelowa temperatura) [double - 8B]
-- Ping - (domyślne nagłówki) (typ wiadomości = PING)
 - Podaj temperaturę
   (domyślne nagłówki) (typ wiadomości = GET_TEMP)
 
@@ -68,8 +67,6 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
 
 - Aktualna temperatura urządzenia
   (domyślne nagłówki) (typ wiadomości = CURR_TEMP) (aktualna temperatura) [double - 8B]
-- Ping return
-  (domyślne nagłówki) (typ wiadomości = PING_RETURN)
 
 ### Serwer - regulator:
 
@@ -102,7 +99,7 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
 
 #### Urządzenie -> Regulator:
 
-- Stan oświetlenia (domyślne nagłówki) (typ wiadomości = CURR_LIGHT) (stan światła) [short 1B
+- Stan oświetlenia (domyślne nagłówki) (typ wiadomości = CURR_LIGHT) (stan światła) [short 1B]
 
 ### Serwer - Klient:
 
@@ -139,6 +136,7 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
 
   //POST /devices - request klienta
   {
+    "id": "string",
     "regulatorId": "string",
     "name": "string",
     "publicKey": "BASE64 encoded string",
@@ -179,7 +177,7 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
 
   //POST /regulators request klienta
   {
-    "regulatorId": "string",
+    "id": "string",
     "name": "string",
     "publicKey": "BASE64 encoded string",
     "address: "string",
@@ -237,7 +235,7 @@ Do stworzenia podpisu wykorzystana zostanie funkcja skrótu SHA-256 i zostanie o
 
 ![First Connection Sequence](/resources/first_connection.png)
 
-Jeżeli nie uda się podłączyć do regulatora serwer odpowednio zapisze regulator jako nieaktywny oraz wszystkie jego urządzenia. Klient podczas pobierania danych o regulatorach i urządzeniach otrzyma odpowiednie statusy tych urządzeń. 
+Jeżeli nie uda się podłączyć do regulatora serwer odpowednio zapisze regulator jako nieaktywny oraz wszystkie jego urządzenia. Klient podczas pobierania danych o regulatorach i urządzeniach otrzyma odpowiednie statusy tych urządzeń.
 
 ![First Connection Sequence](/resources/data_collecting.png)
 
