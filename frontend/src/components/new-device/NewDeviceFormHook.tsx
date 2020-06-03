@@ -66,7 +66,6 @@ export const useNewDeviceForm: (
     try {
       values = await form.validateFields();
 
-      console.log('Values', values);
     } catch {
       return;
     }

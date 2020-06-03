@@ -16,8 +16,10 @@ namespace light_device
         private int port;
         private bool status = false;
         private int backlog = 1;
+
         RSA myKeys;
         RSA regulatorKey;
+
 
         public LampDevice(int port)
         {
@@ -99,7 +101,7 @@ namespace light_device
 
                 listener.Send(msg.ToBytes(), 0, msg.ToBytes().Length, SocketFlags.None);
                 Utils.Log("current staus :" + status, 0);
-                listener.Close(); 
+                listener.Close();
             }
 
         }

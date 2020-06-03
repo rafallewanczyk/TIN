@@ -29,7 +29,11 @@ export const sendServerError = (error: unknown): void => {
   const errorPrefix = 'Server responded with message: ';
 
   if (isAxiosError(error)) {
-    message.error(`${errorPrefix}${error.severMessage}`);
+    const messageString = error?.severMessage
+      ? `${errorPrefix}${error.severMessage}`
+      : 'Unkown error. Server is possibly unreachable';
+
+    message.error(messageString);
   } else {
     message.error(`Unexpected error occurred that is not handled by application ${error}`);
   }
