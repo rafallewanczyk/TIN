@@ -108,9 +108,8 @@ namespace TSHP
                         int keyLength = ReadInt(offset, message, out offset);
                         byte[] key = new byte[keyLength];
                         Array.Copy(message, offset, key, 0, keyLength);
-                        offset += keyLength + 1;
-                        bool target = (message[offset] != 0);
-                        offset++;
+                        offset += keyLength;
+                        short target = ReadShort(offset, message, out offset);  
                         settings.Add(new ChangeConfig(newId, newPort, hostName, key, target));
                     }
                 }
