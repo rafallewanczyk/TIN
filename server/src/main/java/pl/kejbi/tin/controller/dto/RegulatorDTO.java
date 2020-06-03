@@ -41,6 +41,6 @@ public class RegulatorDTO {
     }
 
     public Regulator convertToRegulator() {
-        return new Regulator(id, name, address, port, publicKey, type, StatusType.ACTIVE);
+        return new Regulator(id, name, address, port, publicKey, type, StatusType.INACTIVE);
     }
 }
