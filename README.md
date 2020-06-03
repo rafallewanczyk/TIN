@@ -235,11 +235,10 @@ Do stworzenia podpisu wykorzystana zostanie funkcja skrótu SHA-256 i zostanie o
 
 ## Przykładowe sekwencje
 
-![First Connection Sequence](/resources/first_connection_sequence.png)
+![First Connection Sequence](/resources/first_connection.png)
 
-Jeżeli nie uda się podłączyć do jednego z kilku podanych regulatorów serwer zwróci odpowiednie informacje, i udane połączenia pozostaną. Użytkownik będzie mógł ponowić połączenie z regulatorem
+Jeżeli nie uda się podłączyć do regulatora serwer odpowednio zapisze regulator jako nieaktywny oraz wszystkie jego urządzenia. Klient podczas pobierania danych o regulatorach i urządzeniach otrzyma odpowiednie statusy tych urządzeń. 
 
-![First Connection Sequence](/resources/data_collection_sequence.png)
+![First Connection Sequence](/resources/data_collecting.png)
 
-Jeżeli regulatorowi nie uda się połączyć z urządzeniem podczas operacji “podaj stan” to w logu zostanie umieszczony zapis o błędzie zamiast aktualnego stanu urządzenia.
-Jeżeli nie uda się połączyć serwera z regulatorem, serwer zwróci tę informację klientowi.
+Jeżeli nie uda się regulatorowi połączyć z urządzeniem, to ustawia on jego parametr na wartość, która odpowiada braku połączenia (termiczny: -300, nie osiągalna temperatura; świetlny: 2, tylko 2 stany możliwe (0- wyłączony, 1 - włączony)). Podczas pobierania danych serwer przetworzy tą informację ustawiając odpowiedni status urządzenia.
