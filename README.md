@@ -92,14 +92,16 @@ Dane będa przesyłane jako strumień i przetwarzane zgodnie z typem wiadomości
 
 #### Regulator -> Urządzenie:
 
-- Zapal/Zgaś światło
-  (domyślne nagłówki) (typ wiadomości - CHANGE_LIGHT) (operacja) [short 1B]
+- Zapal światło
+  (domyślne nagłówki) (typ wiadomości - SET1) 
+- Zgaś światło
+  (domyślne nagłówki) (typ wiadomości - SET0) 
 - Podaj stan oświetlenia
-  (domyślne nagłówki) (typ wiadomości = GET_LIGHT)
+  (domyślne nagłówki) (typ wiadomości = GETSTATUS)
 
 #### Urządzenie -> Regulator:
 
-- Stan oświetlenia (domyślne nagłówki) (typ wiadomości = CURR_LIGHT) (stan światła) [short 1B]
+- Stan oświetlenia (domyślne nagłówki) (stan światła) [short 1B]
 
 ### Serwer - Klient:
 
