@@ -25,6 +25,7 @@ namespace TSHP
 
         public List<DeviceSetting> Settings { get => settings; }
         public int Id { get => id; set => id = value; }
+        public byte[] Message { get => message; set => message = value; }
 
         public ServerRegulator(byte[] buffer, RSA publicKey, RSA privateKey)
         {
@@ -33,7 +34,9 @@ namespace TSHP
 
             encryptedData = buffer;
             Decrypt();
-            ReadMessege();
+
+            if (message != null)
+                ReadMessege();
         }
 
         public ServerRegulator(int version, int id, string operation, RSA publicKey, RSA privateKey)
@@ -78,9 +81,10 @@ namespace TSHP
                 //signature
                 message = decryptedData.ToArray();
             }
-            catch (CryptographicException e)
+            catch (Exception e)
             {
                 Utils.Log(e.ToString(), -1);
+                message = null;
             }
         }
 
@@ -129,14 +133,14 @@ namespace TSHP
                 {
                     offset += Encoding.UTF8.GetByteCount("CHANGE_PARAMS");
                     id = ReadInt(offset, message, out offset);
-                    target = ReadShort(offset, message, out offset); 
+                    target = ReadShort(offset, message, out offset);
 
                 }
             }
-            catch (System.ArgumentOutOfRangeException) {
-                Utils.Log("unknown message type", -1); 
+            catch (System.ArgumentOutOfRangeException)
+            {
             }
-            
+
 
         }
 
@@ -186,7 +190,7 @@ namespace TSHP
 
             List<byte> data = new List<byte>();
             data.AddRange(Encoding.UTF8.GetBytes("CHANGE_PARAMS_RE"));
-            data.AddRange(NumToByte(BitConverter.GetBytes(result))); 
+            data.AddRange(NumToByte(BitConverter.GetBytes(result)));
             byte[] encrypted = publicKey.Encrypt(data.ToArray(), RSAEncryptionPadding.OaepSHA256);
             byte[] signature = privateKey.SignData(encrypted, HashAlgorithmName.SHA256, RSASignaturePadding.Pss);
 

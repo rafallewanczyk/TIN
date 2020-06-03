@@ -9,8 +9,7 @@ namespace TSHP
     {
         private int version, id, size;
         public string operation;
-        private byte[] dataBytes;
-        public byte[] message;
+        private byte[] message;
         public byte[] encryptedData;
 
         RSA publicKey;
@@ -20,6 +19,7 @@ namespace TSHP
         public int Version { get => version; set => version = value; }
         public int Id { get => id; set => id = value; }
         public int Size1 { get => size; set => size = value; }
+        public byte[] Message { get => message; set => message = value; }
 
         public RegulatorDevice(byte[] buffer, RSA publicKey, RSA privateKey)
         {
@@ -28,7 +28,9 @@ namespace TSHP
 
             encryptedData = buffer;
             Decrypt();
-            ReadMessege(message); 
+
+            if (message != null)
+                ReadMessege(message);
         }
 
 
