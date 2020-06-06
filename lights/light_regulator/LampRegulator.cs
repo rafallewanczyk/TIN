@@ -21,10 +21,8 @@ namespace light_regulator
         private int id;
         private int privateKeyLength = 0;
 
-        RSA myKeys;
-        RSA serverKey;
-
-        int serverKeyLength;
+        private RSA myKeys;
+        private RSA serverKey;
 
 
 

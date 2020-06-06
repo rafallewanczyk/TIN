@@ -17,8 +17,8 @@ namespace light_device
         private bool status = false;
         private int backlog = 1;
 
-        RSA myKeys;
-        RSA regulatorKey;
+        private RSA myKeys;
+        private RSA regulatorKey;
 
 
         public LampDevice(int port)

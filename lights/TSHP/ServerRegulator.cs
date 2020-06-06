@@ -17,8 +17,8 @@ namespace TSHP
         public short target;
         private List<DeviceSetting> settings = new List<DeviceSetting>();
 
-        RSA publicKey;
-        RSA privateKey;
+        private RSA publicKey;
+        private RSA privateKey;
 
 
         public int Size { get => size; set => size = value; }
