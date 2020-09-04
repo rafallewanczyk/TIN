@@ -22,7 +22,7 @@
     "immer": "^6.0.3",
     "less": "^3.11.1",
     "less-loader": "5.0.0",
-    "react": "^0.0.0-experimental-e5d06e34b",
+    "react": "^0.14.0",
     "react-app-rewired": "^2.1.5",
     "react-dom": "^0.0.0-experimental-e5d06e34b",
     "react-query": "^1.5.3",
